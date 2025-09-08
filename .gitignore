@@ -1,0 +1,59 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# === Build ===
+/target/
+
+# === IDE ===
+/.idea/
+/*.iml
+/.classpath
+/.project
+/.settings/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Logs & temp ===
+*.log
+/logs/
+/tmp/
+
+# === Local-only config (비밀/PC전용) ===
+/src/main/resources/application-local*.yml
+/src/main/resources/application-*.properties
+
+# === 실제 업로드 파일(로컬만 보관) ===
+/upload/

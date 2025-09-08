@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>위시리스트</title>
+    <link rel="stylesheet" href="/resources/css/style.css">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
+</head>
+<body>
+    <h2>위시리스트</h2>
+    <div class="wishlist-container">
+        <table width="800" align="center" border="1">
+            <tr>
+                <th>이미지</th>
+                <th>상품명</th>
+                <th>가격</th>
+                <th>삭제</th>
+            </tr>
+            <!-- 위시리스트 항목 출력 -->
+            <tr th:each="goods : ${list}">
+                <td><img th:src="@{'/static/upload/' + ${goods.goodsMainStoreImage}}" width="50"></td>
+                <td th:text="${goods.goodsName}"></td>
+                <td th:text="${#numbers.formatCurrency(goods.goodsPrice)} + '원'"></td>
+                <td>
+                    <button class="remove-wish" th:data-goods="${goods.goodsNum}">삭제</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // 위시리스트에서 항목 삭제
+            $(".remove-wish").click(function () {
+                const goodsNum = $(this).data("goods");
+
+                $.ajax({
+                    type: "POST",
+                    url: "/item/wishItem",
+                    contentType: "application/json",
+                    data: JSON.stringify({ goodsNum: goodsNum }),
+                    success: function () {
+                        alert("위시리스트에서 상품이 제거되었습니다.");
+                        location.reload();
+                    },
+                    error: function () {
+                        alert("삭제 중 문제가 발생했습니다. 다시 시도해주세요.");
+                    },
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mini.mapper.MemberMapper">
+<insert id="memberInsert" parameterType="memberDTO">
+	insert into members(MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW
+	                   , MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST
+	                   , MEMBER_REGIST, GENDER,MEMBER_PHONE1
+	                   <if test="memberPhone2 != null">
+	                   , MEMBER_PHONE2
+	                   </if>
+	                   , MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_POINT)
+	values(#{memberNum}, #{memberName}, #{memberId}, #{memberPw}
+	      ,#{memberAddr},#{memberAddrDetail},#{memberPost} 
+	      ,sysdate, #{gender}, #{memberPhone1}
+	      <if test="memberPhone2 != null">
+	      ,#{memberPhone2}
+	      </if>
+	      ,#{memberEmail},#{memberBirth},0)
+</insert>
+<sql id="memberBaseColumns">
+		MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW
+	  , MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST
+	  , MEMBER_REGIST, GENDER,MEMBER_PHONE1, MEMBER_PHONE2
+	  , MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_POINT, MEMBER_EMAIL_CONF 
+</sql>
+
+<select id="memberSelectList" resultType="memberDTO" parameterType="startEndPageDTO">
+select *
+from (select ROW_NUMBER() over (order by member_num ) as rn  
+	        ,<include refid="memberBaseColumns"/>
+	  from members
+<where> 
+    <if test="searchWord != null and searchWord != ''">
+        MEMBER_NAME like '%'||#{searchWord}||'%'
+        or MEMBER_ID like '%'||#{searchWord}||'%'
+        or MEMBER_NUM like '%'||#{searchWord}||'%'
+    </if>
+</where>
+)
+where rn BETWEEN #{startRow} and #{endRow}
+</select>
+<select id="memberCount" resultType="integer">
+	select count(*) from members
+</select>
+<select resultType="memberDTO" id="memberSelectOne" parameterType="string" >
+	select <include refid="memberBaseColumns" />
+	from members
+	where member_num = #{memberNum}
+</select>
+<update id="memberUpdate" parameterType="memberDTO">
+	update members
+	<trim prefix="set" suffixOverrides=",">
+		member_Name = #{memberName},
+		member_ADDR = #{memberAddr},
+		<if test="memberAddrDetail != null">
+		member_Addr_Detail = #{memberAddrDetail},
+		</if>
+		<if test="memberAddrDetail == null">
+		member_Addr_Detail = null,
+		</if>
+		member_Post = #{memberPost},
+		gender = #{gender},
+		member_Phone1 = #{memberPhone1},
+		member_Email = #{memberEmail},
+		member_Birth = #{memberBirth},
+		<choose>
+			<when test="memberPhone2 != null">
+			member_Phone2 = #{memberPhone2},
+			</when>
+			<when test="memberPhone2 == null">
+			member_Phone2 = null,
+			</when>
+		</choose>
+	</trim>
+where MEMBER_NUM = #{memberNum}
+</update>
+<delete id="memberDelete" parameterType="string">
+	delete from members
+	where member_num = #{memberNum}
+</delete>
+<update id="memberEmailCheckUpdate" parameterType="string">
+	update members
+	set MEMBER_EMAIL_CONF = 'Y'
+	where member_email = #{memberEmail} and MEMBER_EMAIL_CONF is null
+</update>
+<select id="memberNumSelect" parameterType="string" resultType="string">
+	select member_num from members where member_id = #{memberId}
+</select>
+</mapper>
+
+
+
+
+

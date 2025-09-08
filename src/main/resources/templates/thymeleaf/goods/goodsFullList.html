@@ -1,0 +1,528 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="imagetoolbar" content="no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="title" content="웹사이트">
+  <meta name="description" content="웹사이트입니다.">
+  <meta name="keywords" content="키워드,키워드,키워드">
+  <meta property="og:title" content="웹사이트">
+  <meta property="og:description" content="웹사이트입니다">
+  <meta property="og:image" content="https://웹사이트/images/opengraph.png">
+  <meta property="og:url" content="https://웹사이트">
+  <title>상품 전체페이지 | Miso</title>
+  <script src="/static/js/cartButton.js"></script>
+  <link rel="stylesheet"  href="/resources/css/setting.css">
+  <link rel="stylesheet"  href="/resources/css/plugin.css">
+  <link rel="stylesheet"  href="/resources/css/template.css">
+  <link rel="stylesheet"  href="/resources/css/common.css">
+  <link rel="stylesheet"  href="/resources/css/style.css">
+</head>
+
+<body>
+  <!-- [S]basic-N3 -->
+  <div class="basic-N3" data-bid="uUm3Qv2irL">
+    <div class="header-inner">
+      <div class="header-container container-lg">
+        <div class="header-left">
+          <h1 class="header-title">
+            <a href="/">
+              <img  src="/resources/images/img_logo_black.png" alt="로고">
+            </a>
+          </h1>
+          <div class="header-mobile-group">
+            <div class="header-mobile-top">
+              <p>로그인이 필요합니다.</p>
+              <a href="javascript:void(0)">로그인</a>
+            </div>
+                       <ul class="header-gnblist">
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/banner/brand">
+                  <span>BRAND</span>
+                </a>
+              </li>
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/goods/goodsFullList">
+                  <span>PRODUCTS</span>
+                </a>
+              </li>
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/banner/notice">
+                  <span>NOTICE</span>
+                </a>
+              </li>
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/banner/faq">
+                  <span>FAQ</span>
+                </a>
+              </li>
+          <li class="header-gnbitem">
+  <a class="header-gnblink" 
+     th:href="${isLoggedIn} ? '/login/logout' : '/login/item.login'">
+    <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
+          th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
+  </a>
+</li>
+
+            </ul>
+            <button class="header-btn btn-close">
+              <img  src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘">
+            </button>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="header-utils">
+            <button class="header-btn btn-seach">
+              <img  src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘">
+            </button>
+            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
+              <img  src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
+            </a>
+            <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
+              <img  src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
+              <span class="badgeset-text">1</span>
+            </button>
+            <button class="header-btn btn-allmenu">
+              <img  src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘">
+            </button>
+            <button class="header-btn btn-momenu">
+              <img  src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘">
+            </button>
+            <button class="header-btn btn-close">
+              <img  src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="header-dim"></div>
+  </div>
+  <!-- [E]basic-N3 -->
+  <main class="th-layout-main ">
+    <!-- [S]basic-N50 -->
+    <div class="basic-N50" data-bid="zqM3qV2rT5">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="textset">
+            <h2 class="textset-tit">전체 상품</h2>
+            <button class="contents-btn btn-filter" type="button">
+              <img  src="/resources/icons/ico_filter_black.svg" alt="모바일 필터 아이콘">
+            </button>
+          </div>
+          <div class="contents-body">
+            <div class="contents-left">
+              <div class="contents-filter-header">
+                <strong>필터</strong>
+                <button class="contents-btn btn-close">
+                  <img  src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘">
+                </button>
+              </div>
+              <div class="contents-filter-body">
+                <div class="accordset accordset-plus">
+                  <div class="accordset-item">
+                    <div class="accordset-header">
+                      <button class="accordset-button btn" type="button">브랜드</button>
+                    </div>
+                    <div class="accordset-body">
+                      <div class="accordset-content">
+                        <div class="checkset">
+                          <input id="checkset-1-1" class="checkset-input input-round" type="checkbox" value="" checked="">
+                          <label class="checkset-label" for="checkset-1-1"></label>
+                          <span class="checkset-text">전체</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-1-2" class="checkset-input input-round" type="checkbox" value="" checked="">
+                          <label class="checkset-label" for="checkset-1-2"></label>
+                          <span class="checkset-text">삼성전자</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-1-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-1-3"></label>
+                          <span class="checkset-text">LG전자</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-1-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-1-4"></label>
+                          <span class="checkset-text">레노버</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-1-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-1-5"></label>
+                          <span class="checkset-text">MSI</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-1-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-1-6"></label>
+                          <span class="checkset-text">ASUS</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-1-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-1-7"></label>
+                          <span class="checkset-text">APPLE</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordset-item">
+                    <div class="accordset-header">
+                      <button class="accordset-button btn" type="button">가격</button>
+                    </div>
+                    <div class="accordset-body">
+                      <div class="accordset-content">
+                        <div class="radioset">
+                          <input id="radioset-2-1" name="radioset-2" class="radioset-input input-line" type="radio" value="">
+                          <label class="radioset-label" for="radioset-2-1"></label>
+                          <span class="radioset-text">500,000원 미만</span>
+                        </div>
+                        <div class="radioset">
+                          <input id="radioset-2-2" name="radioset-2" class="radioset-input input-line" type="radio" value="">
+                          <label class="radioset-label" for="radioset-2-2"></label>
+                          <span class="radioset-text">500,000원 ~ 1,000,000원</span>
+                        </div>
+                        <div class="radioset">
+                          <input id="radioset-2-3" name="radioset-2" class="radioset-input input-line" type="radio" value="">
+                          <label class="radioset-label" for="radioset-2-3"></label>
+                          <span class="radioset-text">1,000,000원 이상</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordset-item">
+                    <div class="accordset-header">
+                      <button class="accordset-button btn" type="button">용도</button>
+                    </div>
+                    <div class="accordset-body">
+                      <div class="accordset-content">
+                        <div class="checkset">
+                          <input id="checkset-3-1" class="checkset-input input-round" type="checkbox" value="" checked="">
+                          <label class="checkset-label" for="checkset-3-1"></label>
+                          <span class="checkset-text">전체</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-3-2" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-3-2"></label>
+                          <span class="checkset-text">사무용 노트북</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-3-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-3-3"></label>
+                          <span class="checkset-text">인강용 노트북</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-3-4" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-3-4"></label>
+                          <span class="checkset-text">게이밍 노트북</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-3-4" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-3-5"></label>
+                          <span class="checkset-text">영상편집 노트북</span>
+                        </div>
+                  
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordset-item">
+                    <div class="accordset-header">
+                      <button class="accordset-button btn" type="button">화면 크기</button>
+                    </div>
+                    <div class="accordset-body">
+                      <div class="accordset-content">
+                        <div class="checkset">
+                          <input id="checkset-4-1" class="checkset-input input-round" type="checkbox" value="" checked="">
+                          <label class="checkset-label" for="checkset-4-1"></label>
+                          <span class="checkset-text">전체</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-4-2" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-4-2"></label>
+                          <span class="checkset-text">13.3인치</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-4-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-4-3"></label>
+                          <span class="checkset-text">14인치</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-4-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-4-4"></label>
+                          <span class="checkset-text">15.6인치</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-4-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-4-5"></label>
+                          <span class="checkset-text">17.3인치</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordset-item">
+                    <div class="accordset-header">
+                      <button class="accordset-button btn" type="button">무게</button>
+                    </div>
+                    <div class="accordset-body">
+                      <div class="accordset-content">
+                        <div class="checkset">
+                          <input id="checkset-5-1" class="checkset-input input-round" type="checkbox" value="" checked="">
+                          <label class="checkset-label" for="checkset-5-1"></label>
+                          <span class="checkset-text">전체</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-5-2" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-5-2"></label>
+                          <span class="checkset-text">1kg 미만</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-5-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-5-3"></label>
+                          <span class="checkset-text">1.0 ~ 1.4kg</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-5-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-5-4"></label>
+                          <span class="checkset-text">1.4 ~ 1.7kg</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-5-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-5-5"></label>
+                          <span class="checkset-text">1.7 ~ 2.0kg</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-5-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-5-6"></label>
+                          <span class="checkset-text">2.0 ~ 2.3kg</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordset-item active">
+                    <div class="accordset-header">
+                      <button class="accordset-button btn" type="button">혜택</button>
+                    </div>
+                    <div class="accordset-body">
+                      <div class="accordset-content">
+                        <div class="checkset">
+                          <input id="checkset-6-1" class="checkset-input input-round" type="checkbox" value="" checked="">
+                          <label class="checkset-label" for="checkset-6-1"></label>
+                          <span class="checkset-text">무료배송</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-6-2" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-6-2"></label>
+                          <span class="checkset-text">쿠폰</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-6-3" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-6-3"></label>
+                          <span class="checkset-text">상품할인</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-6-4" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-6-4"></label>
+                          <span class="checkset-text">포인트 적립</span>
+                        </div>
+                        <div class="checkset">
+                          <input id="checkset-6-5" class="checkset-input input-round" type="checkbox" value="">
+                          <label class="checkset-label" for="checkset-6-5"></label>
+                          <span class="checkset-text">사은품 증정</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="contents-filter-footer">
+                <span>필터초기화</span>
+                <button class="contents-btn btn-refresh">
+                  <img  src="/resources/icons/ico_refresh_black.svg" alt="닫기 아이콘">
+                </button>
+              </div>
+            </div>
+            <div class="contents-right">
+              <div class="contents-sort">
+                <p class="contents-sort-total"> 총 <span>12</span>개의 제품이 있습니다. </p>
+                <div class="contents-sort-sel">
+                  <div class="tabset tabset-text">
+                    <ul class="tabset-list">
+                      <li class="tabset-item">
+                        <a class="tabset-link active" href="javascript:void(0)">
+                          <span>인기순</span>
+                        </a>
+                      </li>
+                      <li class="tabset-item">
+                        <a class="tabset-link" href="javascript:void(0)">
+                          <span>리뷰많은순</span>
+                        </a>
+                      </li>
+                      <li class="tabset-item">
+                        <a class="tabset-link" href="javascript:void(0)">
+                          <span>높은가격순</span>
+                        </a>
+                      </li>
+                      <li class="tabset-item">
+                        <a class="tabset-link" href="javascript:void(0)">
+                          <span>낮은가격순</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="selectset selectset-round selectset-sm">
+                    <button class="selectset-toggle btn" type="button">
+                      <span>12개씩 보기</span>
+                    </button>
+                    <ul class="selectset-list">
+                      <li class="selectset-item">
+                        <button class="selectset-link btn" type="button" data-value="전체">
+                          <span>전체</span>
+                        </button>
+                      </li>
+                      <li class="selectset-item">
+                        <button class="selectset-link btn" type="button" data-value="12개씩 보기">
+                          <span>12개씩 보기</span>
+                        </button>
+                      </li>
+                      <li class="selectset-item">
+                        <button class="selectset-link btn" type="button" data-value="30개씩 보기">
+                          <span>30개씩 보기</span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+             <!-- 상품 리스트 출력 -->
+    <div class="contents-list">
+        <!-- 상품 목록을 동적으로 반복 -->
+        <th:block th:each="goods : ${goodsList}">
+            <a th:href="@{'/corner/detailView/' + ${goods.goodsNum}}" class="cardset cardset-shopping">
+                <figure class="cardset-figure">
+                    <!-- 상품 이미지 출력 -->
+                    <img th:src="@{'/upload/' + ${goods.goodsMainStoreImage}}" class="cardset-img" alt="상품 이미지">
+                </figure>
+                <div class="cardset-body">
+                    <h2 class="cardset-tit" th:text="${goods.goodsName}">상품명</h2>
+                    <p class="cardset-desc">
+                        <span th:text="${goods.goodsPrice}">가격</span><small>원</small>
+                    </p>
+                </div>
+            </a>
+        </th:block>
+    </div>
+    <!-- [E]상품 리스트 끝 -->
+              <nav class="pagiset pagiset-line">
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-first" href="javascript:void(0)">
+                    <span class="visually-hidden">처음</span>
+                  </a>
+                </div>
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-prev" href="javascript:void(0)">
+                    <span class="visually-hidden">이전</span>
+                  </a>
+                </div>
+                <div class="pagiset-list">
+                  <a class="pagiset-link active-fill" href="javascript:void(0)">1</a>
+                  <a class="pagiset-link" href="javascript:void(0)">2</a>
+                  <a class="pagiset-link" href="javascript:void(0)">3</a>
+                  <a class="pagiset-link" href="javascript:void(0)">4</a>
+                </div>
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-next" href="javascript:void(0)">
+                    <span class="visually-hidden">다음</span>
+                  </a>
+                </div>
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-last" href="javascript:void(0)">
+                    <span class="visually-hidden">마지막</span>
+                  </a>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="contents-dim"></div>
+    </div>
+    <!-- [E]basic-N50 -->
+  </main>
+  <!-- [S]basic-N4 -->
+  <div class="basic-N4" data-bid="PzM3qV3K9p">
+    <div class="footer-inner">
+      <div class="footer-container container-lg">
+        <div class="footer-top">
+          <h1 class="footer-logo">
+            <a href="javascript:void(0)">
+              <img  src="/resources/images/img_logo_lightgray.png" alt="로고">
+            </a>
+          </h1>
+ <ul class="footer-menulist">
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>이용약관</span>
+              </a>
+            </li>
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>개인정보처리방침</span>
+              </a>
+            </li>
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>국비교육</span>
+              </a>
+            </li>
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>미니프로젝트</span>
+              </a>
+            </li>
+          </ul>
+          <ul class="footer-snslist">
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_instagram_lightgrey.svg" alt="인스타그램">
+              </a>
+            </li>
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_youtube_lightgrey.svg" alt="유튜브">
+              </a>
+            </li>
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_facebook_lightgrey.svg" alt="페이스북">
+              </a>
+            </li>
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_kakao_lightgrey.svg" alt="카카오톡">
+              </a>
+            </li>
+          </ul>
+        </div>
+         <div class="footer-bottom">
+          <div class="footer-txt">
+            <p> 성결대학교 성결관 301호 </p>
+            <p>
+              <span>T. 010-8246-6830</span>
+              <span>E. wnflqm010203@sungkyul.ac.kr</span>
+            </p>
+          </div>
+          <div class="footer-txt">
+            <p>2024 BY JeongJunGyo. ALL RIGHTS RESEVED</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- [E]basic-N4 -->
+  <script  src="/resources/js/setting.js"></script>
+  <script  src="/resources/js/plugin.js"></script>
+  <script  src="/resources/js/template.js"></script>
+  <script  src="/resources/js/common.js"></script>
+  <script  src="/resources/js/script.js"></script>
+</body>

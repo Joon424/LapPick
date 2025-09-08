@@ -1,0 +1,289 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="imagetoolbar" content="no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="title" content="웹사이트">
+  <meta name="description" content="웹사이트입니다.">
+  <meta name="keywords" content="키워드,키워드,키워드">
+  <meta property="og:title" content="웹사이트">
+  <meta property="og:description" content="웹사이트입니다">
+  <meta property="og:image" content="https://웹사이트/images/opengraph.png">
+  <meta property="og:url" content="https://웹사이트">
+  <title>공지사항 | Miso</title>
+  <script src="/static/js/cartButton.js"></script>
+  <link rel="stylesheet"  href="/resources/css/setting.css">
+  <link rel="stylesheet"  href="/resources/css/plugin.css">
+  <link rel="stylesheet"  href="/resources/css/template.css">
+  <link rel="stylesheet"  href="/resources/css/common.css">
+  <link rel="stylesheet"  href="/resources/css/style.css">
+</head>
+
+<body>
+  <!-- [S]basic-N3 -->
+  <div class="basic-N3" data-bid="bdM4hZTbyz">
+    <div class="header-inner">
+      <div class="header-container container-lg">
+        <div class="header-left">
+          <h1 class="header-title">
+            <a href="/">
+              <img  src="/resources/images/img_logo_black.png" alt="로고">
+            </a>
+          </h1>
+          <div class="header-mobile-group">
+            <div class="header-mobile-top">
+              <p>로그인이 필요합니다.</p>
+              <a href="javascript:void(0)">로그인</a>
+            </div>
+                      <ul class="header-gnblist">
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/banner/brand">
+                  <span>BRAND</span>
+                </a>
+              </li>
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/goods/goodsFullList">
+                  <span>PRODUCTS</span>
+                </a>
+              </li>
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/banner/notice">
+                  <span>NOTICE</span>
+                </a>
+              </li>
+              <li class="header-gnbitem">
+                <a class="header-gnblink" href="/banner/faq">
+                  <span>FAQ</span>
+                </a>
+              </li>
+          <li class="header-gnbitem">
+  <a class="header-gnblink" 
+     th:href="${isLoggedIn} ? '/login/logout' : '/login/item.login'">
+    <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
+          th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
+  </a>
+</li>
+
+            </ul>
+            <button class="header-btn btn-close">
+              <img  src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘">
+            </button>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="header-utils">
+            <button class="header-btn btn-seach">
+              <img  src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘">
+            </button>
+            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
+              <img  src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
+            </a>
+            <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
+              <img  src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
+              <span class="badgeset-text">1</span>
+            </button>
+            <button class="header-btn btn-allmenu">
+              <img  src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘">
+            </button>
+            <button class="header-btn btn-momenu">
+              <img  src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘">
+            </button>
+            <button class="header-btn btn-close">
+              <img  src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="header-dim"></div>
+  </div>
+  <!-- [E]basic-N3 -->
+  <main class="th-layout-main ">
+    <!-- [S]basic-N22 -->
+    <div class="basic-N22" data-bid="Nem4HzwZqH">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="textset">
+            <h2 class="textset-tit">공지사항</h2>
+          </div>
+          <div class="contents-form">
+            <div class="selectset selectset-round selectset-lg">
+              <button class="selectset-toggle btn" type="button">
+                <span>전체</span>
+              </button>
+              <ul class="selectset-list">
+                <li class="selectset-item">
+                  <button class="selectset-link btn" type="button" data-value="전체">
+                    <span>전체</span>
+                  </button>
+                </li>
+                <li class="selectset-item">
+                  <button class="selectset-link btn" type="button" data-value="선택1">
+                    <span>선택1</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <div class="inputset inputset-lg">
+              <button class="inputset-icon icon-right icon-search btn" type="button" aria-label="아이콘"></button>
+              <input type="text" class="inputset-input form-control" placeholder="검색어를 입력해주세요." aria-label="내용">
+            </div>
+          </div>
+          <div class="contents-group">
+            <a href="javascript:void(0);" class="cardset cardset-inner cardset-hover cardset-border">
+              <div class="cardset-cont">
+                <h2 class="cardset-tit">신제품 출시 안내 </h2>
+                <p class="cardset-desc"> 새롭게 출시된 고성능 노트북 시리즈가 LapPick에 추가되었습니다! 최신 스펙과 특별 프로모션 정보를 확인하고, 선착순 할인 혜택을 놓치지 마세요. </p>
+                <span class="cardset-txt">2024. 12. 10</span>
+              </div>
+            </a>
+            <a href="javascript:void(0);" class="cardset cardset-inner cardset-hover cardset-border">
+              <div class="cardset-cont">
+                <h2 class="cardset-tit">연말 맞이 대대적 할인 이벤트</h2>
+                <p class="cardset-desc"> 연말을 맞이하여 LapPick에서는 다양한 노트북 제품들에 대한 특별 할인 행사를 진행합니다. 이 기회에 원하던 노트북을 최대 30% 할인된 가격에 만나보세요! </p>
+                <span class="cardset-txt">2024. 12. 8</span>
+              </div>
+            </a>
+            <a href="javascript:void(0);" class="cardset cardset-inner cardset-hover cardset-border">
+              <div class="cardset-cont">
+                <h2 class="cardset-tit">사용자 맞춤 구성 가이드 업데이트</h2>
+                <p class="cardset-desc"> 사용자의 편의를 더욱 높이기 위해 노트북 선택 가이드가 새롭게 업데이트되었습니다. 이제 더욱 쉽게 여러분에게 맞는 노트북을 찾을 수 있습니다. </p>
+                <span class="cardset-txt">2024. 11. 12</span>
+              </div>
+            </a>
+            <a href="javascript:void(0);" class="cardset cardset-inner cardset-hover cardset-border">
+              <div class="cardset-cont">
+                <h2 class="cardset-tit">고객 지원 서비스 확장</h2>
+                <p class="cardset-desc"> 고객 만족을 위해 저희 고객 지원 서비스 시간이 확장되었습니다. 이제 주말 및 공휴일에도 상담 가능하오니 언제든지 문의해 주세요. </p>
+                <span class="cardset-txt">2024. 09. 16</span>
+              </div>
+            </a>
+            <a href="javascript:void(0);" class="cardset cardset-inner cardset-hover cardset-border">
+              <div class="cardset-cont">
+                <h2 class="cardset-tit">환경 보호 캠페인 참여</h2>
+                <p class="cardset-desc"> LapPick은 지속 가능한 환경을 위한 캠페인에 참여하고 있습니다. 노트북 구매시 재활용 가능한 포장재를 사용하는 등 환경 보호에 동참해 주세요. </p>
+                <span class="cardset-txt">2024. 05. 11</span>
+              </div>
+            </a>
+            <a href="javascript:void(0);" class="cardset cardset-inner cardset-hover cardset-border">
+              <div class="cardset-cont">
+                <h2 class="cardset-tit">사용자 리뷰 이벤트</h2>
+                <p class="cardset-desc"> 사용자 여러분의 소중한 리뷰를 기다립니다! 리뷰를 남겨주시는 고객님들 중 추첨을 통해 특별한 선물을 드리는 이벤트가 진행중입니다. 참여 방법과 선물 내용은 홈페이지에서 확인할 수 있습니다. </p>
+                <span class="cardset-txt">2024. 04. 24</span>
+              </div>
+            </a>
+          </div>
+          <nav class="pagiset pagiset-line">
+            <div class="pagiset-ctrl">
+              <a class="pagiset-link pagiset-first" href="javascript:void(0)">
+                <span class="visually-hidden">처음</span>
+              </a>
+            </div>
+            <div class="pagiset-ctrl">
+              <a class="pagiset-link pagiset-prev" href="javascript:void(0)">
+                <span class="visually-hidden">이전</span>
+              </a>
+            </div>
+            <div class="pagiset-list">
+              <a class="pagiset-link active-fill" href="javascript:void(0)">1</a>
+              <a class="pagiset-link" href="javascript:void(0)">2</a>
+              <a class="pagiset-link" href="javascript:void(0)">3</a>
+              <a class="pagiset-link" href="javascript:void(0)">4</a>
+            </div>
+            <div class="pagiset-ctrl">
+              <a class="pagiset-link pagiset-next" href="javascript:void(0)">
+                <span class="visually-hidden">다음</span>
+              </a>
+            </div>
+            <div class="pagiset-ctrl">
+              <a class="pagiset-link pagiset-last" href="javascript:void(0)">
+                <span class="visually-hidden">마지막</span>
+              </a>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+    <!-- [E]basic-N22 -->
+  </main>
+  <!-- [S]basic-N4 -->
+  <div class="basic-N4" data-bid="pHm4hZTGpT">
+    <div class="footer-inner">
+      <div class="footer-container container-lg">
+        <div class="footer-top">
+          <h1 class="footer-logo">
+            <a href="javascript:void(0)">
+              <img  src="/resources/images/img_logo_lightgray.png" alt="로고">
+            </a>
+          </h1>
+ <ul class="footer-menulist">
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>이용약관</span>
+              </a>
+            </li>
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>개인정보처리방침</span>
+              </a>
+            </li>
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>국비교육</span>
+              </a>
+            </li>
+            <li class="footer-menuitem">
+              <a href="javascript:void(0)">
+                <span>미니프로젝트</span>
+              </a>
+            </li>
+          </ul>
+          <ul class="footer-snslist">
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_instagram_lightgrey.svg" alt="인스타그램">
+              </a>
+            </li>
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_youtube_lightgrey.svg" alt="유튜브">
+              </a>
+            </li>
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_facebook_lightgrey.svg" alt="페이스북">
+              </a>
+            </li>
+            <li class="footer-snsitem">
+              <a class="footer-snslink" href="javascript:void(0)">
+                <img  src="/resources/icons/ico_kakao_lightgrey.svg" alt="카카오톡">
+              </a>
+            </li>
+          </ul>
+        </div>
+         <div class="footer-bottom">
+          <div class="footer-txt">
+            <p> 성결대학교 성결관 301호 </p>
+            <p>
+              <span>T. 010-8246-6830</span>
+              <span>E. wnflqm010203@sungkyul.ac.kr</span>
+            </p>
+          </div>
+          <div class="footer-txt">
+            <p>2024 BY JeongJunGyo. ALL RIGHTS RESEVED</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- [E]basic-N4 -->
+  <script  src="/resources/js/setting.js"></script>
+  <script  src="/resources/js/plugin.js"></script>
+  <script  src="/resources/js/template.js"></script>
+  <script  src="/resources/js/common.js"></script>
+  <script  src="/resources/js/script.js"></script>
+</body>

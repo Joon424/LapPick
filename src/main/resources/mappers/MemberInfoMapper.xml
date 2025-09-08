@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mini.mapper.MemberInfoMapper">
+<select id="memberSelectOne" parameterType="string" resultType="memberDTO">
+	select  MEMBER_NUM AS memberNum, 
+            MEMBER_NAME AS memberName, 
+            MEMBER_ID AS memberId, 
+            MEMBER_PW AS memberPw,
+            MEMBER_ADDR AS memberAddr, 
+            MEMBER_ADDR_DETAIL AS memberAddrDetail, 
+            MEMBER_POST AS memberPost,
+            MEMBER_REGIST AS memberRegist, 
+            GENDER AS gender,
+            MEMBER_PHONE1 AS memberPhone1, 
+            MEMBER_PHONE2 AS memberPhone2,
+            MEMBER_EMAIL AS memberEmail, 
+            MEMBER_BIRTH AS memberBirth, 
+            MEMBER_POINT AS memberPoint
+	from members
+	where member_id = #{memberId}
+</select>
+<update id="memberUpdate" parameterType="memberDTO">
+	update members
+ MEMBER_NAME 
+    set 
+        MEMBER_NAME = #{memberName},
+        MEMBER_ADDR = #{memberAddr},
+        MEMBER_ADDR_DETAIL = #{memberAddrDetail},
+        MEMBER_POST = #{memberPost},
+        GENDER = #{gender},
+        MEMBER_PHONE1 = #{memberPhone1},
+        MEMBER_PHONE2 = #{memberPhone2},
+        MEMBER_EMAIL = #{memberEmail},
+        MEMBER_BIRTH = #{memberBirth}
+    where MEMBER_ID = #{memberId}
+</update>
+<update id = "memberPwUpdate">
+	update members
+	set member_pw = #{_newPw}
+	where member_id = #{_memberId}
+</update>
+<delete id="memberDelete">
+	delete from members where member_id = #{memberId}
+</delete>
+</mapper>

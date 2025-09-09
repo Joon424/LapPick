@@ -57,3 +57,11 @@ Thumbs.db
 
 # === 실제 업로드 파일(로컬만 보관) ===
 /upload/
+
+/.metadata/
+/share/
+/*.zip
+/project-tree.txt
+/*.sanitized
+/*.sanitized.yml
+/application-local-*.yml

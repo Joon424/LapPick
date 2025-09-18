@@ -5,12 +5,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 
 /**
  * WebConfig
@@ -81,4 +83,26 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(fileLocation) // "file:" 접두사 포함된 URI 문자열
                 .setCachePeriod(0);
     }
+    
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new mini.config.interceptor.AuthCheckInterceptor(Set.of("mem","emp")))
+                .addPathPatterns(
+                    "/myPage/**",
+                    "/item/cartList",
+                    "/memberUpdate",
+                    "/memberPwModify",
+                    "/memberDropOk"
+                );
+
+        registry.addInterceptor(new mini.config.interceptor.AuthCheckInterceptor(Set.of("emp")))
+                .addPathPatterns(
+                    "/employee/**",
+                    "/goods/goodsForm", "/goods/goodsWrite",
+                    "/goods/goodsModify/**", "/goods/goodsDelete",
+                    "/goods/productsDelete", "/goods/goodsRedirect",
+                    "/goodsIpgo/**"
+                );
+    }
 }
+    

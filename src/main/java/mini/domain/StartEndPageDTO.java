@@ -9,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Alias("StartEndPageDTO")
 public class StartEndPageDTO {
-	int startRow;
-	int endRow;
+	long startRow;
+	long endRow;
 	String searchWord;
 }

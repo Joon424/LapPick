@@ -2,41 +2,33 @@ package mini.service.member;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import mini.command.MemberCommand;
 import mini.domain.MemberDTO;
 import mini.mapper.MemberMapper;
 
 @Service
+@RequiredArgsConstructor
 public class MemberWriteService {
 	@Autowired
 	MemberMapper memberMapper;
 	@Autowired
 	PasswordEncoder passwordEncoder;
-	public void execute(MemberCommand memberCommand) {
-		MemberDTO dto = new MemberDTO();
-		/*
-		dto.setGender(memberCommand.getGender());
-		dto.setMemberAddr(memberCommand.getMemberAddr());
-		dto.setMemberAddrDetail(memberCommand.getMemberAddrDetail());
-		dto.setMemberBirth(memberCommand.getMemberBirth());
-		dto.setMemberEmail(memberCommand.getMemberEmail());
-		dto.setMemberId(memberCommand.getMemberId().trim());
-		dto.setMemberName(memberCommand.getMemberName().trim());
-		dto.setMemberNum(memberCommand.getMemberNum());
-		dto.setMemberPhone1(memberCommand.getMemberPhone1().trim());
-		*/
-		BeanUtils.copyProperties(memberCommand, dto);
-		
-		if(memberCommand.getMemberPhone2() != null) {
-			dto.setMemberPhone2(memberCommand.getMemberPhone2().trim());
-		}
-		String encodePw = passwordEncoder.encode(memberCommand.getMemberPw());
-		dto.setMemberPw(encodePw);
-		
-		dto.setMemberPost(memberCommand.getMemberPost());
-		memberMapper.memberInsert(dto);
+	
+    public void save(MemberDTO dto) {
+        if (memberMapper.existsByMemberId(dto.getMemberId()) > 0) {
+            throw new DuplicateKeyException("이미 사용중인 아이디입니다.");
+        }
+        memberMapper.memberInsert(dto);
+    }
+    // 호환용: 기존 컨트롤러들이 execute/write를 부르면 아래가 save로 위임
+    public void execute(MemberDTO dto) { save(dto); }
+    public void write(MemberDTO dto)   { save(dto); }
+    
 	}
-}

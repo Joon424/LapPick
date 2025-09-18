@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="ko">
-
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -118,7 +117,7 @@
         </div>
 <div class="contents-group">
   <div class="cardset">
-    <a href="/member/memberList" style="display: inline-block; text-align: center; width: 100%;">
+    <a th:href="@{/employee/member/memberList(page=1)}" style="display: inline-block; text-align: center; width: 100%;">
       <figure class="cardset-figure">
         <img class="cardset-img"  src="/resources/images/img_basic_N14_1.png" alt="회원 관리 이미지">
       </figure>

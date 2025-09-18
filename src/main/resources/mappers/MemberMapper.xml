@@ -3,83 +3,164 @@
         "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mini.mapper.MemberMapper">
-<insert id="memberInsert" parameterType="memberDTO">
-	insert into members(MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW
-	                   , MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST
-	                   , MEMBER_REGIST, GENDER,MEMBER_PHONE1
-	                   <if test="memberPhone2 != null">
-	                   , MEMBER_PHONE2
-	                   </if>
-	                   , MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_POINT)
-	values(#{memberNum}, #{memberName}, #{memberId}, #{memberPw}
-	      ,#{memberAddr},#{memberAddrDetail},#{memberPost} 
-	      ,sysdate, #{gender}, #{memberPhone1}
-	      <if test="memberPhone2 != null">
-	      ,#{memberPhone2}
-	      </if>
-	      ,#{memberEmail},#{memberBirth},0)
-</insert>
+
+
+  <!-- 아이디 중복 -->
+    <select id="memberIdExists" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM members WHERE member_id = #{memberId}
+    </select>
+
+ <!-- 신규 등록 (이미 올려둔 selectKey 방식 유지) -->
+    <insert id="memberInsert" parameterType="memberDTO">
+        <selectKey keyProperty="memberNum" resultType="string" order="BEFORE">
+            SELECT 'mem_' || TO_CHAR(MEMBER_SEQ.NEXTVAL) FROM dual
+        </selectKey>
+        INSERT INTO members(
+          MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW,
+          MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST,
+          MEMBER_REGIST, GENDER, MEMBER_PHONE1,
+          MEMBER_PHONE2, MEMBER_EMAIL, MEMBER_BIRTH
+        ) VALUES (
+          #{memberNum}, #{memberName}, #{memberId}, #{memberPw},
+          #{memberAddr}, #{memberAddrDetail}, #{memberPost},
+          SYSDATE, #{gender}, #{memberPhone1},
+          #{memberPhone2}, #{memberEmail}, #{memberBirth}
+        )
+    </insert>
+
+
 <sql id="memberBaseColumns">
 		MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW
 	  , MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST
 	  , MEMBER_REGIST, GENDER,MEMBER_PHONE1, MEMBER_PHONE2
-	  , MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_POINT, MEMBER_EMAIL_CONF 
+	  , MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_EMAIL_CONF 
 </sql>
 
-<select id="memberSelectList" resultType="memberDTO" parameterType="startEndPageDTO">
-select *
-from (select ROW_NUMBER() over (order by member_num ) as rn  
-	        ,<include refid="memberBaseColumns"/>
-	  from members
-<where> 
+<!-- 검색 + 페이징 -->
+<select id="memberSelectList" parameterType="startEndPageDTO" resultType="memberDTO">
+  SELECT * FROM (
+    SELECT ROW_NUMBER() OVER (ORDER BY member_num) AS rn,
+           MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW,
+           MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST,
+           MEMBER_REGIST, GENDER, MEMBER_PHONE1, MEMBER_PHONE2,
+           MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_EMAIL_CONF
+    FROM members
+    <where>
+      <if test="searchWord != null and searchWord != ''">
+        (
+          LOWER(MEMBER_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
+          OR LOWER(MEMBER_ID)   LIKE '%' || LOWER(#{searchWord}) || '%'
+        )
+      </if>
+    </where>
+  )
+  WHERE rn BETWEEN #{startRow} AND #{endRow}
+</select>
+
+
+<!-- 검색어 반영 카운트 -->
+<select id="memberCountBySearch" resultType="int">
+  SELECT COUNT(*)
+  FROM members
+  <where>
     <if test="searchWord != null and searchWord != ''">
-        MEMBER_NAME like '%'||#{searchWord}||'%'
-        or MEMBER_ID like '%'||#{searchWord}||'%'
-        or MEMBER_NUM like '%'||#{searchWord}||'%'
+      (
+        LOWER(MEMBER_NAME) LIKE '%' || LOWER(#{searchWord}) || '%'
+        OR LOWER(MEMBER_ID)   LIKE '%' || LOWER(#{searchWord}) || '%'
+      )
     </if>
-</where>
-)
-where rn BETWEEN #{startRow} and #{endRow}
+  </where>
 </select>
-<select id="memberCount" resultType="integer">
-	select count(*) from members
-</select>
+    <!-- 목록 (검색 + 페이징) -->
+    <select id="memberList" parameterType="map" resultType="memberDTO">
+        SELECT *
+        FROM (
+            SELECT ROW_NUMBER() OVER (ORDER BY member_num) AS rn,
+                   MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW,
+                   MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST,
+                   MEMBER_REGIST, GENDER, MEMBER_PHONE1,
+                   MEMBER_PHONE2, MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_EMAIL_CONF
+            FROM members
+            <where>
+                <if test="searchWord != null and searchWord != ''">
+                    AND (
+                        LOWER(member_name) LIKE '%' || LOWER(#{searchWord}) || '%'
+                        OR LOWER(member_id)   LIKE '%' || LOWER(#{searchWord}) || '%'
+                    )
+                </if>
+            </where>
+        )
+        WHERE rn BETWEEN #{startRow} AND #{endRow}
+    </select>
+
+
+
 <select resultType="memberDTO" id="memberSelectOne" parameterType="string" >
 	select <include refid="memberBaseColumns" />
 	from members
 	where member_num = #{memberNum}
 </select>
+
 <update id="memberUpdate" parameterType="memberDTO">
-	update members
-	<trim prefix="set" suffixOverrides=",">
-		member_Name = #{memberName},
-		member_ADDR = #{memberAddr},
-		<if test="memberAddrDetail != null">
-		member_Addr_Detail = #{memberAddrDetail},
-		</if>
-		<if test="memberAddrDetail == null">
-		member_Addr_Detail = null,
-		</if>
-		member_Post = #{memberPost},
-		gender = #{gender},
-		member_Phone1 = #{memberPhone1},
-		member_Email = #{memberEmail},
-		member_Birth = #{memberBirth},
-		<choose>
-			<when test="memberPhone2 != null">
-			member_Phone2 = #{memberPhone2},
-			</when>
-			<when test="memberPhone2 == null">
-			member_Phone2 = null,
-			</when>
-		</choose>
-	</trim>
-where MEMBER_NUM = #{memberNum}
+  update members
+  <trim prefix="set" suffixOverrides=",">
+    member_Name = #{memberName},
+    member_ADDR = #{memberAddr},
+    <if test="memberAddrDetail != null">
+      member_Addr_Detail = #{memberAddrDetail},
+    </if>
+    <if test="memberAddrDetail == null">
+      member_Addr_Detail = null,
+    </if>
+    member_Post = #{memberPost},
+    gender = #{gender},
+    member_Phone1 = #{memberPhone1},
+    member_Email = #{memberEmail},
+    <!-- ✅ 추가: 이메일 인증여부 컬럼 반영 -->
+    member_email_conf = #{memberEmailConf},
+    member_Birth = #{memberBirth},
+    <choose>
+      <when test="memberPhone2 != null">
+        member_Phone2 = #{memberPhone2},
+      </when>
+      <when test="memberPhone2 == null">
+        member_Phone2 = null,
+      </when>
+    </choose>
+  </trim>
+  where MEMBER_NUM = #{memberNum}
 </update>
-<delete id="memberDelete" parameterType="string">
-	delete from members
-	where member_num = #{memberNum}
+
+
+<delete id="memberDelete">
+  delete from members
+  where member_num in
+  <foreach collection="nums" item="num" open="(" separator="," close=")">
+    #{num}
+  </foreach>
 </delete>
+
+<!-- 단건 삭제 -->
+<delete id="memberDeleteOne" parameterType="string">
+  DELETE FROM members WHERE member_num = #{memberNum}
+</delete>
+
+<!-- 다건 삭제 -->
+<delete id="memberDeleteMany" parameterType="list">
+  DELETE FROM members
+  WHERE member_num IN
+  <foreach collection="nums" item="n" open="(" separator="," close=")">
+    #{n}
+  </foreach>
+</delete>
+
+<!-- 로그인 아이디로 해시 비밀번호 조회 (본인 탈퇴용) -->
+<select id="selectPwById" parameterType="string" resultType="string">
+  select member_pw
+  from members
+  where member_id = #{memberId}
+</select>
+
 <update id="memberEmailCheckUpdate" parameterType="string">
 	update members
 	set MEMBER_EMAIL_CONF = 'Y'
@@ -88,6 +169,11 @@ where MEMBER_NUM = #{memberNum}
 <select id="memberNumSelect" parameterType="string" resultType="string">
 	select member_num from members where member_id = #{memberId}
 </select>
+
+<select id="existsByMemberId" parameterType="string" resultType="int">
+  SELECT COUNT(*) FROM members WHERE member_id = #{memberId}
+</select>
+
 </mapper>
 
 

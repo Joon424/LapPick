@@ -41,10 +41,40 @@
   }
 
   function confirmDelete() {
-    if (confirm("정말 탈퇴하시겠습니까?")) {
-      location.href = "/memberDropOk";
-    }
-  }
+	    if (!confirm("정말 탈퇴하시겠습니까?")) return;
+	    var pw = prompt("비밀번호를 입력하세요");
+	    if (!pw || pw.trim().length === 0) return;
+
+	    var f = document.createElement('form');
+	    f.method = 'post';
+	    f.action = '/memberDropOk';
+
+	    var i = document.createElement('input');
+	    i.type = 'hidden';
+	    i.name = 'memberPw';
+	    i.value = pw.trim();
+	    f.appendChild(i);
+
+	    // CSRF(있으면만 추가)
+	    var p = document.getElementById('csrfParam');
+	    var t = document.getElementById('csrfToken');
+	    if (p && t) {
+	      var c = document.createElement('input');
+	      c.type = 'hidden';
+	      c.name = p.value;
+	      c.value = t.value;
+	      f.appendChild(c);
+	    }
+	    document.body.appendChild(f);
+	    f.submit();
+	  }
+	  }
+  
+  function navigateTo(path){ location.href = (path === '/cart') ? '/item/cartList' : path; }
+</script>
+
+<script th:if="${message}" th:inline="javascript">
+  alert(/*[[${#strings.escapeJavaScript(message)}]]*/'');
 </script>
 </head>
 
@@ -166,7 +196,7 @@
 
   <!-- 수정 영역 -->
   <div id="editSection" style="display:none; margin-top:20px;">
-    <form method="post" action="/memberUpdate">
+    <form th:action="@{/memberUpdate}" method="post">
       <h3>내 정보 수정</h3>
       <label>이름: <input type="text" name="memberName" th:value="${memberCommand.memberName}"></label><br>
         <label>아이디: <input type="text" name="memberId" th:value="${memberCommand.memberId}" readonly></label><br>
@@ -175,6 +205,14 @@
         <label>우편번호: <input type="text" name="memberPost" th:value="${memberCommand.memberPost}"></label><br>
         <label>연락처1: <input type="text" name="memberPhone1" th:value="${memberCommand.memberPhone1}"></label><br>
         <label>이메일: <input type="email" name="memberEmail" th:value="${memberCommand.memberEmail}"></label><br>
+        
+        <label>비밀번호 확인</label>
+  		<input type="password" name="memberPw" placeholder="현재 비밀번호">
+
+  		<!-- (선택) 누락 방지용 숨은 필드들 -->
+  		<input type="hidden" name="memberPhone2" value="" />
+  		<input type="hidden" name="memberBirth"  value="" />
+  		
       <button type="submit">수정</button>
     </form>
   </div>
@@ -267,4 +305,12 @@
   <script  src="/resources/js/template.js"></script>
   <script  src="/resources/js/common.js"></script>
   <script  src="/resources/js/script.js"></script>
+
+<span id="flash-msg" th:if="${flashMsg}" th:text="${flashMsg}" style="display:none"></span>
+<script>
+  (function(){
+    var el = document.getElementById('flash-msg');
+    if (el) { alert(el.textContent); el.remove(); }
+  })();
+</script>
 </body>

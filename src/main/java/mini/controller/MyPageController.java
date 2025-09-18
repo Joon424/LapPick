@@ -1,133 +1,114 @@
 package mini.controller;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
-
 import jakarta.servlet.http.HttpSession;
-import mini.command.EmployeeCommand;
 import mini.command.MemberCommand;
-import mini.service.myPage.EmployeeInfoService;
-import mini.service.myPage.EmployeeModifyService;
-import mini.service.myPage.EmployeePwUpdateService;
+import mini.domain.AuthInfoDTO;
+import mini.domain.MemberDTO;
+import mini.mapper.MemberInfoMapper;
 import mini.service.myPage.MemberDropService;
 import mini.service.myPage.MemberMyInfoService;
 import mini.service.myPage.MemberMyUpdateService;
 import mini.service.myPage.MemberPwUpdateService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("myPage")
 public class MyPageController {
-	@Autowired
-	MemberMyInfoService memberMyInfoService;
-	@Autowired
-	MemberMyUpdateService memberMyUpdateService;
-	@Autowired
-	MemberPwUpdateService memberPwUpdateService ;
-	@Autowired
-	MemberDropService memberDropService ;
-	@Autowired
-	EmployeeInfoService employeeInfoService;
-	@Autowired
-	EmployeeModifyService employeeModifyService;
-	@GetMapping("memberMyPage")
-	public String memMyPage(HttpSession session,Model model) {
-		memberMyInfoService.execute(session, model);
-		return "thymeleaf/myPage/memberMyPage";
-	}
-	@GetMapping("memberUpdate")
-	public String memberUpdate(HttpSession session,Model model) {
-		memberMyInfoService.execute(session, model);
-		return "thymeleaf/myPage/myModify";
-	}
-	@PostMapping("memberModify")
-	public String memberModify(MemberCommand memberCommand
-			, HttpSession session) {
-		memberMyUpdateService.execute(memberCommand, session);
-		return "redirect:memberMyPage";
-	}
-	@RequestMapping(value="memberPwModify" ,method = RequestMethod.GET)
-	public String memberPwModify() {
-		return  "thymeleaf/myPage/myNewPw";
-	}
-	@RequestMapping(value="memberPwPro" ,method = RequestMethod.POST)
-	public String newPw(
-			String oldPw, String newPw,HttpSession session
-			) {
-		memberPwUpdateService.execute(oldPw, newPw, session);
-		return "redirect:memberMyPage";
-	}
-	@GetMapping("memberDrop")
-	public String memberDrop() {
-		return "thymeleaf/myPage/memberDrop";
-	}
-	@PostMapping("memberDropOk")
-	public String memberDropOk(String memberPw, HttpSession session) {
-		memberDropService.execute(memberPw, session);
-		return "redirect:/login/logout";
-	}
-	@GetMapping("empModify")
-	public @ResponseBody Map<String, Object> empPage(HttpSession session, Model model) {
-		Map<String, Object> map = employeeInfoService.execute(session, model );
-		return map;
-	}
-	@PostMapping("empModify")
-	public String empModify(EmployeeCommand employeeCommand, HttpSession session) {
-		employeeModifyService.execute(employeeCommand, session);
-		return "redirect:employeeMyPage";
-	}
-	
-	@GetMapping("employeeMyPage")
-	public String empMyPage() {
-		return "thymeleaf/myPage/employeeInfo";
-	}
-	@PostMapping("empMyPage")
-	public ModelAndView empMyPage(HttpSession session,Model model) {
-		ModelAndView mav = new ModelAndView();
-		mav.setViewName("jsonView");
-		employeeInfoService.execute(session, model);
-		return mav;
-	}
-	@Autowired
-	EmployeePwUpdateService employeePwUpdateService;
-	@PostMapping("empPwPro")
-	public String empPwPro(@RequestParam("oldPw") String oldPw
-						,String newPw, HttpSession session) {
-		employeePwUpdateService.execute(oldPw, newPw, session);
-		return "redirect:employeeMyPage";
-	}
-	 @GetMapping("/empMyPage")
-	    public String empMyPage2() {
-	        // 여기서 직원을 위한 MyPage를 반환합니다.
-	        return "thymeleaf/employee/empLogin"; // empMyPage 페이지를 반환 (템플릿 경로에 맞게 수정)
-	    }
-	 @GetMapping("/memMyPage")
-	    public String memMyPage2(HttpSession session, Model model) {
-	        // 여기서 멤버를 위한 MyPage를 반환합니다.
-		 memberMyInfoService.execute(session, model); 
-	        return "thymeleaf/member/memMyPage"; // memMyPage 페이지를 반환 (템플릿 경로에 맞게 수정)
-	    }
+
+    // ===== 서비스/매퍼 주입 =====
+    @Autowired MemberMyInfoService memberMyInfoService;
+    @Autowired MemberMyUpdateService memberMyUpdateService;
+    @Autowired MemberPwUpdateService memberPwUpdateService;
+    @Autowired MemberDropService memberDropService;
+    @Autowired MemberInfoMapper memberInfoMapper;
+
+    // ===== 회원 마이페이지 =====
+    // ※ 기존에 동일 경로가 또 있으면 제거하세요(이번 오류 원인)
+    @GetMapping("/myPage/memMyPage")
+    public String memMyPage2(HttpSession session, Model model) {
+        // 프로젝트 서비스 시그니처: (session, model) → void
+        memberMyInfoService.execute(session, model);
+        model.addAttribute("isLoggedIn", session.getAttribute("auth") != null);
+        return "thymeleaf/member/memMyPage";
+    }
+
+    // ===== 장바구니 별칭 =====
+    // 템플릿에서 javascript:navigateTo('/cart') 또는 단순 링크 '/cart' 모두 지원
+    @GetMapping("/cart")
+    public String cartAlias() {
+        return "redirect:/item/cartList";
+    }
+
+    // ===== 내 정보 수정 =====
+    // memMyPage 폼 action="/memberUpdate"
+    @PostMapping("/memberUpdate")
+    public String memberUpdate(MemberCommand memberCommand,
+                               HttpSession session,
+                               RedirectAttributes ra) {
+        memberMyUpdateService.execute(memberCommand, session);
+        ra.addFlashAttribute("flashMsg", "수정되었습니다.");
+        return "redirect:/myPage/memMyPage";
+    }
+
+    // ===== 비밀번호 변경 =====
+    // memMyPage 폼 action="/memberPwModify"
+    @PostMapping("/memberPwModify")
+    public String memberPwModify(@RequestParam String oldPw,
+                                 @RequestParam String newPw,
+                                 HttpSession session,
+                                 RedirectAttributes ra) {
+
+        AuthInfoDTO before = (AuthInfoDTO) session.getAttribute("auth");
+        String beforeHash = (before != null ? before.getUserPw() : null);
+
+        memberPwUpdateService.execute(oldPw, newPw, session);
+
+        AuthInfoDTO after = (AuthInfoDTO) session.getAttribute("auth");
+        boolean changed = (after != null && beforeHash != null && !beforeHash.equals(after.getUserPw()));
+
+        if (changed) {
+            ra.addFlashAttribute("flashMsg", "성공적으로 비밀번호가 변경됐습니다");
+            session.invalidate();
+            return "redirect:/login/item.login";
+        } else {
+            ra.addFlashAttribute("flashMsg", "현재 비밀번호가 잘못됐습니다.");
+            return "redirect:/myPage/memMyPage";
+        }
+    }
+
+    // ===== 회원 탈퇴 =====
+    // 버튼에서 location.href="/memberDropOk?memberPw=..." 형태로 호출(비번 확인 필요)
+    @GetMapping("/memberDropOk")
+    public String memberDropOk(@RequestParam(name = "memberPw", required = false) String memberPw,
+                               HttpSession session,
+                               RedirectAttributes ra) {
+        AuthInfoDTO auth = (AuthInfoDTO) session.getAttribute("auth");
+        if (auth == null) return "redirect:/login/item.login";
+
+        if (memberPw == null || memberPw.isBlank()) {
+            ra.addFlashAttribute("flashMsg", "회원 탈퇴는 비밀번호 확인이 필요합니다.");
+            return "redirect:/myPage/memMyPage";
+        }
+
+        String userId = auth.getUserId();
+        memberDropService.execute(memberPw, session); // (memberPw, session)
+
+        MemberDTO stillThere = memberInfoMapper.memberSelectOne(userId);
+        if (stillThere == null) {   // 삭제 성공
+            session.invalidate();
+            return "redirect:/";
+        } else {                    // 비번 불일치 등으로 미삭제
+            ra.addFlashAttribute("flashMsg", "비밀번호가 일치하지 않습니다.");
+            return "redirect:/myPage/memMyPage";
+        }
+    }
+
+    // ===== (주의) 이 클래스에 동일 경로(@GetMapping("/myPage/memMyPage"))가
+    // 또 하나라도 존재하면 매핑 충돌이 납니다. 반드시 하나만 유지하세요. =====
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

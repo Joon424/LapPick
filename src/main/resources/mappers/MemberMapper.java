@@ -14,9 +14,10 @@ public interface MemberMapper {
 	public Integer memberCount();
 	public MemberDTO memberSelectOne(String memberNum);
 	public void memberUpdate(MemberDTO dto);
-	public void memberDelete(String memberNum);
+	int memberDelete(@Param("nums") List<String> nums);
 	public Integer memberEmailCheckUpdate(String memberEmail);
 	public String memberNumSelect(String memberId);
+	String findNumById(@Param("memberId") String memberId);
 }
 
 

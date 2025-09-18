@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,15 +37,53 @@ public class LoginController {
     }
 
     @PostMapping("login")
-    public String login(@Validated LoginCommand loginCommand, BindingResult result, HttpSession session, Model model) {
+    public String login(
+            @Validated LoginCommand loginCommand,
+            BindingResult result,
+            HttpSession session,
+            Model model,
+            @RequestParam(value = "returnUrl", required = false) String returnUrl
+    ) {
         userLoginService.execute(loginCommand, session, result);
-        if(result.hasErrors()) {
-            // 로그인 실패 시 "일치하지 않는 사용자 정보" 메시지를 로그인 페이지로 전달
+        if (result.hasErrors()) {
             model.addAttribute("errorMessage", "일치하지 않는 사용자 정보입니다.");
-            return "thymeleaf/login"; // 로그인 페이지로 포워딩
+            return "thymeleaf/login";
         }
-        return "redirect:/"; // 로그인 성공 시 메인 페이지로 리다이렉트
+
+        AuthInfoDTO auth = (AuthInfoDTO) session.getAttribute("auth");
+        String grade = (auth != null ? auth.getGrade() : null);
+
+        if (returnUrl != null && !returnUrl.isBlank()) {
+            if (!"emp".equals(grade) && isEmployeeOnlyUrl(returnUrl)) {
+                return "redirect:/";
+            }
+            return "redirect:" + returnUrl;
+        }
+
+        return "emp".equals(grade) ? "redirect:/myPage/empMyPage" : "redirect:/";
     }
+
+    
+ // --- 아래 유틸 메서드를 컨트롤러에 추가 ---
+    private boolean isEmployeeOnlyUrl(String url) {
+        // 직원 전용으로 묶을 엔드포인트 prefix를 여기에 정의
+        // (goods 관리용, 직원 관리용 등)
+        String[] empOnlyPrefixes = {
+            "/employee/",
+            "/goods/goodsForm",
+            "/goods/goodsWrite",
+            "/goods/goodsModify",
+            "/goods/goodsDelete",
+            "/goods/productsDelete",
+            "/goods/goodsRedirect",
+            "/goodsIpgo/"
+        };
+        for (String p : empOnlyPrefixes) {
+            if (url.startsWith(p)) return true;
+        }
+        return false;
+    }
+
 
     @GetMapping("logout")
     public String logout(HttpSession session) {
@@ -56,7 +95,12 @@ public class LoginController {
     public String item() {
         return "thymeleaf/login"; // 로그인 페이지로 이동
     }
-
+    
+    @GetMapping("/emp.login")  // 직원용 별도 화면을 쓰는 경우
+    public String empLogin() {
+        return "thymeleaf/employee/empLogin"; // 직원 로그인 템플릿
+    }
+    
     @PostMapping("item.login")
     public void item(LoginCommand loginCommand, BindingResult result, HttpSession session, HttpServletResponse response) {
         userLoginService.execute(loginCommand, session, result);
@@ -98,4 +142,17 @@ public class LoginController {
         return "redirect:/"; // 예외 처리 (기본적으로 메인페이지로 돌아가기)
     }
 
+    @PostMapping("user.login")
+    public String userLoginAlias(
+            @Validated LoginCommand loginCommand,
+            BindingResult result,
+            HttpSession session,
+            Model model,
+            @RequestParam(value = "returnUrl", required = false) String returnUrl
+    ) {
+        return login(loginCommand, result, session, model, returnUrl);
+    }
+
+
+    
 }

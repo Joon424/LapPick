@@ -39,7 +39,7 @@
 <!-- 검색 + 페이징 -->
 <select id="memberSelectList" parameterType="startEndPageDTO" resultType="memberDTO">
   SELECT * FROM (
-    SELECT ROW_NUMBER() OVER (ORDER BY member_num) AS rn,
+    SELECT ROW_NUMBER() OVER (ORDER BY member_regist DESC) AS rn,
            MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW,
            MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST,
            MEMBER_REGIST, GENDER, MEMBER_PHONE1, MEMBER_PHONE2,
@@ -57,7 +57,6 @@
   WHERE rn BETWEEN #{startRow} AND #{endRow}
 </select>
 
-
 <!-- 검색어 반영 카운트 -->
 <select id="memberCountBySearch" resultType="int">
   SELECT COUNT(*)
@@ -73,26 +72,25 @@
 </select>
     <!-- 목록 (검색 + 페이징) -->
     <select id="memberList" parameterType="map" resultType="memberDTO">
-        SELECT *
-        FROM (
-            SELECT ROW_NUMBER() OVER (ORDER BY member_num) AS rn,
-                   MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW,
-                   MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST,
-                   MEMBER_REGIST, GENDER, MEMBER_PHONE1,
-                   MEMBER_PHONE2, MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_EMAIL_CONF
-            FROM members
-            <where>
-                <if test="searchWord != null and searchWord != ''">
-                    AND (
-                        LOWER(member_name) LIKE '%' || LOWER(#{searchWord}) || '%'
-                        OR LOWER(member_id)   LIKE '%' || LOWER(#{searchWord}) || '%'
-                    )
-                </if>
-            </where>
-        )
-        WHERE rn BETWEEN #{startRow} AND #{endRow}
-    </select>
-
+    SELECT *
+    FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY member_regist DESC) AS rn,
+               MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW,
+               MEMBER_ADDR, MEMBER_ADDR_DETAIL, MEMBER_POST,
+               MEMBER_REGIST, GENDER, MEMBER_PHONE1,
+               MEMBER_PHONE2, MEMBER_EMAIL, MEMBER_BIRTH, MEMBER_EMAIL_CONF
+        FROM members
+        <where>
+            <if test="searchWord != null and searchWord != ''">
+                AND (
+                    LOWER(member_name) LIKE '%' || LOWER(#{searchWord}) || '%'
+                    OR LOWER(member_id)   LIKE '%' || LOWER(#{searchWord}) || '%'
+                )
+            </if>
+        </where>
+    )
+    WHERE rn BETWEEN #{startRow} AND #{endRow}
+</select>
 
 
 <select resultType="memberDTO" id="memberSelectOne" parameterType="string" >
@@ -173,6 +171,18 @@
 <select id="existsByMemberId" parameterType="string" resultType="int">
   SELECT COUNT(*) FROM members WHERE member_id = #{memberId}
 </select>
+
+<select id="selectMemberById" parameterType="string" resultType="memberDTO">
+    select <include refid="memberBaseColumns" />
+    from members
+    where member_id = #{memberId}
+</select>
+
+<update id="memberPwUpdate" parameterType="memberDTO">
+    update members
+    set member_pw = #{memberPw}
+    where member_id = #{memberId}
+</update>
 
 </mapper>
 

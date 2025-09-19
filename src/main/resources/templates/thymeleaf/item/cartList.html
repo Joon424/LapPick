@@ -176,7 +176,7 @@ function del1(){
               </li>
           <li class="header-gnbitem">
   <a class="header-gnblink" 
-     th:href="${isLoggedIn} ? '/login/logout' : '/login/item.login'">
+     th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
     <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
           th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
   </a>

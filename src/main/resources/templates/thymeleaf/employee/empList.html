@@ -2,22 +2,38 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="imagetoolbar" content="no">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>직원_회원관리 | Miso</title>
-
-  <!-- memInfo.html과 동일 리소스 -->
-  <script src="/static/js/cartButton.js"></script>
-  <link rel="stylesheet"  href="/resources/css/setting.css">
-  <link rel="stylesheet"  href="/resources/css/plugin.css">
-  <link rel="stylesheet"  href="/resources/css/template.css">
-  <link rel="stylesheet"  href="/resources/css/common.css">
-  <link rel="stylesheet"  href="/resources/css/style.css">
+  <title>직원_직원관리 | Miso</title>
+  
+  <link rel="stylesheet" href="/resources/css/setting.css">
+  <link rel="stylesheet" href="/resources/css/plugin.css">
+  <link rel="stylesheet" href="/resources/css/template.css">
+  <link rel="stylesheet" href="/resources/css/common.css">
+  <link rel="stylesheet" href="/resources/css/style.css">
   <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
+  
+ <style>
+    table { table-layout: fixed; }
+    th, td { vertical-align: middle; padding: 8px; }
+    .manage-btn {
+      display: inline-block; padding: 5px 10px; font-size: 12px;
+      text-align: center; text-decoration: none; color: #333;
+      background-color: #fff; border: 1px solid #ccc; border-radius: 4px;
+      cursor: pointer; margin: 0 2px; white-space: nowrap;
+    }
+    .manage-btn:hover { background-color: #f0f0f0; border-color: #bbb; }
+    .pagination-container .page-btn {
+      display: inline-block; min-width: 32px; padding: 6px 10px;
+      font-size: 13px; font-weight: 500; text-align: center; text-decoration: none;
+      color: #333; background-color: #fff; border: 1px solid #ddd;
+      border-radius: 4px; cursor: pointer; transition: background-color 0.2s;
+    }
+    .pagination-container .page-btn:hover { background-color: #f5f5f5; }
+    .pagination-container .page-btn.active {
+      background-color: #333; color: #fff; border-color: #333; font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <!-- === 헤더 (memInfo.html과 동일 블록) === -->
   <div class="basic-N3" data-bid="znM47Svc81">
     <div class="header-inner">
       <div class="header-container container-lg">
@@ -36,7 +52,7 @@
               <li class="header-gnbitem"><a class="header-gnblink" href="/banner/notice"><span>NOTICE</span></a></li>
               <li class="header-gnbitem"><a class="header-gnblink" href="/banner/faq"><span>FAQ</span></a></li>
               <li class="header-gnbitem">
-                <a class="header-gnblink" th:href="${isLoggedIn} ? '/login/logout' : '/login/item.login'">
+                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
                   <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
                 </a>
               </li>
@@ -60,42 +76,32 @@
     </div>
     <div class="header-dim"></div>
   </div>
-
+  
   <main class="th-layout-main">
     <div class="basic-N23" data-bid="wWM47SwZLN">
       <div class="contents-inner">
         <div class="contents-container container-md">
 
-          <!-- 타이틀/설명 (memInfo.html 스타일) -->
           <div class="textset" style="margin-bottom:14px;">
-            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지" th-hoverbox="true">
-            <h2 class="textset-tit">회원 관리</h2>
-            <p class="textset-desc">회원 목록을 조회/관리합니다.</p>
-            <div class="alert"
-                 th:if="${msg != null or error != null}"
-                 th:text="${msg != null ? msg : error}"
-                 style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">직원 관리</h2>
+            <p class="textset-desc">직원 정보 및 권한을 관리합니다.</p>
           </div>
 
-          <!-- 검색/버튼 라인 -->
           <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 16px;">
-            <form th:action="@{/employee/member/memberList}" method="get" style="display:flex; gap:8px; align-items:center;">
-              <!-- 컨트롤러 파라미터가 searchWord라면 name도 searchWord로 맞추는 게 안전 -->
-              <input type="text" name="searchWord" th:value="${searchWord}" placeholder="이름 또는 아이디 검색"
-                     style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px; min-width:240px;">
+            <form th:action="@{/employee}" method="get" style="display:flex; gap:8px; align-items:center;">
+              <input type="text" name="searchWord" th:value="${pageData?.searchWord}" placeholder="이름 또는 아이디 검색" style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px; min-width:240px;">
               <button type="submit" class="btnset btnset-line btnset-round">검색</button>
-              <a class="btnset btnset-line btnset-round" th:href="@{/employee/member/memberList}">전체보기</a>
+              <a class="btnset btnset-line btnset-round" th:href="@{/employee}">전체보기</a>
             </form>
-
             <div style="display:flex; gap:8px;">
-              <a class="btnset btnset-line btnset-round" th:href="@{/employee/member/memberWrite}">회원등록</a>
+              <a class="btnset btnset-line btnset-round" th:href="@{/employee/add}">직원등록</a>
               <button type="button" class="btnset btnset-line btnset-round" onclick="submitBulkDelete()">선택삭제</button>
             </div>
           </div>
 
-          <!-- 목록 테이블: memInfo.html처럼 심플한 테이블 디자인(plain border) -->
-          <form id="bulkDeleteForm" th:action="@{/employee/member/membersDelete}" method="post">
-            <table border="1" width="100%" style="border-collapse:collapse;">
+          <form id="bulkDeleteForm" th:action="@{/employee/delete}" method="post">
+            <table border="1" width="100%" style="border-collapse:collapse; border-color:#eee;">
               <thead>
                 <tr style="background:#f9fafb;">
                   <th width="48"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
@@ -104,32 +110,28 @@
                   <th>아이디</th>
                   <th>이메일</th>
                   <th>휴대폰</th>
-                  <th width="140">가입일</th>
-                  <th width="160">관리</th>
+                  <th width="140">입사일</th>
+                  <th width="200" style="text-align: center;">관리</th>
                 </tr>
               </thead>
               <tbody>
-                <tr th:if="${members == null} or ${#lists.isEmpty(members)}">
-                  <td colspan="8" style="text-align:center; padding:18px; color:#666;">표시할 회원이 없습니다.</td>
+                <tr th:if="${employees == null or #lists.isEmpty(employees)}">
+                  <td colspan="8" style="text-align:center; padding:20px; color:#666;">표시할 직원이 없습니다.</td>
                 </tr>
-
-                <tr th:each="m, stat : ${members}">
-                  <td style="text-align:center;"><input type="checkbox" name="nums" th:value="${m.memberNum}"></td>
-                  <td style="text-align:center;" th:text="${stat.index + 1}">1</td>
-                  <td th:text="${m.memberName}">홍길동</td>
-                  <td th:text="${m.memberId}">hong</td>
-                  <td th:text="${m.memberEmail}">hong@example.com</td>
-                  <td th:text="${m.memberPhone1}">010-0000-0000</td>
-                  <td th:text="${#dates.format(m.memberRegist, 'yyyy-MM-dd')}">2024-01-01</td>
+                <tr th:each="emp, stat : ${employees}">
+                  <td style="text-align:center;"><input type="checkbox" name="empDels" th:value="${emp.empNum}"></td>
+                  <td style="text-align:center;" th:text="${(pageData.page - 1) * pageData.size + stat.index + 1}">1</td>
+                  <td th:text="${emp.empName}">홍길동</td>
+                  <td th:text="${emp.empId}">hong</td>
+                  <td th:text="${emp.empEmail}">hong@example.com</td>
+                  <td th:text="${emp.empPhone}">010-0000-0000</td>
+                  <td th:text="${#dates.format(emp.empHireDate, 'yyyy-MM-dd')}">2024-01-01</td>
                   <td>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                      <a class="btnset btnset-line btnset-round"
-                         th:href="@{/employee/member/memInfo/{memberNum}(memberNum=${m.memberNum})}">상세</a>
-                      <a class="btnset btnset-line btnset-round"
-                         th:href="@{/employee/member/memberEdit/{memberNum}(memberNum=${m.memberNum})}">수정</a>
-                      <a class="btnset btnset-line btnset-round"
-                         th:href="@{/member/memberDelete/{memberNum}(memberNum=${m.memberNum})}"
-                         onclick="return confirm('정말 삭제할까요?')">삭제</a>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
+                      <a class="manage-btn" th:href="@{/employee/{num}(num=${emp.empNum})}">상세</a>
+                      <a class="manage-btn" th:href="@{/employee/{num}/edit(num=${emp.empNum})}">수정</a>
+                      <a class="manage-btn" th:href="@{/employee/delete/{num}(num=${emp.empNum})}"
+                         onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
                     </div>
                   </td>
                 </tr>
@@ -137,20 +139,13 @@
             </table>
           </form>
 
-          <!-- 페이지네이션: memInfo 스타일 버튼으로 간단히 -->
-          <div style="display:flex; gap:6px; justify-content:center; margin-top:14px;"
-               th:with="tp=${(totalPage != null and totalPage > 0) ? totalPage : 1}">
-            <a class="btnset btnset-line btnset-round"
-               th:href="@{/employee/member/memberList(page=${page != null && page > 1 ? page - 1 : 1}, searchWord=${searchWord})}">이전</a>
-
-            <a class="btnset btnset-line btnset-round"
-               th:each="i : ${#numbers.sequence(1, tp)}"
-               th:text="${i}"
-               th:classappend="${page == i} ? ' btnset-primary' : ''"
-               th:href="@{/employee/member/memberList(page=${i}, searchWord=${searchWord})}">1</a>
-
-            <a class="btnset btnset-line btnset-round"
-               th:href="@{/employee/member/memberList(page=${page != null && page < tp ? page + 1 : tp}, searchWord=${searchWord})}">다음</a>
+          <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:20px;"
+               th:if="${pageData != null and pageData.total > 0}">
+            <a class="page-btn" th:href="@{/employee(page=${pageData.page - 1}, searchWord=${pageData.searchWord})}" th:if="${pageData.page > 1}">이전</a>
+            <a class="page-btn" th:each="i : ${#numbers.sequence(1, pageData.totalPages)}" th:text="${i}"
+               th:classappend="${pageData.page == i} ? 'active' : ''"
+               th:href="@{/employee(page=${i}, searchWord=${pageData.searchWord})}"></a>
+            <a class="page-btn" th:href="@{/employee(page=${pageData.page + 1}, searchWord=${pageData.searchWord})}" th:if="${pageData.page < pageData.totalPages}">다음</a>
           </div>
 
         </div>
@@ -158,8 +153,7 @@
     </div>
   </main>
 
-  <!-- === 푸터 (memInfo.html과 동일 블록) === -->
-  <div class="basic-N4" data-bid="asM47Svmx7">
+ <div class="basic-N4" data-bid="asM47Svmx7">
     <div class="footer-inner">
       <div class="footer-container container-lg">
         <div class="footer-top">
@@ -187,30 +181,18 @@
       </div>
     </div>
   </div>
-
-  <!-- 테이블 줄바꿈/정렬 보정 (memInfo의 심플 느낌 유지) -->
-  <style>
-    table { table-layout: fixed; }
-    th, td { vertical-align: middle; padding: 8px; }
-  </style>
-
+  
   <script>
     function toggleAll(master){
-      document.querySelectorAll('input[name="nums"]').forEach(cb=>cb.checked = master.checked);
+      document.querySelectorAll('input[name="empDels"]').forEach(cb => cb.checked = master.checked);
     }
     function submitBulkDelete(){
-      const checked = document.querySelectorAll('input[name="nums"]:checked');
+      const checked = document.querySelectorAll('input[name="empDels"]:checked');
       if(checked.length === 0){ alert('삭제할 항목을 선택하세요.'); return; }
-      if(confirm('선택한 회원을 삭제하시겠습니까?')){
+      if(confirm('선택한 ' + checked.length + '명의 직원을 삭제하시겠습니까?')){
         document.getElementById('bulkDeleteForm').submit();
       }
     }
   </script>
-
-  <script src="/resources/js/setting.js"></script>
-  <script src="/resources/js/plugin.js"></script>
-  <script src="/resources/js/template.js"></script>
-  <script src="/resources/js/common.js"></script>
-  <script src="/resources/js/script.js"></script>
 </body>
 </html>

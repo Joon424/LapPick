@@ -25,6 +25,12 @@ public class GoodsCommand {
 	Date goodsUpdateDate;
 	MultipartFile goodsMainImage;
 	MultipartFile goodsDetailImage[];
+	
+	// 💥 [추가] 상품 등록 폼에서 받을 필드들
+		String goodsBrand;
+		String goodsPurpose;
+		Double goodsScreenSize;
+		Double goodsWeight;
 }
 
 

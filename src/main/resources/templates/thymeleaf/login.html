@@ -60,13 +60,11 @@
                   <span>FAQ</span>
                 </a>
               </li>
-          <li class="header-gnbitem">
-  <a class="header-gnblink" 
-     th:href="${isLoggedIn} ? '/login/logout' : '/login/item.login'">
-    <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
-          th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
-  </a>
-</li>
+  <li class="header-gnbitem">
+                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
+                  <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
+                </a>
+              </li>
 
             </ul>
             <button class="header-btn btn-close">
@@ -79,8 +77,8 @@
             <button class="header-btn btn-seach">
               <img  src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘">
             </button>
-            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
-              <img  src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
+             <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
+              <img src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
             </a>
             <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
               <img  src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
@@ -117,7 +115,7 @@
             </div>
             
             <!-- 로그인 폼 -->
-            <form th:action="@{/login/login}" method="post">
+            <form th:action="@{/login}" method="post">
              <input type="hidden" name="returnUrl" th:value="${param.returnUrl}">
               <div class="inputset">
                 <input type="text" name="userId" class="inputset-input form-control" aria-label="아이디" placeholder="아이디를 입력해주세요." required>
@@ -137,6 +135,9 @@
               <th:block th:if="${_csrf != null}">
   				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 			  </th:block>
+			   <div th:if="${param.error}" style="color: red; margin-top: 10px;">
+              아이디 또는 비밀번호가 올바르지 않습니다.
+            </div>
               <button type="submit" class="btnset">로그인</button>
               <!-- 오류 메시지 -->
   			<div th:if="${errorMessage}" class="text-danger" th:text="${errorMessage}"></div>

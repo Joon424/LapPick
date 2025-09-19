@@ -1,3 +1,5 @@
+
+/*
 package mini.service.goodsIpgo;
 
 import java.util.HashMap;
@@ -40,3 +42,4 @@ public class GoodsItemService {
 		return map;
 	}
 }
+*/

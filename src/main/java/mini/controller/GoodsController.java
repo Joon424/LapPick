@@ -1,6 +1,7 @@
 package mini.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,126 +10,133 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import mini.command.GoodsCommand;
+import mini.command.GoodsFilterDTO;
+import mini.domain.GoodsDTO;
+import mini.domain.GoodsListPage;
 import mini.service.AutoNumService;
-import mini.service.goods.GoodsDeleteService;
-import mini.service.goods.GoodsDetailService;
-import mini.service.goods.GoodsListService;
-import mini.service.goods.GoodsUpdateService;
-import mini.service.goods.GoodsWriteService;
-import mini.service.goods.ProductsDeleteService;
+import mini.service.goods.GoodsService;
 
 @Controller
-@RequestMapping("goods")
+@RequestMapping("/goods")
+@RequiredArgsConstructor
 public class GoodsController {
-	@Autowired
-	AutoNumService autoNumService;
-	@Autowired
-	GoodsListService goodsListService;
-	
-	
-	 // 상품 풀 리스트를 가져오는 메소드 (상품 전체 목록)
-    @RequestMapping(value = "goodsFullList", method = RequestMethod.GET)
-    public String goodsFullList(
-            @RequestParam(value="searchWord", required = false) String searchWord,
-            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-            Model model) {
-        // 상품 목록과 페이징 데이터를 준비하여 모델에 담음
-        goodsListService.execute(searchWord, model, page);
-        return "thymeleaf/goods/goodsFullList";  // 상품 풀 리스트 페이지로 이동
+
+    private final GoodsService goodsService;
+    private final AutoNumService autoNumService;
+
+    /**
+     * 상품 목록 (직원용)
+     */
+    @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String goodsListForAdmin(@RequestParam(value = "page", defaultValue = "1") int page,
+                                    @RequestParam(value = "searchWord", required = false) String searchWord,
+                                    Model model) {
+        // 💥 [수정] GoodsFilterDTO 객체를 생성하고 searchWord를 설정합니다.
+        GoodsFilterDTO filter = new GoodsFilterDTO();
+        filter.setSearchWord(searchWord);
+
+        // 💥 [수정] 서비스 호출 시 filter 객체를 전달합니다.
+        GoodsListPage pageData = goodsService.getGoodsListPage(filter, page, 10);
+        
+        model.addAttribute("pageData", pageData);
+        model.addAttribute("goodsList", pageData.getItems());
+        model.addAttribute("filter", filter); // 검색어를 유지하기 위해 필터 객체 전달
+        return "thymeleaf/goods/goodsList";
     }
-	
-	@RequestMapping(value="goodsList" , method=RequestMethod.GET)
-	public String  goodsList(
-			@RequestParam(value="searchWord" , required = false) String searchWord,
-			@RequestParam(value = "page" , required = false , defaultValue = "1") int page,
-			Model model) {
-		goodsListService.execute(searchWord, model, page);
-		return "thymeleaf/goods/goodsList";
-	}
-	@GetMapping("goodsForm")
-	public String form() {
-		return "thymeleaf/goods/goodsWrite";
-	}
-	@GetMapping("goodsWrite")
-	public String goodsForm(Model model) {
-		String autoNum = autoNumService.execute("goods_", "goods_num", 7, "goods");
-		GoodsCommand  goodsCommand = new GoodsCommand();
-		goodsCommand.setGoodsNum(autoNum);
-		model.addAttribute("goodsCommand", goodsCommand);
-		return "thymeleaf/goods/goodsForm";
-	}
-	@Autowired
-	GoodsWriteService goodsWriteService;
-	@RequestMapping(value="goodsWrite" , method=RequestMethod.POST)
-	public String goodsWrite(@Validated GoodsCommand goodsCommand,BindingResult result
-			,HttpSession session) {
-		if(result.hasErrors()) {
-			return "thymeleaf/goods/goodsForm";
-		}
-		goodsWriteService.execute(goodsCommand, session);
-		return "thymeleaf/goods/goodsRedirect";
-		//return "redirect:goodsList";
-	}
-	@Autowired
-	ProductsDeleteService productsDeleteService;
-	@PostMapping("productsDelete")
-	public String productsDelete(//체크박스에 의해 전달 된 값을 배열로 받습니다.
-			@RequestParam(value = "nums") String memDels[]) {
-		productsDeleteService.execute(memDels);
-		return "redirect:goodsList";
-	}
-	@Autowired
-	GoodsDetailService goodsDetailService;
-	@GetMapping("goodsDetail")
-	public String goodsDetail(@RequestParam("goodsNum") String goodsNum
-			,Model model,HttpSession session) {
-		session.removeAttribute("fileList");
-		goodsDetailService.execute(goodsNum, model);
-		return "thymeleaf/goods/goodsInfo";
-	}
-	@GetMapping("goodsUpdate")
-	public String goodsUpdate(@RequestParam("goodsNum") String goodsNum, Model model
-			, HttpSession session) {
-		// 삭제할 파일을 선택한 후 다시 수정페이지로 오면 삭제할 파일정보를 가진 session이 존재하여 오류의 소지가 있다.
-		// 그래서 수정 페이지에 오면 삭제할 파일정보를 가진 session을 제거 하는 것이 좋다. 
-		session.removeAttribute("fileList"); // 삭제할 파일 정보를 가지고 있는 session삭제
-		goodsDetailService.execute(goodsNum, model);//수정을 하려면 기본 정보를 가져와야 하므로 goodsDetailService를 사용
-		return "thymeleaf/goods/goodsModify";
-	}
-	@Autowired
-	GoodsUpdateService goodsUpdateService;
-	@PostMapping("goodsUpdate")
-	public String goodsUpdate(@Validated GoodsCommand goodsCommand,BindingResult result,
-			HttpSession session, Model model) {
-		goodsUpdateService.execute(goodsCommand, session, result, model);
-		if(result.hasErrors()) {
-			return "thymeleaf/goods/goodsModify";
-		}
-		return "redirect:goodsDetail?goodsNum="+goodsCommand.getGoodsNum();
-	}
-	@Autowired
-	GoodsDeleteService goodsDeleteService;
-	@RequestMapping("goodsDel/{goodsNum}")
-	public String goodsDel(@PathVariable("goodsNum") String goodsNum) {
-		goodsDeleteService.execute(goodsNum);
-		return "redirect:../goodsList"; //PathVariable인 경우에는 주소 앞에 .. 을 꼭해줘야 합니다.
-	}
-	
-	
+
+    /**
+     * 상품 전체 목록 (사용자용)
+     */
+    // 💥 [수정] URL 경로를 헤더의 링크와 동일한 "goodsFullList"로 변경합니다.
+    @GetMapping("/goodsFullList") 
+    public String goodsFullList(GoodsFilterDTO filter,
+                                @RequestParam(value = "page", defaultValue = "1") int page,
+                                Model model) {
+        GoodsListPage pageData = goodsService.getGoodsListPage(filter, page, 10);
+        model.addAttribute("pageData", pageData);
+        model.addAttribute("goodsList", pageData.getItems());
+        model.addAttribute("filter", filter);
+        return "thymeleaf/goods/goodsFullList";
+    }
+    /**
+     * 상품 상세 정보 (사용자용)
+     */
+    @GetMapping("/{goodsNum}")
+    public String goodsDetail(@PathVariable("goodsNum") String goodsNum, Model model) {
+        GoodsDTO dto = goodsService.getGoodsDetail(goodsNum);
+        model.addAttribute("goodsCommand", dto);
+        model.addAttribute("newLine", "\n");
+        return "thymeleaf/item/detailView";
+    }
+
+    /**
+     * 상품 등록 폼 (직원용)
+     */
+    @GetMapping("/add")
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String addForm(Model model) {
+        String autoNum = autoNumService.execute("goods_", "goods_num", 7, "goods");
+        GoodsCommand goodsCommand = new GoodsCommand();
+        goodsCommand.setGoodsNum(autoNum);
+        model.addAttribute("goodsCommand", goodsCommand);
+        return "thymeleaf/goods/goodsForm";
+    }
+
+    /**
+     * 상품 등록 처리 (직원용)
+     */
+    @PostMapping("/add")
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String addGoods(@Validated GoodsCommand command, BindingResult result) {
+        if (result.hasErrors()) {
+            return "thymeleaf/goods/goodsForm";
+        }
+        goodsService.createGoods(command);
+        return "redirect:/goods";
+    }
+
+    /**
+     * 상품 수정 폼 (직원용)
+     */
+    @GetMapping("/{goodsNum}/edit")
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String editForm(@PathVariable("goodsNum") String goodsNum, Model model, HttpSession session) {
+        session.removeAttribute("fileList");
+        GoodsDTO dto = goodsService.getGoodsDetail(goodsNum);
+        model.addAttribute("goodsCommand", dto);
+        return "thymeleaf/goods/goodsModify";
+    }
+
+    /**
+     * 상품 수정 처리 (직원용)
+     */
+    @PostMapping("/update")
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String updateGoods(@Validated GoodsCommand command, BindingResult result,
+                              @RequestParam(value="imagesToDelete", required = false) List<String> imagesToDelete) {
+        if (result.hasErrors()) {
+            return "thymeleaf/goods/goodsModify";
+        }
+        goodsService.updateGoods(command, imagesToDelete);
+        return "redirect:/goods/" + command.getGoodsNum();
+    }
+
+    /**
+     * 상품 삭제 (개별/다중) (직원용)
+     */
+    @PostMapping("/delete")
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String deleteGoods(@RequestParam("nums") String[] goodsNums) {
+        goodsService.deleteGoods(goodsNums);
+        return "redirect:/goods";
+    }
 }
-
-
-
-
-
-
-
-
 
 
 

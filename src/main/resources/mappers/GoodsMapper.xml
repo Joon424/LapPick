@@ -25,22 +25,25 @@ values(#{goodsNum}, #{goodsName}, #{goodsPrice}, #{goodsContents}
 
 <!-- dto에 직접 넣어 가지고 오는 것이 아니라 setter를 이용해서 가져오겠습니다. -->
 <resultMap type="goods" id="goodsResultMap">
-	<constructor>
-		<idArg column="goods_Num" jdbcType="VARCHAR" javaType="string"/>
-		<arg column="goods_Name" jdbcType="VARCHAR" javaType="string" />
-		<arg column="GOODS_PRICE" jdbcType="BIGINT" javaType="integer" />
-		<arg column="goods_Contents" javaType="string" jdbcType="VARCHAR" />
-		<arg column="emp_Num" javaType="string" jdbcType="VARCHAR" />
-		<arg column="visit_Count" javaType="integer" jdbcType="BIGINT" />
-		<arg column="goods_Regist" javaType="java.util.Date" jdbcType="DATE" />
-		<arg column="update_Emp_Num" javaType="string" jdbcType="VARCHAR" />
-		<arg column="goods_Update_Date" javaType="java.util.Date" jdbcType="DATE" />
-		<arg column="GOODS_MAIN_IMAGE" javaType="string" jdbcType="VARCHAR" />
-		<arg column="GOODS_MAIN_STORE_IMAGE" javaType="string" jdbcType="VARCHAR" />
-		<arg column="GOODS_DETAIL_IMAGE" javaType="string" jdbcType="VARCHAR" />
-		<arg column="GOODS_DETAIL_STORE_IMAGE" javaType="string" jdbcType="VARCHAR" />		
-	</constructor>
+    <id property="goodsNum" column="goods_Num" />
+    <result property="goodsName" column="goods_Name" />
+    <result property="goodsPrice" column="GOODS_PRICE" />
+    <result property="goodsContents" column="goods_Contents" />
+    <result property="empNum" column="emp_Num" />
+    <result property="visitCount" column="visit_Count" />
+    <result property="goodsRegist" column="goods_Regist" />
+    <result property="updateEmpNum" column="update_Emp_Num" />
+    <result property="goodsUpdateDate" column="goods_Update_Date" />
+    <result property="goodsMainImage" column="GOODS_MAIN_IMAGE" />
+    <result property="goodsMainStoreImage" column="GOODS_MAIN_STORE_IMAGE" />
+    <result property="goodsDetailImage" column="GOODS_DETAIL_IMAGE" />
+    <result property="goodsDetailStoreImage" column="GOODS_DETAIL_STORE_IMAGE" />
+    <result property="goodsBrand" column="GOODS_BRAND" />
+    <result property="goodsPurpose" column="GOODS_PURPOSE" />
+    <result property="goodsScreenSize" column="GOODS_SCREEN_SIZE" />
+    <result property="goodsWeight" column="GOODS_WEIGHT" />
 </resultMap>
+
 <select id="allSelect" resultMap="goodsResultMap">
 select * from (
 	select ROW_NUMBER() over (order by goods_num desc) as rn,

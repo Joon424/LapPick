@@ -21,6 +21,11 @@
   <link rel="stylesheet"  href="/resources/css/template.css">
   <link rel="stylesheet"  href="/resources/css/common.css">
   <link rel="stylesheet"  href="/resources/css/style.css">
+  <script th:if="${message}" th:inline="javascript">
+    /*<![CDATA[*/
+      alert([[${message}]]);
+    /*]]>*/
+  </script>
 <script>
   function showInfo() {
     document.getElementById("infoSection").style.display = "block";
@@ -42,40 +47,36 @@
 
   function confirmDelete() {
 	    if (!confirm("정말 탈퇴하시겠습니까?")) return;
-	    var pw = prompt("비밀번호를 입력하세요");
+	    var pw = prompt("계정 삭제를 위해 비밀번호를 입력하세요");
 	    if (!pw || pw.trim().length === 0) return;
 
 	    var f = document.createElement('form');
 	    f.method = 'post';
-	    f.action = '/memberDropOk';
+	    f.action = '/member/withdraw'; 
 
-	    var i = document.createElement('input');
-	    i.type = 'hidden';
-	    i.name = 'memberPw';
-	    i.value = pw.trim();
-	    f.appendChild(i);
+	    var pwInput = document.createElement('input');
+	    pwInput.type = 'hidden';
+	    pwInput.name = 'memberPw';
+	    pwInput.value = pw.trim();
+	    f.appendChild(pwInput);
 
-	    // CSRF(있으면만 추가)
-	    var p = document.getElementById('csrfParam');
-	    var t = document.getElementById('csrfToken');
-	    if (p && t) {
-	      var c = document.createElement('input');
-	      c.type = 'hidden';
-	      c.name = p.value;
-	      c.value = t.value;
-	      f.appendChild(c);
+	    // 💥 [추가] 자바스크립트에서도 CSRF 토큰을 함께 추가해서 보내야 합니다.
+	    var csrfToken = document.querySelector('input[name="_csrf"]'); // 페이지의 다른 폼에서 토큰 정보 가져오기
+	    if (csrfToken) {
+	      var csrfInput = document.createElement('input');
+	      csrfInput.type = 'hidden';
+	      csrfInput.name = '_csrf';
+	      csrfInput.value = csrfToken.value;
+	      f.appendChild(csrfInput);
 	    }
+
 	    document.body.appendChild(f);
 	    f.submit();
-	  }
 	  }
   
   function navigateTo(path){ location.href = (path === '/cart') ? '/item/cartList' : path; }
 </script>
 
-<script th:if="${message}" th:inline="javascript">
-  alert(/*[[${#strings.escapeJavaScript(message)}]]*/'');
-</script>
 </head>
 
 <body>
@@ -115,13 +116,11 @@
                   <span>FAQ</span>
                 </a>
               </li>
-          <li class="header-gnbitem">
-  <a class="header-gnblink" 
-     th:href="${isLoggedIn} ? '/login/logout' : '/login/item.login'">
-    <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
-          th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
-  </a>
-</li>
+     <li class="header-gnbitem">
+                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
+                  <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
+                </a>
+              </li>
 
             </ul>
             <button class="header-btn btn-close">
@@ -195,38 +194,37 @@
   </div>
 
   <!-- 수정 영역 -->
-  <div id="editSection" style="display:none; margin-top:20px;">
-    <form th:action="@{/memberUpdate}" method="post">
+<div id="editSection" style="display:none; margin-top:20px;">
+ 	<form th:action="@{/member/my-page/update}" th:object="${memberCommand}" method="post">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
       <h3>내 정보 수정</h3>
-      <label>이름: <input type="text" name="memberName" th:value="${memberCommand.memberName}"></label><br>
-        <label>아이디: <input type="text" name="memberId" th:value="${memberCommand.memberId}" readonly></label><br>
-        <label>주소: <input type="text" name="memberAddr" th:value="${memberCommand.memberAddr}"></label><br>
-        <label>상세주소: <input type="text" name="memberAddrDetail" th:value="${memberCommand.memberAddrDetail}"></label><br>
-        <label>우편번호: <input type="text" name="memberPost" th:value="${memberCommand.memberPost}"></label><br>
-        <label>연락처1: <input type="text" name="memberPhone1" th:value="${memberCommand.memberPhone1}"></label><br>
-        <label>이메일: <input type="email" name="memberEmail" th:value="${memberCommand.memberEmail}"></label><br>
+      <label>이름: <input type="text" th:field="*{memberName}"></label><br>
+      <label>아이디: <input type="text" th:field="*{memberId}" readonly></label><br>
+      <input type="hidden" th:field="*{memberNum}">
+      <label>주소: <input type="text" th:field="*{memberAddr}"></label><br>
+      <label>상세주소: <input type="text" th:field="*{memberAddrDetail}"></label><br>
+      <label>우편번호: <input type="text" th:field="*{memberPost}"></label><br>
+      <label>연락처1: <input type="text" th:field="*{memberPhone1}"></label><br>
+      <label>이메일: <input type="email" th:field="*{memberEmail}"></label><br>
+      
+      <label>비밀번호 확인</label>
+      <input type="password" name="memberPw" placeholder="수정을 위해 현재 비밀번호를 입력하세요" required>
         
-        <label>비밀번호 확인</label>
-  		<input type="password" name="memberPw" placeholder="현재 비밀번호">
-
-  		<!-- (선택) 누락 방지용 숨은 필드들 -->
-  		<input type="hidden" name="memberPhone2" value="" />
-  		<input type="hidden" name="memberBirth"  value="" />
-  		
       <button type="submit">수정</button>
     </form>
   </div>
 
   <!-- 비밀번호 변경 영역 -->
-  <div id="passwordSection" style="display:none; margin-top:20px;">
-    <form method="post" action="/memberPwModify">
+ <div id="passwordSection" style="display:none; margin-top:20px;">
+ <form method="post" th:action="@{/member/my-page/change-password}">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
       <h3>비밀번호 변경</h3>
-      <label>현재 비밀번호: <input type="password" name="oldPw"></label><br>
-      <label>새 비밀번호: <input type="password" name="newPw"></label><br>
+      <label>현재 비밀번호: <input type="password" name="oldPw" required></label><br>
+      <label>새 비밀번호: <input type="password" name="newPw" required></label><br>
       <button type="submit">비밀번호 변경</button>
     </form>
   </div>
-</div>
     <!-- [E]basic-N32 -->
   </main>
   <!-- [S]basic-N4 -->
@@ -306,11 +304,4 @@
   <script  src="/resources/js/common.js"></script>
   <script  src="/resources/js/script.js"></script>
 
-<span id="flash-msg" th:if="${flashMsg}" th:text="${flashMsg}" style="display:none"></span>
-<script>
-  (function(){
-    var el = document.getElementById('flash-msg');
-    if (el) { alert(el.textContent); el.remove(); }
-  })();
-</script>
 </body>

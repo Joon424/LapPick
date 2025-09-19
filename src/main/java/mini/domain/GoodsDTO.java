@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Alias("goods")
-@AllArgsConstructor
 @NoArgsConstructor
 public class GoodsDTO {
 	String goodsNum;
@@ -27,4 +26,9 @@ public class GoodsDTO {
 	String goodsMainStoreImage;
 	String goodsDetailImage;
 	String goodsDetailStoreImage;
+	
+	String goodsBrand;
+	String goodsPurpose;
+	Double goodsScreenSize;
+	Double goodsWeight;
 }

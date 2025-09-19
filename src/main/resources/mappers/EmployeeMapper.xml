@@ -33,7 +33,7 @@
 <select id="employeeAllSelect"   parameterType="startEndPageDTO" 
 	resultMap="employeeResultMap" >
 select * from (
-	select ROW_NUMBER() over (order by emp_num) as rn, 
+    select ROW_NUMBER() over (order by emp_hire_date DESC) as rn, 
 			<include refid="employeeBaseColumns" />
 	from employees
 	<where>
@@ -49,14 +49,14 @@ select * from (
 where rn between #{startRow}  and #{endRow}
 </select>
 <select id="employeeCount" parameterType="string" resultType="integer">
-	select count(*) from employees
-	<if test='searchWord != null'>
-		<where>
-			emp_NAME like '%' || #{searchWord} || '%'
-			or emp_id like '%' || #{searchWord} || '%'
-			or emp_num like '%' || #{searchWord} || '%'
-		</where>
-	</if>
+    select count(*) from employees
+    <where>
+        <if test="searchWord != null and searchWord != ''">
+            emp_NAME like '%' || #{searchWord} || '%'
+            or emp_id like '%' || #{searchWord} || '%'
+            or emp_num like '%' || #{searchWord} || '%'
+        </if>
+    </where>
 </select>
 <delete id="employeesDelete" parameterType="string">
 delete from employees where EMP_NUM in

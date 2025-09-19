@@ -1,7 +1,6 @@
 package mini.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,33 +13,21 @@ public interface MemberMapper {
 	public void memberInsert(MemberDTO dto);
 	public List<MemberDTO> memberSelectList(StartEndPageDTO sepDTO); 
 	public Integer memberCount();
-	
-    Integer memberCountBySearch(@Param("searchWord") String searchWord);
-
-    MemberDTO memberSelectOne(@Param("memberNum") String memberNum);
-    
+	public MemberDTO memberSelectOne(String memberNum);
 	public void memberUpdate(MemberDTO dto);
+	int memberDelete(@Param("nums") List<String> nums);
 	public Integer memberEmailCheckUpdate(String memberEmail);
 	public String memberNumSelect(String memberId);
+	String findNumById(@Param("memberId") String memberId);
 	
-    /** 단건 삭제 */
-    int memberDeleteOne(@Param("memberNum") String memberNum);
+	public Integer memberCountBySearch(@Param("searchWord") String searchWord);
 
-    /** 다건 삭제 */
-    int memberDeleteMany(@Param("nums") List<String> nums);
+	// 💥 [추가] 아이디로 비밀번호를 조회하는 메서드
+	public String selectPwById(@Param("memberId") String memberId);
 	
-	int memberDelete(@Param("nums") List<String> nums);
-    String selectPwById(@Param("memberId") String memberId);
-    int existsByMemberId(@Param("memberId") String memberId);
-    
-    int memberIdExists(@Param("memberId") String memberId);
-
-    int memberCount(@Param("searchWord") String searchWord);
-
-    List<MemberDTO> memberList(Map<String, Object> params);
-    String findNumById(@Param("memberId") String memberId);
-	public int idCheck(String memberId);
-    
+	// MemberMapper.java 파일 안에 아래 두 줄을 추가해주세요.
+	public MemberDTO selectMemberById(@Param("memberId") String memberId);
+	public void memberPwUpdate(MemberDTO dto);
 
 }
 

@@ -2,14 +2,14 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>직원_회원등록 | Miso</title>
-  <script src="/static/js/cartButton.js"></script>
-  <link rel="stylesheet"  href="/resources/css/setting.css">
-  <link rel="stylesheet"  href="/resources/css/plugin.css">
-  <link rel="stylesheet"  href="/resources/css/template.css">
-  <link rel="stylesheet"  href="/resources/css/common.css">
-  <link rel="stylesheet"  href="/resources/css/style.css">
-  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
+  <title>직원_직원등록 | Miso</title>
+  
+  <link rel="stylesheet" href="/resources/css/setting.css">
+  <link rel="stylesheet" href="/resources/css/plugin.css">
+  <link rel="stylesheet" href="/resources/css/template.css">
+  <link rel="stylesheet" href="/resources/css/common.css">
+  <link rel="stylesheet" href="/resources/css/style.css">
+  
   <style>
     table { table-layout: fixed; border-collapse: collapse; width:600px; }
     th, td { border:1px solid #e5e7eb; padding:10px; vertical-align:top; }
@@ -25,8 +25,7 @@
   </style>
 </head>
 <body>
-  <!-- 헤더 -->
-  <div class="basic-N3" data-bid="znM47Svc81">
+   <div class="basic-N3" data-bid="znM47Svc81">
     <div class="header-inner">
       <div class="header-container container-lg">
         <div class="header-left">
@@ -68,106 +67,98 @@
     </div>
     <div class="header-dim"></div>
   </div>
-
   <main class="th-layout-main">
     <div class="basic-N23" data-bid="wWM47SwZLN">
       <div class="contents-inner">
         <div class="contents-container container-md">
 
           <div class="textset">
-            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지" th-hoverbox="true">
-            <h2 class="textset-tit">회원 등록</h2>
-            <p class="textset-desc">새로운 회원을 등록하는 페이지입니다.</p>
-            <div class="alert" th:if="${message}" th:text="${message}"></div>
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">직원 등록</h2>
+            <p class="textset-desc">새로운 직원을 등록하는 페이지입니다.</p>
           </div>
 
-          <form id="memberNewForm" th:action="@{/employee/members/add}" th:object="${member}" method="post" autocomplete="off">
-            <!-- 목록 복귀 컨텍스트(선택) -->
-            <input type="hidden" name="page"       th:value="${param.page != null ? param.page[0] : 1}">
-            <input type="hidden" name="searchWord" th:value="${param.searchWord != null ? param.searchWord[0] : null}">
-            <!-- CSRF -->
-            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-
-       <table>
+        <form id="employeeNewForm" th:action="@{/employee/add}" th:object="${employeeCommand}" method="post" autocomplete="off" onsubmit="return combineJumin();">
+            <table>
               <tbody>
+                <tr>
+                  <th>직원번호</th>
+                  <td><input type="text" th:field="*{empNum}" readonly></td>
+                </tr>
                 <tr>
                   <th>아이디</th>
                   <td>
-                    <input type="text" th:field="*{memberId}" placeholder="아이디" required>
-                    <div th:if="${#fields.hasErrors('memberId')}" th:errors="*{memberId}" class="hint" style="color:red;"></div>
+                    <input type="text" th:field="*{empId}" placeholder="아이디" required>
+                    <div th:if="${#fields.hasErrors('empId')}" th:errors="*{empId}" class="hint" style="color:red;"></div>
                   </td>
                 </tr>
                 <tr>
                   <th>비밀번호</th>
                   <td>
-                    <input type="password" th:field="*{memberPw}" placeholder="비밀번호" required>
+                    <input type="password" th:field="*{empPw}" placeholder="비밀번호" required>
                     <div class="hint">등록 시 암호화되어 저장됩니다.</div>
-                    <div th:if="${#fields.hasErrors('memberPw')}" th:errors="*{memberPw}" class="hint" style="color:red;"></div>
+                    <div th:if="${#fields.hasErrors('empPw')}" th:errors="*{empPw}" class="hint" style="color:red;"></div>
                   </td>
                 </tr>
                 <tr>
                   <th>비밀번호 확인</th>
                   <td>
-                    <input type="password" th:field="*{memberPwCon}" placeholder="비밀번호 확인" required>
-                    <div th:if="${#fields.hasErrors('memberPwCon')}" th:errors="*{memberPwCon}" class="hint" style="color:red;"></div>
+                    <input type="password" th:field="*{empPwCon}" placeholder="비밀번호 확인" required>
+                    <div th:if="${#fields.hasErrors('empPwCon')}" th:errors="*{empPwCon}" class="hint" style="color:red;"></div>
                   </td>
                 </tr>
                 <tr>
                   <th>이름</th>
                   <td>
-                    <input type="text" th:field="*{memberName}" placeholder="이름" required>
-                    <div th:if="${#fields.hasErrors('memberName')}" th:errors="*{memberName}" class="hint" style="color:red;"></div>
+                    <input type="text" th:field="*{empName}" placeholder="이름" required>
+                    <div th:if="${#fields.hasErrors('empName')}" th:errors="*{empName}" class="hint" style="color:red;"></div>
                   </td>
-                </tr>
-                <tr>
-                  <th>성별</th>
+                </tr>           
+			      <tr>
+                  <th>주민번호</th>
                   <td>
-                    <div class="row">
-                      <label><input type="radio" th:field="*{gender}" value="M"> 남</label>
-                      <label><input type="radio" th:field="*{gender}" value="F"> 여</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                      <input type="text" id="jumin1" maxlength="6" placeholder="앞 6자리" style="width: 180px;">
+                      <span>-</span>
+                      <input type="password" id="jumin2" maxlength="7" placeholder="뒤 7자리" style="flex-grow: 1;">
                     </div>
+                    
+                    <input type="hidden" th:field="*{empJumin}" />
+                    <div th:if="${#fields.hasErrors('empJumin')}" th:errors="*{empJumin}" class="hint" style="color:red;"></div>
                   </td>
                 </tr>
-                <tr>
-                  <th>전화번호1</th>
+                  <th>연락처</th>
                   <td>
-                    <input type="text" th:field="*{memberPhone1}" placeholder="01012345678" required>
-                    <div th:if="${#fields.hasErrors('memberPhone1')}" th:errors="*{memberPhone1}" class="hint" style="color:red;"></div>
-                  </td>
-                </tr>
-                <tr>
-                  <th>전화번호2</th>
-                  <td>
-                    <input type="text" th:field="*{memberPhone2}" placeholder="선택 입력">
-                    <div class="hint">미입력 가능</div>
+                    <input type="text" th:field="*{empPhone}" placeholder="01012345678" required>
+                    <div th:if="${#fields.hasErrors('empPhone')}" th:errors="*{empPhone}" class="hint" style="color:red;"></div>
                   </td>
                 </tr>
                 <tr>
                   <th>이메일</th>
                   <td>
-                    <input type="email" th:field="*{memberEmail}" placeholder="user@example.com" required>
-                    <div th:if="${#fields.hasErrors('memberEmail')}" th:errors="*{memberEmail}" class="hint" style="color:red;"></div>
+                    <input type="email" th:field="*{empEmail}" placeholder="user@example.com" required>
+                    <div th:if="${#fields.hasErrors('empEmail')}" th:errors="*{empEmail}" class="hint" style="color:red;"></div>
                   </td>
                 </tr>
                 <tr>
                   <th>주소</th>
                   <td>
-                    <input type="text" th:field="*{memberAddr}" placeholder="기본주소" required>
-                    <div th:if="${#fields.hasErrors('memberAddr')}" th:errors="*{memberAddr}" class="hint" style="color:red;"></div>
+                    <input type="text" th:field="*{empAddr}" placeholder="기본주소" required>
+                    <div th:if="${#fields.hasErrors('empAddr')}" th:errors="*{empAddr}" class="hint" style="color:red;"></div>
                     <div style="height:8px;"></div>
-                    <input type="text" th:field="*{memberAddrDetail}" placeholder="상세주소">
+                    <input type="text" th:field="*{empAddrDetail}" placeholder="상세주소">
                     <div style="height:8px;"></div>
                     <div class="row">
                       <span>우편번호:&nbsp;</span>
-                      <input class="w-120" type="text" th:field="*{memberPost}" placeholder="00000">
+                      <input class="w-120" type="text" th:field="*{empPost}" placeholder="00000">
                     </div>
                   </td>
                 </tr>
                 <tr>
-                  <th>생년월일</th>
+                  <th>입사일</th>
                   <td>
-                    <input type="date" th:field="*{memberBirth}" required>
-                    <div th:if="${#fields.hasErrors('memberBirth')}" th:errors="*{memberBirth}" class="hint" style="color:red;"></div>
+                    <input type="date" th:field="*{empHireDate}">
+                    <div th:if="${#fields.hasErrors('empHireDate')}" th:errors="*{empHireDate}" class="hint" style="color:red;"></div>
                   </td>
                 </tr>
               </tbody>
@@ -175,12 +166,8 @@
           </form>
 
           <div class="btnbar">
-                    <a class="btnset btnset-line btnset-round"
-               th:href="@{/employee/members(
-                  page=${param.page != null ? param.page[0] : 1},
-                  searchWord=${param.searchWord != null ? param.searchWord[0] : null}
-               )}">목록으로</a>
-            <button form="memberNewForm" type="submit" class="btnset btnset-line btnset-round">등록완료</button>
+            <a class="btnset btnset-line btnset-round" th:href="@{/employee}">목록으로</a>
+            <button form="employeeNewForm" type="submit" class="btnset btnset-line btnset-round">등록완료</button>
           </div>
 
         </div>
@@ -188,7 +175,6 @@
     </div>
   </main>
 
-  <!-- 푸터 -->
   <div class="basic-N4" data-bid="asM47Svmx7">
     <div class="footer-inner">
       <div class="footer-container container-lg">
@@ -217,12 +203,21 @@
       </div>
     </div>
   </div>
-
-  <script src="/resources/js/setting.js"></script>
-  <script src="/resources/js/plugin.js"></script>
-  <script src="/resources/js/template.js"></script>
-  <script src="/resources/js/common.js"></script>
-  <script src="/resources/js/script.js"></script>
-</body>
+  
+   <script>
+    function combineJumin() {
+      const jumin1 = document.getElementById('jumin1').value;
+      const jumin2 = document.getElementById('jumin2').value;
+      
+      // th:field="*{empJumin}"에 의해 id="empJumin"으로 생성된 hidden input을 찾습니다.
+      const empJuminInput = document.getElementById('empJumin');
+      
+      // 두 input의 값을 합쳐서 hidden input에 넣어줍니다.
+      empJuminInput.value = jumin1 + '-' + jumin2;
+      
+      return true; // 폼 제출을 계속 진행합니다.
+    }
+  </script>
+  
+  </body>
 </html>
-

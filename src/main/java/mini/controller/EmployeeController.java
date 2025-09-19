@@ -1,133 +1,135 @@
 package mini.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import lombok.RequiredArgsConstructor;
 import mini.command.EmployeeCommand;
+import mini.domain.EmployeeDTO;
+import mini.domain.EmployeeListPage;
 import mini.service.AutoNumService;
-import mini.service.employee.EmployeeDeleteService;
-import mini.service.employee.EmployeeDetailService;
-import mini.service.employee.EmployeeInsertService;
-import mini.service.employee.EmployeeListService;
-import mini.service.employee.EmployeeUpdateService;
-import mini.service.employee.EmployeesDeleteService;
-import mini.service.member.MemberListService;
+import mini.service.employee.EmployeeService;
 
 @Controller
-@RequestMapping("employee")
+@RequestMapping("/employee") // 💥 모든 직원 관련 URL은 /employee로 시작
+@RequiredArgsConstructor
+@PreAuthorize("hasAuthority('ROLE_EMP')")
 public class EmployeeController {
-	@Autowired
-	AutoNumService autoNumService;
-	@Autowired
-	EmployeeInsertService employeeInsertService;
-	@Autowired
-	EmployeeListService employeeListService;
-	@Autowired
-	EmployeesDeleteService employeesDeleteService;
-	@Autowired
-	EmployeeDetailService employeeDetailService;
-	@Autowired
-	MemberListService memberListService;
-	@RequestMapping(value="employeeList", method=RequestMethod.GET)
-	//페이징과 검색을 위한 코드를 추가하겠습니다.
-	public String empList(
-			@RequestParam(value="page", required = false, defaultValue = "1" ) int page,
-			@RequestParam(value="searchWord" , required = false) String searchWord,
-			Model model) {
-		//직원 목록을 가져오도록 해보자.
-		employeeListService.execute(searchWord, page,model);
-		return "thymeleaf/employee/employeeList";
-	}
-	@GetMapping("empRegist")
-	public String form(Model model ) {
-		String autoNum = autoNumService.execute("emp_", "emp_num", 5, "employees");
-		EmployeeCommand  employeeCommand = new EmployeeCommand();
-		employeeCommand.setEmpNum(autoNum);
-		model.addAttribute("employeeCommand", employeeCommand);
-		return "thymeleaf/employee/empForm";
-	}
-	@RequestMapping(value="empRegist", method=RequestMethod.POST)
-	// html에 있는 값을 command로 받아와야 한다.
-	// html에서 넘어온 값에 대해 유효성 검사를 합니다.
-	public String form(@Validated EmployeeCommand employeeCommand,BindingResult result , Model model ) {
-		// 정상적으로 저장되었다면 직원목록페이지로 이동
-		if(result.hasErrors()) {
-			// 오류가 있다면 employeeForm페이지가 열리게 합니다.
-			return "thymeleaf/employee/empForm";
-		}
-		// 모두 입력을 했다면 비밀번호확인 검사
-		if (!employeeCommand.isEmpPwEqualsEmpPwCon()) {
-			System.out.println("비밀번호 확인이 다릅니다.");
-			//틀렸으면 다시 employeeForm페이지가 열리게 합니다.
-			return "thymeleaf/employee/empForm";
-		}
-		//모든 오류가 없으면 디비에 저장
-		employeeInsertService.execute(employeeCommand);
-		return "redirect:empList";
-	}
-	
-	@PostMapping("empsDelete")
-	public String membersDelete( 
-			@RequestParam(value="empDels") String empsDel []) {
-		employeesDeleteService.execute(empsDel);
-		return "redirect:empList";
-	}
-	@RequestMapping(value="employeeDetail",method=RequestMethod.GET)
-	public String employeeDetail(@RequestParam(value = "empNum") String empNum, Model model) {
-		employeeDetailService.execute(empNum, model);
-		return "thymeleaf/employee/empDetail";
-	}
-	@RequestMapping(value = "empModify", method = RequestMethod.GET)
-	public String employeeUpdate(@RequestParam(value = "empNum") String empNum, Model model) {
-		employeeDetailService.execute(empNum, model);
-		return "thymeleaf/employee/empUpdate";
-	}
 
-	@Autowired
-	EmployeeUpdateService employeeUpdateService;
-	@RequestMapping(value = "empModify", method = RequestMethod.POST)
-	public String employeeUpdate(@Validated EmployeeCommand employeeCommand, BindingResult result) {
+    private final EmployeeService employeeService;
+    private final AutoNumService autoNumService;
 
-		if (result.hasErrors()) {
+    /**
+     * 💥 [수정] 직원 목록 페이지 (GET /employee)
+     */
+    @GetMapping
+    public String listEmployees(@RequestParam(value = "page", defaultValue = "1") int page,
+                              @RequestParam(value = "searchWord", required = false) String searchWord,
+                              Model model) {
+        EmployeeListPage pageData = employeeService.getEmployeeListPage(searchWord, page);
+        model.addAttribute("pageData", pageData);
+        model.addAttribute("employees", pageData.getItems());
+        return "thymeleaf/employee/empList"; // empList.html을 보여줌
+    }
 
-			return "thymeleaf/employee/empUpdate";
-		}
-		employeeUpdateService.execute(employeeCommand);
-		//수정하고 직원상세페이지로 
-		return "redirect:employeeDetail?empNum=" + employeeCommand.getEmpNum();
-	}
+    /**
+     * 직원 상세 정보 (GET /employee/{empNum})
+     */
+    @GetMapping("/{empNum}")
+    public String employeeDetail(@PathVariable("empNum") String empNum, Model model) {
+        EmployeeDTO dto = employeeService.getEmployeeDetail(empNum);
+        model.addAttribute("employeeCommand", dto);
+        
+        // 💥 [수정] 우리가 만든 파일 이름인 "empInfo"를 바라보도록 변경
+        return "thymeleaf/employee/empInfo"; 
+    }
+    
+    /**
+     * 직원 등록 폼 (GET /employee/add)
+     */
+    @GetMapping("/add")
+    public String addForm(Model model) {
+        String autoNum = autoNumService.execute("emp_", "emp_num", 5, "employees");
+        EmployeeCommand employeeCommand = new EmployeeCommand();
+        employeeCommand.setEmpNum(autoNum);
+        model.addAttribute("employeeCommand", employeeCommand);
 
-	@Autowired
-	EmployeeDeleteService employeeDeleteService;
-	@GetMapping("empDelete")
-	public String employeeDelete(@RequestParam(value = "empNum") String empNum) {
+        // 💥 [수정] 우리가 만든 파일 이름인 "empWrite"를 바라보도록 변경
+        return "thymeleaf/employee/empWrite";
+    }
 
-		employeeDeleteService.execute(empNum);
+    /**
+     * 직원 등록 처리 (POST /employee/add)
+     */
+    @PostMapping("/add")
+    public String addEmployee(@Validated EmployeeCommand employeeCommand, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            // 💥 [수정] 되돌아갈 템플릿 파일 이름을 empForm -> empWrite 로 변경
+            return "thymeleaf/employee/empWrite";
+        }
+        if (!employeeCommand.isEmpPwEqualsEmpPwCon()) {
+            result.rejectValue("empPwCon", "employeeCommand.empPwCon", "비밀번호 확인이 일치하지 않습니다.");
+            // 💥 [수정] 여기도 empForm -> empWrite 로 변경
+            return "thymeleaf/employee/empWrite";
+        }
+        
+        employeeService.createEmployee(employeeCommand);
+        return "redirect:/employee";
+    }
 
-		return "redirect:empList";
+    /**
+     * 직원 수정 폼 (GET /employee/{empNum}/edit)
+     */
+    @GetMapping("/{empNum}/edit")
+    public String editForm(@PathVariable("empNum") String empNum, Model model) {
+        EmployeeDTO dto = employeeService.getEmployeeDetail(empNum);
+        model.addAttribute("employeeCommand", dto);
+        // 💥 [수정] 우리가 만든 파일 이름인 "empEdit"을 바라보도록 변경
+        return "thymeleaf/employee/empEdit";
+    }
 
-	}
 
+    /**
+     * 직원 수정 처리 (POST /employee/edit)
+     */
+    @PostMapping("/edit")
+    // 💥 [수정] @Validated 어노테이션을 제거하여, 수정 시에는 유효성 검사를 건너뛰도록 변경합니다.
+    public String updateEmployee(EmployeeCommand employeeCommand, BindingResult result) {
+        
+        // 💥 [추가] 만약 이름과 같이 필수적인 필드에 대한 수동 검사가 필요하다면 여기에 추가할 수 있습니다.
+        // 예: if (employeeCommand.getEmpName() == null || employeeCommand.getEmpName().isBlank()) { ... }
+
+        employeeService.updateEmployee(employeeCommand);
+        return "redirect:/employee/" + employeeCommand.getEmpNum();
+    }
+    /**
+     * 직원 개별 삭제 (GET /employee/delete/{empNum})
+     */
+    @GetMapping("/delete/{empNum}")
+    public String deleteSingleEmployee(@PathVariable("empNum") String empNum) {
+        employeeService.deleteEmployees(new String[]{empNum});
+        return "redirect:/employee";
+    }
+    
+    /**
+     * 직원 선택 삭제 (POST /employee/delete)
+     */
+    @PostMapping("/delete")
+    public String deleteEmployees(@RequestParam("empDels") String[] empNums) {
+        employeeService.deleteEmployees(empNums);
+        return "redirect:/employee";
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

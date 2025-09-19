@@ -13,7 +13,7 @@ public class FileDelService {
 	/// 장바구니
 	public int execute(String orgFile, String storeFile, HttpSession session) {
 		int i = 0;
-		FileDTO dto = new FileDTO();
+		FileDTO dto = new FileDTO(storeFile, storeFile);
 		dto.setOrgFile(orgFile);
 		dto.setStoreFile(storeFile);
 		Boolean newFile = true; // 새로운 파일인지 확인 

@@ -89,7 +89,7 @@
               </li>
           <li class="header-gnbitem">
   <a class="header-gnblink" 
-     th:href="${isLoggedIn} ? '/login/logout' : '/login/item.login'">
+     th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
     <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
           th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
   </a>
@@ -159,6 +159,47 @@
                     <span style="color:red" th:if="${#fields.hasErrors('goodsPrice')}" th:errors="*{goodsPrice}"></span>
                   </td>
                 </tr>
+                <tr>
+    <th>브랜드</th>
+    <td>
+        <select th:field="*{goodsBrand}" required>
+            <option value="">-- 브랜드 선택 --</option>
+            <option value="SAMSUNG">삼성전자</option>
+            <option value="LG">LG전자</option>
+            <option value="APPLE">APPLE</option>
+            <option value="MSI">MSI</option>
+            <option value="ASUS">ASUS</option>
+            <option value="LENOVO">레노버</option>
+        </select>
+    </td>
+</tr>
+
+<tr>
+    <th>용도</th>
+    <td>
+        <select th:field="*{goodsPurpose}" required>
+            <option value="">-- 용도 선택 --</option>
+            <option value="OFFICE">사무용</option>
+            <option value="LECTURE">인강용</option>
+            <option value="GAMING">게이밍</option>
+            <option value="VIDEO_EDIT">영상편집</option>
+        </select>
+    </td>
+</tr>
+
+<tr>
+    <th>화면 크기 (인치)</th>
+    <td>
+        <input type="number" step="0.1" th:field="*{goodsScreenSize}" placeholder="예: 15.6" />
+    </td>
+</tr>
+
+<tr>
+    <th>무게 (kg)</th>
+    <td>
+        <input type="number" step="0.01" th:field="*{goodsWeight}" placeholder="예: 1.57" />
+    </td>
+    </tr>
                 <tr>
                   <th>상품설명</th>
                   <td><textarea rows="10" cols="50" name="goodsContents">[[${goodsCommand.goodsContents}]]</textarea><br />

@@ -49,6 +49,7 @@ public class MemberService {
         dto.setMemberPost(command.getMemberPost());
         dto.setMemberPhone1(command.getMemberPhone1());
         dto.setMemberEmail(command.getMemberEmail());
+        dto.setMemberBirth(command.getMemberBirth());
         
         memberMapper.memberUpdate(dto);
     }

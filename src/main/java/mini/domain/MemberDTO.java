@@ -3,6 +3,7 @@ package mini.domain;
 import java.util.Date;
 
 import org.apache.ibatis.type.Alias;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
 @Alias("memberDTO")
@@ -20,6 +21,8 @@ public class MemberDTO {
 	String memberPost;
 	String gender;
 	String memberEmail;
+	
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	Date memberBirth;
 	Date memberRegist;
 	

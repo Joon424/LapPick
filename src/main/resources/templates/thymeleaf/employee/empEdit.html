@@ -110,10 +110,12 @@
                     <input type="text" th:field="*{empPost}" placeholder="우편번호">
                   </td>
                 </tr>
-                <tr>
-                  <th>입사일</th>
-                  <td><input type="date" th:field="*{empHireDate}"></td>
-                </tr>
+               <tr>
+  <th>입사일</th>
+  <td>
+    <input type="date" name="empHireDate" th:value="${#dates.format(employeeCommand.empHireDate, 'yyyy-MM-dd')}">
+  </td>
+</tr>
               </tbody>
             </table>
           </form>

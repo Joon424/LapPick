@@ -15,7 +15,7 @@
   <meta property="og:image" content="https://웹사이트/images/opengraph.png">
   <meta property="og:url" content="https://웹사이트">
   
-  <title>상세페이지 | Miso</title>
+ <title th:text="${goods.goodsName} + ' | LapPick'">상세페이지</title>
 
   <link rel="stylesheet" href="/resources/css/setting.css">
   <link rel="stylesheet" href="/resources/css/plugin.css">
@@ -23,136 +23,55 @@
   <link rel="stylesheet" href="/resources/css/common.css">
   <link rel="stylesheet" href="/resources/css/style.css">
    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
- <script type="text/javascript">
+  <script th:inline="javascript">
     $(function () {
-      // 상품 상세 정보 요청
-      function goodsDescript() {
-        $.ajax({
-          type: "POST",
-          url: "../goodsDescript",
-          contentType: "application/json",
-          data: JSON.stringify({ goodsNum: [[${goods.goodsDTO.goodsNum}]] }),
-          dataType: "json",
-          success: function (data) {
-            console.log(data);
-            let contentHtml = `<table width='800' align='center'><tr><td>`;
-            contentHtml += `<span>${data.goodsDTO.goodsContents}</span><br/>`;
-            if (data.goodsDTO.goodsDetailStoreImage) {
-              const images = data.goodsDTO.goodsDetailStoreImage.split('/');
-              images.forEach((img) => {
-                contentHtml += `<img src='/upload/${img}' /><br/>`;
-              });
-            }
-            contentHtml += `</td></tr></table>`;
-            $("#content").html(contentHtml);
-          },
-          error: function (xhr, status, error) {
-            console.error("Error:", error);
-          },
-        });
-      }
+        // 장바구니 추가
+        $("#cartBtn").on("click", function() {
+            const goodsNum = /*[[${goods.goodsNum}]]*/ 'default';
+            const qty = 1;
 
-      // 상품 문의 요청
-      function inquire() {
-        $.ajax({
-          type: "POST",
-          url: "/corner/inquireList",
-          dataType: "html",
-          data: { goodsNum: [[${goods.goodsDTO.goodsNum}]] },
-          success: function (response) {
-            $("#content").html(response);
-          },
-          error: function () {
-            alert("로그아웃되었습니다.");
-          },
-        });
-      }
-
-      // 장바구니 추가
-     $("#cartBtn").click(function () {
-    const qty = $("#cartQty").val() || 1;
-    const goodsNum = /*[[${goods.goodsDTO.goodsNum}]]*/; // Thymeleaf 바인딩
-
-    $.ajax({
-        type: "POST",
-        url: "/item/cartAdd",
-        contentType: "application/json",
-        data: JSON.stringify({ goodsNum: goodsNum, qty: qty }),
-        success: function (response) {
-            if (response === "200") {
-                if (confirm("계속 쇼핑하려면 '취소'를 클릭하세요.")) {
-                    location.href = "/item/cartList";
+            const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
+            if (!isLoggedIn) {
+                if(confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+                    window.location.href = "/login/item.login";
                 }
-            } else if (response === "900") {
-                alert("관리자는 사용할 수 없는 페이지입니다.");
-            } else if (response === "000") {
-                alert("로그아웃되었습니다. 다시 로그인해주세요.");
-                window.open("/login/item.login", "login", "width=315, height=200, top=100, left=100");
+                return;
             }
-        },
-        error: function () {
-            alert("로그아웃되었습니다. 다시 로그인해주세요.");
-            window.open("/login/item.login", "login", "width=315, height=200, top=100, left=100");
-        },
-    });
-});
-     $(document).ready(function () {
-         // 위시리스트 추가/삭제
-         $("#wishBtn").click(function () {
-             var goodsNum = "${goods.goodsDTO.goodsNum}"; // 상품 번호
 
-             $.ajax({
-                 type: "POST",
-                 url: "/item/wishItem",
-                 contentType: "application/json",
-                 data: JSON.stringify({ goodsNum: goodsNum }),
-                 success: function () {
-                     // 아이콘 전환 (추가/삭제 시 이미지 교체)
-                     const currentSrc = $("#wishIcon").attr("src");
-                     if (currentSrc === "/resources/icons/ico_like_black_line.svg") {
-                         $("#wishIcon").attr("src", "/resources/icons/ico_like_black_fill.svg");
-                         alert("위시리스트에 추가되었습니다.");
-                     } else {
-                         $("#wishIcon").attr("src", "/resources/icons/ico_like_black_line.svg");
-                         alert("위시리스트에서 제거되었습니다.");
-                     }
-                 },
-                 error: function () {
-                     alert("로그인 상태를 확인해주세요.");
-                 },
-             });
-         });
-     });
-     $(document).ready(function () {
-    	    $("#cartButton").click(function () {
-    	      // 로그인 상태 확인 후 장바구니 페이지로 이동
-    	      $.ajax({
-    	        type: "GET",
-    	        url: "/item/isLoggedIn", // 서버에서 로그인 상태를 확인할 API
-    	        success: function (isLoggedIn) {
-    	          if (isLoggedIn) {
-    	            window.location.href = "/item/cartList"; // 장바구니 페이지로 이동
-    	          } else {
-    	            alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
-    	            window.location.href = "/login/item.login"; // 로그인 페이지로 이동
-    	          }
-    	        },
-    	        error: function () {
-    	          alert("로그인 상태를 확인할 수 없습니다. 다시 시도해주세요.");
-    	        },
-    	      });
-    	    });
-    	  });
-      // 구매하기
-      $("#buyItem").click(function () {
-        const qty = $("#cartQty").val() || 1;
-        location.href = `/item/buyItem?goodsNum=[[${goods.goodsDTO.goodsNum}]]&qty=${qty}`;
-      });
+            $.ajax({
+                type: "POST",
+                url: "/item/cartAdd",
+                contentType: "application/json",
+                data: JSON.stringify({ goodsNum: goodsNum, qty: qty }),
+                success: function (response) {
+                    if (response === "200") {
+                        if (confirm("장바구니에 상품을 담았습니다. 장바구니로 이동하시겠습니까?")) {
+                            location.href = "/item/cartList";
+                        }
+                    }
+                },
+                error: function () {
+                    alert("오류가 발생했습니다. 다시 시도해주세요.");
+                }
+            });
+        });
+
+        // 구매하기
+        $("#buyItem").on("click", function() {
+            const goodsNum = /*[[${goods.goodsNum}]]*/ 'default';
+            const qty = 1;
+
+            const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
+            if (!isLoggedIn) {
+                 if(confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+                    window.location.href = "/login/item.login";
+                }
+                return;
+            }
+            location.href = `/item/buyItem?goodsNum=${goodsNum}&qty=${qty}`;
+        });
     });
-  </script>
-  <script>
-    console.log("GoodsNum: /*[[${goods.goodsDTO.goodsNum}]]*/"); // 콘솔 출력으로 값 확인
-</script>
+    </script>
 </head>
 
 <body>
@@ -234,92 +153,69 @@
     <div class="header-dim"></div>
   </div>
   <!-- [E]basic-N3 -->
-  <main class="th-layout-main ">
-    <!-- [S]basic-N51 -->
-    <div class="basic-N51" data-bid="Wkm3qv4x0r">
-      <div class="contents-inner">
-        <div class="contents-container container-md">
-          <div class="contents-left">
-            <div class="contents-thumbnail">
-              <!-- 상품 이미지 -->
-              <img th:src="@{'/upload/' + ${goods.goodsDTO.goodsMainStoreImage}}" class="contents-thumbimg" alt="썸네일이미지1">
+     <main class="th-layout-main ">
+        <div class="basic-N51" data-bid="Wkm3qv4x0r">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="contents-left">
+                        <div class="contents-thumbnail">
+                            <img th:src="@{/upload/{img}(img=${goods.goodsMainStoreImage})}" class="contents-thumbimg" alt="대표이미지">
+                        </div>
+                        <ul class="contents-thumblist">
+                            <li class="contents-thumbitem" th:each="image : ${#strings.listSplit(goods.goodsDetailStoreImage, '/')}">
+                                <img th:if="${!image.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${image})}" class="contents-thumbimg" alt="썸네일">
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="contents-right">
+                        <div class="contents-right-group">
+                            <div class="contents-brand">
+                                <a href="javascript:void(0);" th:text="${goods.goodsBrand}">브랜드</a>
+                            </div>
+                           <div class="textset">
+    <h2 class="textset-tit" th:text="${goods.goodsName}">상품명</h2>
+    <p class="textset-desc" style="margin-top: 8px; margin-bottom: 5px;" th:text="${goods.goodsContents}"></p>
+    <p class="textset-desc" th:if="${goods.goodsWeight != null}" th:text="|${goods.goodsWeight}kg|"></p>
 
-            </div>
-            <ul class="contents-thumblist">
-                  <!-- 메인 이미지도 썸네일로 표시 -->
-            <li class="contents-thumbitem" onclick="changeImage(this)">
-              <img th:src="@{'/upload/' + ${goods.goodsDTO.goodsMainStoreImage}}" class="contents-thumbimg" alt="메인 썸네일">
-            </li>
-            <!-- 다른 썸네일 이미지 -->
-            <li class="contents-thumbitem" th:each="image : ${goods.goodsDTO.goodsDetailStoreImage.split('/')}">
-              <img th:src="@{'/upload/' + ${image}}" class="contents-thumbimg" alt="추가 썸네일" onclick="changeImage(this)">
-            </li>
-            </ul>
-          </div>
-          <div class="contents-right">
-            <div class="contents-right-group">
-              <div class="contents-brand">
-                <a href="javascript:void(0);">TEMHA-IT</a> <!-- 브랜드 명 (이 예제에서는 고정) -->
-                <div class="contents-brand-group">
-                   <button id="wishBtn" class="contents-btn">
-        				<img id="wishIcon" src="/resources/icons/ico_like_black_line.svg" alt="하트 라인 아이콘">
-    			  </button>
-                  <button class="contents-btn">
-                    <img src="/resources/icons/ico_share_black.svg" alt="공유 아이콘">
-                  </button>
-                </div>
-              </div>
-              <div class="textset">
-                <h2 class="textset-tit" th:text="${goods.goodsDTO.goodsName}">상품명</h2> <!-- 상품명 -->
-                <p class="textset-desc" th:text="${goods.goodsDTO.goodsContents}">상품 설명</p> <!-- 상품 설명 -->
-              </div>
-              <div class="contents-badge-group">
-                <!-- 상품 태그 (예시) -->
-                <div class="badgeset badgeset-tag badgeset-round badgeset-line">
-                  <span class="badgeset-text">#신제품</span>
-                </div>
-                <div class="badgeset badgeset-tag badgeset-round badgeset-line">
-                  <span class="badgeset-text">#AI</span>
-                </div>
-                <div class="badgeset badgeset-tag badgeset-round badgeset-line">
-                  <span class="badgeset-text">#성능</span>
-                </div>
-              </div>
-              <p class="contents-price" th:text="${goods.goodsDTO.goodsPrice} + '원'">가격</p> <!-- 상품 가격 -->
-            </div>
-            <div class="contents-right-group">
-              <ul class="contents-right-list">
-                <li class="contents-right-item">
-                  <strong>포인트적립</strong>
-                  <span>10% 포인트적립이 가능합니다</span>
-                </li>
-                <li class="contents-right-item">
-                  <strong>배송정보</strong>
-                  <span>무료배송</span>
-                </li>
-                <li class="contents-right-item">
-                  <strong>판매자정보</strong>
-                  <span>정준교</span>
-                </li>
-              </ul>
-            </div>
-            <div class="contents-btn-group">
-              <button id="cartBtn" class="btnset btnset-line">장바구니</button>
-              <button id="buyItem" class="btnset">구매하기</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="contents-badge-group" style="margin-top: 12px;">
+        <div class="badgeset badgeset-tag badgeset-round badgeset-line" th:if="${goods.goodsKeyword1 != null and !goods.goodsKeyword1.isEmpty()}"><span class="badgeset-text" th:text="'#' + ${goods.goodsKeyword1}"></span></div>
+        <div class="badgeset badgeset-tag badgeset-round badgeset-line" th:if="${goods.goodsKeyword2 != null and !goods.goodsKeyword2.isEmpty()}"><span class="badgeset-text" th:text="'#' + ${goods.goodsKeyword2}"></span></div>
+        <div class="badgeset badgeset-tag badgeset-round badgeset-line" th:if="${goods.goodsKeyword3 != null and !goods.goodsKeyword3.isEmpty()}"><span class="badgeset-text" th:text="'#' + ${goods.goodsKeyword3}"></span></div>
     </div>
-    <!-- [E]basic-N51 -->
-  </main>
+</div>
 
-  <!-- [S]basic-N52 -->
-  <div class="basic-N52" data-bid="QrM3qv56nc">
-    <div class="contents-inner">
-      <div class="tabset tabset-fluid">
-        <ul class="tabset-list container-md">
-          <li class="tabset-item">
+<p class="contents-price" style="margin-top: 10px;" th:text="${#numbers.formatInteger(goods.goodsPrice, 0, 'COMMA')} + '원'">가격</p>
+                        </div>
+                        <div class="contents-right-group">
+                            <ul class="contents-right-list">
+                                <li class="contents-right-item">
+                                    <strong>포인트적립</strong>
+                                    <span>구매금액의 1% 적립</span>
+                                </li>
+                                <li class="contents-right-item">
+                                    <strong>배송정보</strong>
+                                    <span th:text="${goods.goodsShippingInfo}">무료배송</span>
+                                </li>
+                                <li class="contents-right-item">
+                                    <strong>판매자정보</strong>
+                                    <span th:text="${goods.goodsSellerInfo}">판매자</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="contents-btn-group">
+                            <button id="cartBtn" class="btnset btnset-line">장바구니</button>
+                            <button id="buyItem" class="btnset">구매하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="basic-N52" data-bid="QrM3qv56nc">
+            <div class="contents-inner">
+                <div class="tabset tabset-fluid">
+                    <ul class="tabset-list container-md">
+                        <li class="tabset-item">
             <a class="tabset-link active" href="javascript:void(0)">
               <span>상세정보</span>
             </a>
@@ -339,16 +235,24 @@
               <span>배송/교환/반품안내</span>
             </a>
           </li>
-        </ul>
-      </div>
-      <div class="contents-container container-md">
-        <div class="image" align="center">
-          <img src="/resources/images/ms3.jpg" alt="이미지">
-          <img src="/resources/images/ms4.png" alt="이미지">
+                        </ul>
+                </div>
+                <div class="contents-container container-md">
+                    <div class="image" align="center" th:if="${goods.goodsDetailStore != null and goods.goodsDetailStore != ''}">
+                        <img th:each="img : ${#strings.listSplit(goods.goodsDetailStore, '/')}" 
+                             th:if="${!img.isEmpty()}" 
+                             th:src="@{/upload/{imgName}(imgName=${img})}" 
+                             alt="상세 설명 이미지" 
+                             style="max-width: 100%; display: block;">
+                    </div>
+                    <div class="image" align="center" th:unless="${goods.goodsDetailStore != null and goods.goodsDetailStore != ''}">
+                        <p style="padding: 50px 0;">등록된 상세 설명 이미지가 없습니다.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
+    </main>
+
   <!-- [E]basic-N52 -->
   <!-- [S]basic-N4 -->
   <div class="basic-N4" data-bid="aCM3Qv5DHm">

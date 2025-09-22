@@ -29,6 +29,11 @@ public interface MemberMapper {
 	public MemberDTO selectMemberById(@Param("memberId") String memberId);
 	public void memberPwUpdate(MemberDTO dto);
 
+	
+	   // ▼▼▼▼▼ [추가] 비밀번호 마이그레이션을 위한 메서드 ▼▼▼▼▼
+    public List<MemberDTO> selectAllMembers();
+    public void updatePassword(MemberDTO member);
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 }
 
 

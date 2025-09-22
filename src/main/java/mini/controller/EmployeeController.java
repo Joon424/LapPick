@@ -59,7 +59,7 @@ public class EmployeeController {
      */
     @GetMapping("/add")
     public String addForm(Model model) {
-        String autoNum = autoNumService.execute("emp_", "emp_num", 5, "employees");
+    	String autoNum = autoNumService.execute("employees", "emp_num", "emp_");
         EmployeeCommand employeeCommand = new EmployeeCommand();
         employeeCommand.setEmpNum(autoNum);
         model.addAttribute("employeeCommand", employeeCommand);

@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -14,11 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import mini.command.GoodsCommand;
-import mini.command.GoodsFilterDTO;
+import mini.command.GoodsFilterCommand;
 import mini.domain.FileDTO;
 import mini.domain.GoodsDTO;
 import mini.domain.GoodsListPage;
-import mini.domain.StartEndPageDTO;
 import mini.mapper.EmployeeMapper;
 import mini.mapper.GoodsMapper;
 
@@ -27,65 +29,35 @@ import mini.mapper.GoodsMapper;
 @RequiredArgsConstructor
 public class GoodsService {
 
+    // [추가] application.properties에서 설정한 파일 경로를 주입받습니다.
+    @Value("${file.upload.dir}")
+    private String fileDir;
+	
     private final GoodsMapper goodsMapper;
     private final EmployeeMapper employeeMapper;
 
-    // --- Private Helper Methods for File Handling ---
-
-    private String getUploadDirectory() {
-        URL resource = getClass().getClassLoader().getResource("static/upload");
-        if (resource == null) {
-            throw new RuntimeException("Upload directory 'static/upload' not found.");
-        }
-        return resource.getFile();
-    }
-
-    private void deleteFile(String storeFileName) {
-        if (storeFileName == null || storeFileName.isBlank()) return;
-        File file = new File(getUploadDirectory(), storeFileName);
-        if (file.exists()) {
-            file.delete();
-        }
-    }
-
-    private FileDTO uploadFile(MultipartFile multipartFile) {
-        if (multipartFile == null || multipartFile.isEmpty()) {
-            return null;
-        }
-        String originalFile = multipartFile.getOriginalFilename();
-        String extension = originalFile.substring(originalFile.lastIndexOf("."));
-        String storeName = UUID.randomUUID().toString().replace("-", "");
-        String storeFileName = storeName + extension;
-        File file = new File(getUploadDirectory(), storeFileName);
-        try {
-            multipartFile.transferTo(file);
-            return new FileDTO(originalFile, storeFileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    // --- Public Service Methods ---
-
     /**
      * 상품 목록 조회 (직원용/사용자용)
+     * Controller에서 받은 필터 조건(filter)을 DB 쿼리에 맞게 가공하여 Mapper에 전달합니다.
      */
     @Transactional(readOnly = true)
-    public GoodsListPage getGoodsListPage(GoodsFilterDTO filter, int page, int limit) {
-        long startRow = (page - 1L) * limit + 1;
-        long endRow = page * 1L * limit;
-        
+    public GoodsListPage getGoodsListPage(GoodsFilterCommand filter, int limit) {
+        // 1. 페이징을 위한 시작/끝 행 번호 계산
+        long startRow = (filter.getPage() - 1L) * limit + 1;
+        long endRow = filter.getPage() * 1L * limit;
         filter.setStartRow(startRow);
         filter.setEndRow(endRow);
 
+
+        // 3. 가공된 필터 객체로 DB에서 데이터 조회
         List<GoodsDTO> list = goodsMapper.allSelect(filter);
         int total = goodsMapper.goodsCount(filter);
         int totalPages = (int) Math.ceil(total / (double) limit);
 
+        // 4. 최종 페이지 객체 생성하여 반환
         return GoodsListPage.builder()
                 .items(list)
-                .page(page).size(limit)
+                .page(filter.getPage()).size(limit)
                 .total(total).totalPages(totalPages)
                 .searchWord(filter.getSearchWord())
                 .build();
@@ -98,62 +70,91 @@ public class GoodsService {
     public GoodsDTO getGoodsDetail(String goodsNum) {
         return goodsMapper.selectOne(goodsNum);
     }
-
     /**
      * 상품 등록
      */
     public void createGoods(GoodsCommand command) {
         GoodsDTO dto = new GoodsDTO();
+        
+        // Command 객체(입력값)의 데이터를 DTO 객체(DB 저장용)로 옮깁니다.
         dto.setGoodsNum(command.getGoodsNum());
         dto.setGoodsName(command.getGoodsName());
         dto.setGoodsPrice(command.getGoodsPrice());
         dto.setGoodsContents(command.getGoodsContents());
+        dto.setGoodsBrand(command.getGoodsBrand());
+        dto.setGoodsPurpose(command.getGoodsPurpose());
+        
+        dto.setGoodsScreenSize(command.getGoodsScreenSize());
+        dto.setGoodsWeight(command.getGoodsWeight());
+        
+        dto.setGoodsKeyword1(command.getGoodsKeyword1());
+        dto.setGoodsKeyword2(command.getGoodsKeyword2());
+        dto.setGoodsKeyword3(command.getGoodsKeyword3());
+        dto.setGoodsShippingInfo(command.getGoodsShippingInfo());
+        dto.setGoodsSellerInfo(command.getGoodsSellerInfo());
 
-        // 현재 로그인한 직원 정보 설정
+        // 현재 로그인한 직원 정보를 가져와 등록 직원 번호를 설정합니다.
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String empNum = employeeMapper.getEmpNum(auth.getName());
         dto.setEmpNum(empNum);
 
-        // 메인 이미지 업로드
+        // 이미지 파일들을 서버에 업로드하고, DTO에 파일명을 저장합니다.
         FileDTO mainImage = uploadFile(command.getGoodsMainImage());
         if (mainImage != null) {
             dto.setGoodsMainImage(mainImage.getOrgFile());
             dto.setGoodsMainStoreImage(mainImage.getStoreFile());
         }
-
-        // 상세 이미지 업로드
-        if (command.getGoodsDetailImage() != null && command.getGoodsDetailImage()[0] != null && !command.getGoodsDetailImage()[0].isEmpty()) {
-            StringBuilder originalTotal = new StringBuilder();
-            StringBuilder storeTotal = new StringBuilder();
-            for (MultipartFile mf : command.getGoodsDetailImage()) {
-                FileDTO detailImage = uploadFile(mf);
-                if (detailImage != null) {
-                    originalTotal.append(detailImage.getOrgFile()).append("/");
-                    storeTotal.append(detailImage.getStoreFile()).append("/");
-                }
-            }
-            dto.setGoodsDetailImage(originalTotal.toString());
-            dto.setGoodsDetailStoreImage(storeTotal.toString());
-        }
         
+        dto.setGoodsDetailStoreImage(uploadMultipleFiles(command.getGoodsDetailImage()));
+        dto.setGoodsDetailStore(uploadMultipleFiles(command.getGoodsDetail()));
+        
+        // 최종적으로 완성된 DTO를 Mapper에 전달하여 DB에 삽입합니다.
         goodsMapper.goodsInsert(dto);
     }
 
+    // [신규] 여러 파일을 업로드하고 파일명 문자열을 반환하는 헬퍼 메서드
+    private String uploadMultipleFiles(MultipartFile[] files) {
+        if (files == null || files.length == 0) {
+            return null;
+        }
+        return Arrays.stream(files)
+                     .filter(f -> f != null && !f.isEmpty())
+                     .map(this::uploadFile)
+                     .map(FileDTO::getStoreFile)
+                     .collect(Collectors.joining("/"));
+    }
+    
     /**
      * 상품 수정
      */
-    public void updateGoods(GoodsCommand command, List<String> imagesToDelete) {
+    public void updateGoods(GoodsCommand command, List<String> imagesToDelete,
+                          List<String> detailDescImagesToDelete) {
+        // 1. DB에서 기존 상품 정보를 가져옵니다.
         GoodsDTO dto = goodsMapper.selectOne(command.getGoodsNum());
+        
+        // 2. command 객체에 담긴 새로운 정보로 dto를 업데이트합니다.
         dto.setGoodsName(command.getGoodsName());
         dto.setGoodsPrice(command.getGoodsPrice());
         dto.setGoodsContents(command.getGoodsContents());
+        dto.setGoodsBrand(command.getGoodsBrand());
+        dto.setGoodsPurpose(command.getGoodsPurpose());
+        
 
-        // 현재 로그인한 직원 정보 설정
+        dto.setGoodsScreenSize(command.getGoodsScreenSize());
+        dto.setGoodsWeight(command.getGoodsWeight());
+        
+        dto.setGoodsKeyword1(command.getGoodsKeyword1());
+        dto.setGoodsKeyword2(command.getGoodsKeyword2());
+        dto.setGoodsKeyword3(command.getGoodsKeyword3());
+        dto.setGoodsShippingInfo(command.getGoodsShippingInfo());
+        dto.setGoodsSellerInfo(command.getGoodsSellerInfo());
+
+        // 3. 수정한 직원 정보를 기록합니다.
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String empNum = employeeMapper.getEmpNum(auth.getName());
         dto.setUpdateEmpNum(empNum);
-        
-        // 메인 이미지 변경 시 기존 파일 삭제 후 업로드
+
+        // 4. 메인 이미지 파일 처리 (새 파일이 있으면 기존 파일 삭제 후 업로드)
         if (command.getGoodsMainImage() != null && !command.getGoodsMainImage().isEmpty()) {
             deleteFile(dto.getGoodsMainStoreImage());
             FileDTO mainImage = uploadFile(command.getGoodsMainImage());
@@ -161,37 +162,42 @@ public class GoodsService {
             dto.setGoodsMainStoreImage(mainImage.getStoreFile());
         }
         
-        // 기존 상세 이미지 정보
-        List<String> orgImages = new ArrayList<>(Arrays.asList(dto.getGoodsDetailImage().split("/")));
-        List<String> storeImages = new ArrayList<>(Arrays.asList(dto.getGoodsDetailStoreImage().split("/")));
-        
-        // 삭제할 이미지 제거
-        if (imagesToDelete != null) {
-            for (String storeFileToDelete : imagesToDelete) {
-                int index = storeImages.indexOf(storeFileToDelete);
-                if (index != -1) {
-                    deleteFile(storeImages.get(index));
-                    storeImages.remove(index);
-                    orgImages.remove(index);
-                }
-            }
-        }
-        
-        // 새로 추가된 상세 이미지 업로드
-        if (command.getGoodsDetailImage() != null && command.getGoodsDetailImage()[0] != null && !command.getGoodsDetailImage()[0].isEmpty()) {
-            for (MultipartFile mf : command.getGoodsDetailImage()) {
-                FileDTO detailImage = uploadFile(mf);
-                if (detailImage != null) {
-                    orgImages.add(detailImage.getOrgFile());
-                    storeImages.add(detailImage.getStoreFile());
-                }
-            }
-        }
+        // 5. 상세 이미지 및 상세 설명 이미지 파일 처리 (삭제할 것 삭제하고, 새 파일 추가)
+        dto.setGoodsDetailStoreImage(updateMultipleFiles(dto.getGoodsDetailStoreImage(), imagesToDelete, command.getGoodsDetailImage()));
+        dto.setGoodsDetailStore(updateMultipleFiles(dto.getGoodsDetailStore(), detailDescImagesToDelete, command.getGoodsDetail()));
 
-        dto.setGoodsDetailImage(String.join("/", orgImages));
-        dto.setGoodsDetailStoreImage(String.join("/", storeImages));
-
+        // 6. 최종적으로 완성된 DTO를 Mapper에 전달하여 DB에 업데이트합니다.
         goodsMapper.goodsUpdate(dto);
+    }
+    
+
+    // [신규] 기존 파일 삭제 및 신규 파일 추가를 한번에 처리하는 헬퍼 메서드
+    private String updateMultipleFiles(String existingFileNames, List<String> filesToDelete, MultipartFile[] newFiles) {
+        // 1. 기존 파일 목록을 리스트로 변환
+        List<String> fileList = new ArrayList<>();
+        if (existingFileNames != null && !existingFileNames.isEmpty()) {
+            fileList.addAll(Arrays.asList(existingFileNames.split("/")));
+        }
+
+        // 2. 삭제할 파일 제거
+        if (filesToDelete != null) {
+            for (String fileToDelete : filesToDelete) {
+                if (fileList.remove(fileToDelete)) {
+                    deleteFile(fileToDelete);
+                }
+            }
+        }
+        
+        // 3. 새로 추가된 파일 업로드
+        if (newFiles != null && newFiles.length > 0) {
+            Arrays.stream(newFiles)
+                  .filter(f -> f != null && !f.isEmpty())
+                  .map(this::uploadFile)
+                  .forEach(fileDTO -> fileList.add(fileDTO.getStoreFile()));
+        }
+
+        // 4. 다시 '/'로 구분된 문자열로 합쳐서 반환
+        return fileList.stream().collect(Collectors.joining("/"));
     }
     
     /**
@@ -209,6 +215,46 @@ public class GoodsService {
                 }
                 goodsMapper.goodsDelete(goodsNum);
             }
+        }
+    }
+
+
+    // --- 파일 처리 Helper Methods (기존과 동일) ---
+    private String getUploadDirectory() {
+        URL resource = getClass().getClassLoader().getResource("static/upload");
+        if (resource == null) {
+            throw new RuntimeException("Upload directory 'static/upload' not found.");
+        }
+        return resource.getFile();
+    }
+    private void deleteFile(String storeFileName) {
+        if (storeFileName == null || storeFileName.isBlank()) return;
+        // [수정] 주입받은 fileDir 경로를 사용합니다.
+        File file = new File(fileDir, storeFileName);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+    private FileDTO uploadFile(MultipartFile multipartFile) {
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            return null;
+        }
+        String originalFile = multipartFile.getOriginalFilename();
+        String extension = originalFile.substring(originalFile.lastIndexOf("."));
+        String storeName = UUID.randomUUID().toString().replace("-", "");
+        String storeFileName = storeName + extension;
+        // [수정] 주입받은 fileDir 경로를 사용합니다.
+        File file = new File(fileDir, storeFileName);
+        try {
+            // [추가] 만약 폴더가 없다면 자동으로 생성해줍니다.
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+            multipartFile.transferTo(file);
+            return new FileDTO(originalFile, storeFileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

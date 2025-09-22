@@ -7,6 +7,7 @@ import mini.domain.MemberListPage;
 import mini.domain.StartEndPageDTO;
 import mini.mapper.MemberMapper;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // 트랜잭션 추가
@@ -19,8 +20,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final MemberMapper memberMapper;
-    private final PasswordEncoder passwordEncoder; 
+	@Autowired
+	private MemberMapper memberMapper; // MemberMapper 주입 필요
+
+	@Autowired
+	private PasswordEncoder passwordEncoder; // PasswordEncoder 주입 필요
 
     // 💥 [추가] 현재 로그인한 사용자의 ID로 상세 정보를 조회하는 메서드
     @Transactional(readOnly = true)
@@ -139,5 +143,25 @@ public class MemberService {
         
         // deleteMembers 메서드를 재사용 (하나의 아이디를 리스트로 만들어서 전달)
         deleteMembers(Collections.singletonList(memberNum));
+    }
+    
+
+ // 모든 회원의 비밀번호를 BCrypt로 마이그레이션하는 메서드
+    // 모든 회원의 비밀번호를 BCrypt로 마이그레이션하는 메서드
+    public void migratePasswords() {
+        List<MemberDTO> allMembers = memberMapper.selectAllMembers();
+        for (MemberDTO member : allMembers) {
+            // 이미 BCrypt로 암호화된 비밀번호는 건너뛰기
+            // [수정] getUserPw() -> getMemberPw()
+            if (member.getMemberPw() != null && !member.getMemberPw().startsWith("$2a$")) {
+                String encodedPassword = passwordEncoder.encode(member.getMemberPw());
+                // [수정] setUserPw() -> setMemberPw()
+                member.setMemberPw(encodedPassword);
+                memberMapper.updatePassword(member);
+
+                // [참고] MemberMapper.xml의 updatePassword 쿼리도 memberPw를 사용해야 합니다.
+                // <update id="updatePassword" ...> SET MEMBER_PW = #{memberPw} ... </update>
+            }
+        }
     }
 }

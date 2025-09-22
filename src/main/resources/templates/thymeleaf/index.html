@@ -96,7 +96,7 @@
               
                     <h2 class="cardset-tit" th:text="${goods.goodsName}">상품명</h2>
                     <p class="cardset-desc">
-                      <span th:text="${goods.goodsPrice}">가격</span><small>원</small>
+                      <span th:text="${#numbers.formatInteger(goods.goodsPrice, 3, 'COMMA')}">가격</span><small>원</small>
                     </p>
                   </div>
                 </a>

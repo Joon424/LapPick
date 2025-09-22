@@ -11,59 +11,63 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import mini.command.GoodsCommand;
-import mini.command.GoodsFilterDTO;
+import mini.command.GoodsFilterCommand;
 import mini.domain.GoodsDTO;
 import mini.domain.GoodsListPage;
 import mini.service.AutoNumService;
 import mini.service.goods.GoodsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 @RequestMapping("/goods")
 @RequiredArgsConstructor
 public class GoodsController {
 
+
     private final GoodsService goodsService;
     private final AutoNumService autoNumService;
 
     /**
-     * 상품 목록 (직원용)
+     * [수정] 상품 목록 (직원용) - 디버깅 로그 추가
      */
-    @GetMapping
+    @GetMapping("/list")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
-    public String goodsListForAdmin(@RequestParam(value = "page", defaultValue = "1") int page,
-                                    @RequestParam(value = "searchWord", required = false) String searchWord,
-                                    Model model) {
-        // 💥 [수정] GoodsFilterDTO 객체를 생성하고 searchWord를 설정합니다.
-        GoodsFilterDTO filter = new GoodsFilterDTO();
-        filter.setSearchWord(searchWord);
-
-        // 💥 [수정] 서비스 호출 시 filter 객체를 전달합니다.
-        GoodsListPage pageData = goodsService.getGoodsListPage(filter, page, 10);
+    public String goodsListForAdmin(GoodsFilterCommand filter, Model model) {
+        // [수정] 페이지당 표시 개수를 10개에서 5개로 변경합니다.
+        GoodsListPage pageData = goodsService.getGoodsListPage(filter, 5); 
         
         model.addAttribute("pageData", pageData);
         model.addAttribute("goodsList", pageData.getItems());
-        model.addAttribute("filter", filter); // 검색어를 유지하기 위해 필터 객체 전달
-        return "thymeleaf/goods/goodsList";
+        model.addAttribute("filter", filter);
+        return "thymeleaf/goods/goodsList"; // 직원용 상품 목록 페이지
     }
 
     /**
      * 상품 전체 목록 (사용자용)
      */
-    // 💥 [수정] URL 경로를 헤더의 링크와 동일한 "goodsFullList"로 변경합니다.
-    @GetMapping("/goodsFullList") 
-    public String goodsFullList(GoodsFilterDTO filter,
-                                @RequestParam(value = "page", defaultValue = "1") int page,
-                                Model model) {
-        GoodsListPage pageData = goodsService.getGoodsListPage(filter, page, 10);
+    @GetMapping("/goodsFullList")
+    public String goodsFullList(GoodsFilterCommand filter, Model model) {
+        // 4. 페이지 당 상품 개수 9개로 고정
+        GoodsListPage pageData = goodsService.getGoodsListPage(filter, 9); 
         model.addAttribute("pageData", pageData);
         model.addAttribute("goodsList", pageData.getItems());
         model.addAttribute("filter", filter);
+        
+        // 페이지네이션을 위한 시작/끝 페이지 계산
+        int paginationRange = 5; // 한 번에 보여줄 페이지 번호 개수
+        int startPage = (int) (Math.floor((pageData.getPage() - 1) / paginationRange) * paginationRange + 1);
+        int endPage = Math.min(startPage + paginationRange - 1, pageData.getTotalPages());
+
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+
         return "thymeleaf/goods/goodsFullList";
     }
+    
     /**
      * 상품 상세 정보 (사용자용)
      */
@@ -72,7 +76,8 @@ public class GoodsController {
         GoodsDTO dto = goodsService.getGoodsDetail(goodsNum);
         model.addAttribute("goodsCommand", dto);
         model.addAttribute("newLine", "\n");
-        return "thymeleaf/item/detailView";
+        // [수정] 반환하는 html 파일 이름을 'goodsInfo'로 변경합니다.
+        return "thymeleaf/goods/goodsInfo";
     }
 
     /**
@@ -81,24 +86,29 @@ public class GoodsController {
     @GetMapping("/add")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String addForm(Model model) {
-        String autoNum = autoNumService.execute("goods_", "goods_num", 7, "goods");
+        // [수정] AutoNumService를 호출할 때 접두사를 'goods_'로 명확히 지정합니다.
+    	String autoNum = autoNumService.execute("goods", "goods_num", "goods_");
+        
         GoodsCommand goodsCommand = new GoodsCommand();
         goodsCommand.setGoodsNum(autoNum);
         model.addAttribute("goodsCommand", goodsCommand);
-        return "thymeleaf/goods/goodsForm";
+        return "thymeleaf/goods/goodsWrite";
     }
+
 
     /**
      * 상품 등록 처리 (직원용)
      */
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
-    public String addGoods(@Validated GoodsCommand command, BindingResult result) {
+    public String addGoods(@Validated GoodsCommand command, BindingResult result, Model model) {
         if (result.hasErrors()) {
-            return "thymeleaf/goods/goodsForm";
+            model.addAttribute("goodsCommand", command);
+            // [수정] 등록 실패 시 돌아갈 html 파일 이름도 'goodsWrite'로 변경합니다.
+            return "thymeleaf/goods/goodsWrite";
         }
         goodsService.createGoods(command);
-        return "redirect:/goods";
+        return "redirect:/goods/list";
     }
 
     /**
@@ -110,7 +120,8 @@ public class GoodsController {
         session.removeAttribute("fileList");
         GoodsDTO dto = goodsService.getGoodsDetail(goodsNum);
         model.addAttribute("goodsCommand", dto);
-        return "thymeleaf/goods/goodsModify";
+        // [수정] 반환하는 html 파일 이름을 'goodsEdit'로 변경합니다.
+        return "thymeleaf/goods/goodsEdit";
     }
 
     /**
@@ -119,11 +130,16 @@ public class GoodsController {
     @PostMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String updateGoods(@Validated GoodsCommand command, BindingResult result,
-                              @RequestParam(value="imagesToDelete", required = false) List<String> imagesToDelete) {
+                              @RequestParam(value="imagesToDelete", required = false) List<String> imagesToDelete,
+                              // ▼▼▼▼▼ [추가] 상세 설명 이미지 중 삭제할 목록을 받는 파라미터 ▼▼▼▼▼
+                              @RequestParam(value="detailDescImagesToDelete", required = false) List<String> detailDescImagesToDelete,
+                              Model model) {
         if (result.hasErrors()) {
-            return "thymeleaf/goods/goodsModify";
+            model.addAttribute("goodsCommand", command);
+            return "thymeleaf/goods/goodsEdit";
         }
-        goodsService.updateGoods(command, imagesToDelete);
+        // [수정] 서비스 호출 시 새로운 파라미터를 함께 전달합니다.
+        goodsService.updateGoods(command, imagesToDelete, detailDescImagesToDelete);
         return "redirect:/goods/" + command.getGoodsNum();
     }
 
@@ -134,53 +150,9 @@ public class GoodsController {
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String deleteGoods(@RequestParam("nums") String[] goodsNums) {
         goodsService.deleteGoods(goodsNums);
-        return "redirect:/goods";
+        return "redirect:/goods/list"; // [수정] 직원용 목록 페이지로 리다이렉트
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

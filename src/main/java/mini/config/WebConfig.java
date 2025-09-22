@@ -17,39 +17,34 @@ import java.util.Set;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${app.upload-dir:./upload}")
-    private String uploadDir;
-
+	 @Value("${file.upload.dir}")
+	    private String uploadDir;
 
     @Bean("jsonView")
     public MappingJackson2JsonView jsonView() {
         return new MappingJackson2JsonView();
     }
 
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 1) 과거 템플릿 호환: /resources/** → 실제 정적 위치들에서 탐색
+        // 1. 기존 정적 리소스 설정
         registry.addResourceHandler("/resources/**")
-                .addResourceLocations(
-                        "classpath:/static/",            // 현재 사용하는 기본 정적 폴더
-                        "classpath:/resources/",         // 과거 구조 대비
-                        "classpath:/public/",
-                        "classpath:/META-INF/resources/" // 웹JAR 등 호환
-                )
-                .setCachePeriod(0); // 개발 중 캐시 비활성화
+                .addResourceLocations("classpath:/static/", "classpath:/resources/")
+                .setCachePeriod(0);
 
-        // 2) /static/** 그대로 노출(명시적으로 유지)
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(0);
 
-        // 3) /upload/** → 파일시스템 매핑 (절대경로 변환 + 슬래시 보정)
-        Path path = Paths.get(uploadDir).toAbsolutePath().normalize();
-        String fileLocation = path.toUri().toString(); // 예) file:///C:/dev/LapPick/upload/
-        if (!fileLocation.endsWith("/")) fileLocation = fileLocation + "/";
-
+        // 2. [수정] 업로드 폴더 매핑 방식을 더 명확하게 변경하고, 확인용 로그를 추가합니다.
+        String resourcePath = "file:///" + uploadDir.replace("\\", "/");
+        
+        // 서버 시작 시 콘솔에 이 메시지가 찍히는지 확인해주세요.
+        System.out.println(">>> 파일 리소스 경로 확인: " + resourcePath); 
+        
         registry.addResourceHandler("/upload/**")
-                .addResourceLocations(fileLocation) // "file:" 접두사 포함된 URI 문자열
+                .addResourceLocations(resourcePath)
                 .setCachePeriod(0);
     }
     

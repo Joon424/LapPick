@@ -86,13 +86,6 @@
       <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>
 
-    <!-- Devtools: 개발 편의, 트랜잭티브 전파 방지 옵션 -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-      <optional>true</optional>
-    </dependency>
-
     <!-- JSP/JSTL (필요 시) -->
     <dependency>
       <groupId>jakarta.servlet.jsp.jstl</groupId>

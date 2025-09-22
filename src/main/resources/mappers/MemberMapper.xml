@@ -184,6 +184,17 @@
     where member_id = #{memberId}
 </update>
 
+    <select id="selectAllMembers" resultType="mini.domain.MemberDTO">
+        SELECT MEMBER_ID AS "memberId", MEMBER_PW AS "memberPw" 
+        FROM MEMBER
+    </select>
+    
+    <update id="updatePassword" parameterType="mini.domain.MemberDTO">
+        UPDATE MEMBER
+        SET MEMBER_PW = #{memberPw}
+        WHERE MEMBER_ID = #{memberId}
+    </update>
+
 </mapper>
 
 

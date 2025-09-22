@@ -1,149 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC 	
-	"-//mybatis.org//DTD Mapper 3.0//EN" 
-	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mini.mapper.GoodsMapper">
-<sql id="goodsColumnsBase">
-	   goods_Num , goods_name , goods_price ,goods_contents , emp_num  
-	  ,goods_regist , GOODS_MAIN_IMAGE ,GOODS_MAIN_STORE_IMAGE 
-	  , GOODS_DETAIL_IMAGE ,GOODS_DETAIL_STORE_IMAGE 
-	  , visit_count ,update_Emp_Num , goods_Update_Date
-</sql>
-<insert id="goodsInsert" parameterType="goods">
-insert into goods ( <include refid="goodsColumnsBase" /> )
-values(#{goodsNum}, #{goodsName}, #{goodsPrice}, #{goodsContents}
-		,#{empNum}, sysdate, 
-		#{goodsMainImage}, #{goodsMainStoreImage},
-		<if test="goodsDetailImage != null">
-		#{goodsDetailImage},#{goodsDetailStoreImage},
-		</if>
-		<if test="goodsDetailImage == null">
-		null,null,
-		</if>
-		0,null,null)
-</insert>
 
-<!-- dto에 직접 넣어 가지고 오는 것이 아니라 setter를 이용해서 가져오겠습니다. -->
-<resultMap type="goods" id="goodsResultMap">
-    <id property="goodsNum" column="goods_Num" />
-    <result property="goodsName" column="goods_Name" />
-    <result property="goodsPrice" column="GOODS_PRICE" />
-    <result property="goodsContents" column="goods_Contents" />
-    <result property="empNum" column="emp_Num" />
-    <result property="visitCount" column="visit_Count" />
-    <result property="goodsRegist" column="goods_Regist" />
-    <result property="updateEmpNum" column="update_Emp_Num" />
-    <result property="goodsUpdateDate" column="goods_Update_Date" />
-    <result property="goodsMainImage" column="GOODS_MAIN_IMAGE" />
-    <result property="goodsMainStoreImage" column="GOODS_MAIN_STORE_IMAGE" />
-    <result property="goodsDetailImage" column="GOODS_DETAIL_IMAGE" />
-    <result property="goodsDetailStoreImage" column="GOODS_DETAIL_STORE_IMAGE" />
-    <result property="goodsBrand" column="GOODS_BRAND" />
-    <result property="goodsPurpose" column="GOODS_PURPOSE" />
-    <result property="goodsScreenSize" column="GOODS_SCREEN_SIZE" />
-    <result property="goodsWeight" column="GOODS_WEIGHT" />
-</resultMap>
+    <resultMap id="goodsResultMap" type="mini.domain.GoodsDTO">
+        <id property="goodsNum" column="GOODS_NUM" />
+        <result property="goodsName" column="GOODS_NAME" />
+        <result property="goodsPrice" column="GOODS_PRICE" />
+        <result property="goodsContents" column="GOODS_CONTENTS" />
+        <result property="goodsBrand" column="GOODS_BRAND" />
+        <result property="goodsPurpose" column="GOODS_PURPOSE" />
+        <result property="goodsScreenSize" column="GOODS_SCREEN_SIZE" />
+        <result property="goodsWeight" column="GOODS_WEIGHT" />
+        <result property="goodsKeyword1" column="GOODS_KEYWORD1" />
+        <result property="goodsKeyword2" column="GOODS_KEYWORD2" />
+        <result property="goodsKeyword3" column="GOODS_KEYWORD3" />
+        <result property="goodsShippingInfo" column="GOODS_SHIPPING_INFO" />
+        <result property="goodsSellerInfo" column="GOODS_SELLER_INFO" />
+        <result property="empNum" column="EMP_NUM" />
+        <result property="goodsDate" column="GOODS_DATE" />
+        <result property="goodsMainImage" column="GOODS_MAIN_IMAGE" />
+        <result property="goodsMainStoreImage" column="GOODS_MAIN_STORE_IMAGE" />
+        <result property="goodsDetailImage" column="GOODS_DETAIL_IMAGE" />
+        <result property="goodsDetailStoreImage" column="GOODS_DETAIL_STORE_IMAGE" />
+        <result property="goodsDetail" column="GOODS_DETAIL" />
+        <result property="goodsDetailStore" column="GOODS_DETAIL_STORE" />
+        <result property="updateEmpNum" column="UPDATE_EMP_NUM" />
+        <result property="updateDate" column="UPDATE_DATE" />
+    </resultMap>
+    
+    <resultMap id="goodsStockResultMap" type="mini.domain.GoodsStockDTO" extends="goodsResultMap">
+        <result property="stockQty" column="STOCK_QTY" />
+    </resultMap>
 
-<select id="allSelect" resultMap="goodsResultMap">
-select * from (
-	select ROW_NUMBER() over (order by goods_num desc) as rn,
-			<include refid="goodsColumnsBase" />
-	from goods
-	<where>
-		<if test="searchWord != null">
-			goods_name like '%' || #{searchWord} || '%'
-			or goods_num like '%' || #{searchWord} || '%'
-		</if>
-	</where>
-)
-where rn between #{startRow}  and #{endRow}
-</select>
-<select id="goodsCount" resultType="integer">
-    select count(*) from goods
-</select>
-<delete id="productsDelete" parameterType="string">
-delete from goods <!-- foreach문을 사용해서 in연산자를 사용합니다. -->
-where goods_num in <foreach collection="products" item="goodsNum" open="(" close=")" index="index"
-					separator=",">
-						#{goodsNum}
-					</foreach>
-</delete>
+    <sql id="goodsColumns">
+        GOODS_NUM, GOODS_NAME, GOODS_PRICE, GOODS_CONTENTS, GOODS_BRAND, GOODS_PURPOSE,
+        GOODS_SCREEN_SIZE, GOODS_WEIGHT, GOODS_KEYWORD1, GOODS_KEYWORD2, GOODS_KEYWORD3,
+        GOODS_SHIPPING_INFO, GOODS_SELLER_INFO, EMP_NUM, GOODS_DATE,
+        GOODS_MAIN_IMAGE, GOODS_MAIN_STORE_IMAGE,
+        GOODS_DETAIL_IMAGE, GOODS_DETAIL_STORE_IMAGE,
+        GOODS_DETAIL, GOODS_DETAIL_STORE,
+        UPDATE_EMP_NUM, UPDATE_DATE
+    </sql>
 
-<select id="selectOne" parameterType="string" resultMap="goodsResultMap">
-select <include refid="goodsColumnsBase" />
-from goods  
-where goods_Num = #{goodsNum}
-</select>
-<update id="goodsUpdate" parameterType="goods"> 
-update goods
-<trim prefix="set" suffixOverrides=",">
-	 GOODS_NAME = #{goodsName}, GOODS_PRICE = #{goodsPrice}
-	,GOODS_CONTENTs = #{goodsContents}
-    ,update_emp_num = #{updateEmpNum}, goods_update_date = sysdate
-    <if test="goodsMainImage != null">
-    ,GOODS_MAIN_IMAGE = #{goodsMainImage}
-    ,GOODS_MAIN_STORE_IMAGE = #{goodsMainStoreImage}
-    </if>
-    <if test="goodsDetailImage != null ">
-    ,GOODS_DETAIL_IMAGE = #{goodsDetailImage}
-    ,GOODS_DETAIL_STORE_IMAGE = #{goodsDetailStoreImage}
-    </if>
-</trim>
-where goods_num = #{goodsNum}
-</update>
-<delete id="goodsDelete" parameterType="string">
-delete from goods
-where goods_num = #{goodsNum}
-</delete>
+    <sql id="filterConditions">
+        <where>
+            <if test="searchWord != null and searchWord != ''">(UPPER(GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(GOODS_CONTENTS) LIKE '%' || UPPER(#{searchWord}) || '%')</if>
+            <if test="goodsBrand != null and !goodsBrand.isEmpty()">AND UPPER(GOODS_BRAND) IN <foreach item="brand" collection="goodsBrand" open="(" separator="," close=")">UPPER(#{brand})</foreach></if>
+            <if test="priceRange != null and priceRange != ''">
+                <choose>
+                    <when test='priceRange == "0-50"'>AND GOODS_PRICE &lt; 500000</when>
+                    <when test='priceRange == "50-100"'>AND GOODS_PRICE BETWEEN 500000 AND 1000000</when>
+                    <when test='priceRange == "100-"'>AND GOODS_PRICE &gt;= 1000000</when>
+                </choose>
+            </if>
+            <if test="goodsPurpose != null and !goodsPurpose.isEmpty()">AND UPPER(GOODS_PURPOSE) IN <foreach item="purpose" collection="goodsPurpose" open="(" separator="," close=")">UPPER(#{purpose})</foreach></if>
+            <if test="minScreenSize != null">AND GOODS_SCREEN_SIZE >= #{minScreenSize}</if>
+            <if test="maxScreenSize != null">AND GOODS_SCREEN_SIZE &lt;= #{maxScreenSize}</if>
+            <if test="minWeight != null">AND GOODS_WEIGHT >= #{minWeight}</if>
+            <if test="maxWeight != null">AND GOODS_WEIGHT &lt;= #{maxWeight}</if>
+        </where>
+    </sql>
 
-<select id="goodsSelectList" resultMap="goodsResultMap">
-select * from (
-	select ROW_NUMBER() over (order by goods_num desc) as rn
-		, goods_Num , goods_name , goods_price ,goods_contents , emp_num,goods_regist , GOODS_MAIN_IMAGE 
-		,GOODS_MAIN_STORE_IMAGE , GOODS_DETAIL_IMAGE ,GOODS_DETAIL_STORE_IMAGE , visit_count 
-		,update_Emp_Num , goods_Update_Date
-	from goods
-)
-where rn between #{startRow} and #{endRow}
-</select>
+    <select id="allSelect" parameterType="mini.command.GoodsFilterCommand" resultMap="goodsResultMap">
+        SELECT * FROM ( SELECT ROWNUM AS RN, <include refid="goodsColumns" /> FROM ( SELECT <include refid="goodsColumns" /> FROM GOODS <include refid="filterConditions"/> ORDER BY GOODS_NUM DESC ) ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+    </select>
+    
+    <select id="goodsCount" parameterType="mini.command.GoodsFilterCommand" resultType="int">
+        SELECT COUNT(*) FROM GOODS <include refid="filterConditions"/>
+    </select>
+    
+    <select id="selectOne" parameterType="string" resultMap="goodsResultMap">
+        SELECT <include refid="goodsColumns" /> FROM GOODS WHERE GOODS_NUM = #{goodsNum}
+    </select>
+    
+    <select id="selectOneWithStock" parameterType="string" resultMap="goodsStockResultMap">
+        SELECT 
+            G.*, COALESCE(S.STOCK, 0) AS STOCK_QTY
+        FROM GOODS G
+        LEFT OUTER JOIN (
+            SELECT 
+                IP.GOODS_NUM, 
+                COALESCE(IQTY, 0) - COALESCE(PQTY, 0) AS STOCK
+            FROM (SELECT GOODS_NUM, SUM(IPGO_QTY) AS IQTY FROM GOODS_IPGO GROUP BY GOODS_NUM) IP
+            LEFT OUTER JOIN (SELECT GOODS_NUM, SUM(PURCHASE_QTY) AS PQTY FROM PURCHASE_LIST GROUP BY GOODS_NUM) PL
+            ON IP.GOODS_NUM = PL.GOODS_NUM
+        ) S
+        ON G.GOODS_NUM = S.GOODS_NUM
+        WHERE G.GOODS_NUM = #{goodsNum}
+    </select>
+    
+    <update id="visitCountUpdate" parameterType="string">
+        UPDATE GOODS
+        SET VISIT_COUNT = NVL(VISIT_COUNT, 0) + 1
+        WHERE GOODS_NUM = #{goodsNum}
+    </update>
+    
+    <insert id="goodsInsert" parameterType="mini.domain.GoodsDTO">
+        INSERT INTO GOODS (<include refid="goodsColumns" />) VALUES (#{goodsNum}, #{goodsName}, #{goodsPrice}, #{goodsContents}, #{goodsBrand}, #{goodsPurpose}, #{goodsScreenSize}, #{goodsWeight}, #{goodsKeyword1}, #{goodsKeyword2}, #{goodsKeyword3}, #{goodsShippingInfo}, #{goodsSellerInfo}, #{empNum}, SYSDATE, #{goodsMainImage, jdbcType=VARCHAR}, #{goodsMainStoreImage, jdbcType=VARCHAR}, #{goodsDetailImage, jdbcType=VARCHAR}, #{goodsDetailStoreImage, jdbcType=VARCHAR}, #{goodsDetail, jdbcType=VARCHAR}, #{goodsDetailStore, jdbcType=VARCHAR}, #{updateEmpNum, jdbcType=VARCHAR}, #{updateDate, jdbcType=TIMESTAMP})
+    </insert>
+    
+    <update id="goodsUpdate" parameterType="mini.domain.GoodsDTO">
+        UPDATE GOODS SET GOODS_NAME = #{goodsName}, GOODS_PRICE = #{goodsPrice}, GOODS_CONTENTS = #{goodsContents}, GOODS_BRAND = #{goodsBrand}, GOODS_PURPOSE = #{goodsPurpose}, GOODS_SCREEN_SIZE = #{goodsScreenSize}, GOODS_WEIGHT = #{goodsWeight}, GOODS_KEYWORD1 = #{goodsKeyword1}, GOODS_KEYWORD2 = #{goodsKeyword2}, GOODS_KEYWORD3 = #{goodsKeyword3}, GOODS_SHIPPING_INFO = #{goodsShippingInfo}, GOODS_SELLER_INFO = #{goodsSellerInfo}, GOODS_MAIN_IMAGE = #{goodsMainImage, jdbcType=VARCHAR}, GOODS_MAIN_STORE_IMAGE = #{goodsMainStoreImage, jdbcType=VARCHAR}, GOODS_DETAIL_IMAGE = #{goodsDetailImage, jdbcType=VARCHAR}, GOODS_DETAIL_STORE_IMAGE = #{goodsDetailStoreImage, jdbcType=VARCHAR}, GOODS_DETAIL = #{goodsDetail, jdbcType=VARCHAR}, GOODS_DETAIL_STORE = #{goodsDetailStore, jdbcType=VARCHAR}, UPDATE_EMP_NUM = #{updateEmpNum, jdbcType=VARCHAR}, UPDATE_DATE = SYSDATE WHERE GOODS_NUM = #{goodsNum}
+    </update>
+    
+    <delete id="goodsDelete" parameterType="list">
+        DELETE FROM GOODS 
+        WHERE GOODS_NUM IN
+        <foreach collection="list" item="goodsNum" open="(" separator="," close=")">
+            #{goodsNum}
+        </foreach>
+    </delete>
+
+    <select id="selectGoodsForDelete" parameterType="list" resultMap="goodsResultMap">
+        SELECT GOODS_MAIN_STORE_IMAGE, GOODS_DETAIL_STORE_IMAGE, GOODS_DETAIL_STORE
+        FROM GOODS
+        WHERE GOODS_NUM IN
+        <foreach collection="list" item="goodsNum" open="(" separator="," close=")">
+            #{goodsNum}
+        </foreach>
+    </select>
+    
+    <select id="wishCountSelectOne" parameterType="map" resultType="int">
+        SELECT count(*)
+        FROM WISH
+        WHERE GOODS_NUM = #{goodsNum} AND MEMBER_NUM = #{memberNum}
+    </select>
+    
+    <insert id="wishInsert" parameterType="map">
+        INSERT INTO WISH (GOODS_NUM, MEMBER_NUM)
+        VALUES(#{goodsNum}, #{memberNum})
+    </insert>
+    
+    <delete id="wishDelete" parameterType="map">
+        DELETE FROM WISH
+        WHERE GOODS_NUM = #{goodsNum} AND MEMBER_NUM = #{memberNum}
+    </delete>
+    
+    <select id="wishSelectList" parameterType="string" resultMap="goodsResultMap">
+        SELECT <include refid="goodsColumns"/>
+        FROM GOODS
+        WHERE GOODS_NUM IN (SELECT GOODS_NUM FROM WISH WHERE MEMBER_NUM = #{memberNum})
+        ORDER BY GOODS_NUM DESC
+    </select>
+    
 </mapper>
-<!-- nvl <====> ifnull ====> COALESCE(column, 0) -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,50 +1,53 @@
+// mini/service/item/GoodsDetailViewService.java
+
 package mini.service.item;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import mini.domain.AuthInfoDTO;
+// ... 필요한 import 추가 ...
 import mini.domain.GoodsStockDTO;
-import mini.mapper.GoodsStockMapper;
-import mini.mapper.ItemMapper;
-import mini.mapper.MemberMapper;
+import mini.mapper.GoodsMapper;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class GoodsDetailViewService {
-	@Autowired
-	GoodsStockMapper goodsStockMapper;
-	@Autowired
-	MemberMapper memberMapper;
-	@Autowired
-	ItemMapper itemMapper;
-	public void execute(String goodsNum, Model model, HttpServletResponse response
-			, HttpSession session) {
-		GoodsStockDTO dto = goodsStockMapper.goodsStockSelectOne(goodsNum);
-		goodsStockMapper.goodsVisitCountUpdate(goodsNum);
-		model.addAttribute("goods", dto);
-		model.addAttribute("dto", dto);
-		AuthInfoDTO auth = (AuthInfoDTO)session.getAttribute("auth");
-		if(auth != null) {
-			String memberNum =  memberMapper.memberNumSelect(auth.getUserId());
-			Map<String, String> map = new HashMap<String, String>();
-			map.put("goodsNum", goodsNum);
-			map.put("memberNum", memberNum);
-			Integer i = itemMapper.wishCountSelectOne(map);
-			model.addAttribute("wish", i);
-		}
-		ObjectMapper mapper = new ObjectMapper();
-		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/json");
-		try {
-			//response.getWriter().print(mapper.writeValueAsString(dto));
-		}catch(Exception e) {}
-	}
+
+    private final GoodsMapper goodsMapper;
+
+    // [수정] Model을 직접 다루는 대신, 조회한 GoodsStockDTO를 반환하도록 변경
+    public GoodsStockDTO execute(String goodsNum, HttpServletRequest request, HttpServletResponse response) {
+        // 조회수 증가 로직 (쿠키 기반)
+        Cookie goodsCookie = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if (c.getName().equals("viewGoods")) {
+                    goodsCookie = c;
+                }
+            }
+        }
+
+        boolean shouldIncreaseViewCount = false;
+        if (goodsCookie != null) {
+            if (!goodsCookie.getValue().contains("[" + goodsNum + "]")) {
+                goodsCookie.setValue(goodsCookie.getValue() + "_[" + goodsNum + "]");
+                shouldIncreaseViewCount = true;
+            }
+        } else {
+            goodsCookie = new Cookie("viewGoods", "[" + goodsNum + "]");
+            shouldIncreaseViewCount = true;
+        }
+
+        if (shouldIncreaseViewCount) {
+            goodsCookie.setPath("/");
+            goodsCookie.setMaxAge(60 * 60 * 24 * 30); // 30일
+            response.addCookie(goodsCookie);
+        }
+
+        // DB에서 모든 상품 정보와 재고를 조회하여 반환
+        return goodsMapper.selectOneWithStock(goodsNum); 
+    }
 }

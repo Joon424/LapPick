@@ -1,34 +1,38 @@
 package mini.domain;
 
 import java.util.Date;
-
-import org.apache.ibatis.type.Alias;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.apache.ibatis.type.Alias;
 
 @Data
 @Alias("goods")
-@NoArgsConstructor
 public class GoodsDTO {
-	String goodsNum;
-	String goodsName;
-	Integer goodsPrice;
-	String goodsContents;
-	String empNum;
-	Integer visitCount;
-	Date goodsRegist;
-	String updateEmpNum;
-	Date goodsUpdateDate;
-	// 디비에 파일명을 저장하기 위해 주가합니다.
-	String goodsMainImage;
-	String goodsMainStoreImage;
-	String goodsDetailImage;
-	String goodsDetailStoreImage;
-	
-	String goodsBrand;
-	String goodsPurpose;
-	Double goodsScreenSize;
-	Double goodsWeight;
+    String goodsNum;
+    String goodsName;
+    Integer goodsPrice;
+    String goodsContents;
+    String empNum;
+    Date goodsDate;
+    
+    String goodsMainImage;
+    String goodsMainStoreImage;
+    String goodsDetailImage;
+    String goodsDetailStoreImage;
+    
+    String goodsBrand;
+    String goodsPurpose;
+    Double goodsScreenSize;
+    
+    // ▼▼▼▼▼ [수정] String -> Double로 타입 변경 ▼▼▼▼▼
+    Double goodsWeight;
+    
+    String goodsDetail;
+    String goodsDetailStore;
+    String goodsKeyword1;
+    String goodsKeyword2;
+    String goodsKeyword3;
+    String goodsShippingInfo;
+    String goodsSellerInfo;
+    String updateEmpNum;
+    Date updateDate;
 }

@@ -21,6 +21,36 @@
   <link rel="stylesheet"  href="/resources/css/template.css">
   <link rel="stylesheet"  href="/resources/css/common.css">
   <link rel="stylesheet"  href="/resources/css/style.css">
+  <style>
+    table { table-layout: fixed; width: 100%; border-collapse: collapse; }
+    th, td { 
+        vertical-align: middle; padding: 10px 8px; 
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        border-left: none;
+        border-right: none;
+    }
+    thead tr { background: #f9fafb; }
+    /* [삭제] 아래 tbody tr:hover 스타일이 회색 효과의 원인이므로 삭제했습니다. */
+    /* tbody tr:hover { background: #f5f5f5; } */
+    .manage-btn {
+        display: inline-block; padding: 5px 10px; font-size: 12px;
+        text-align: center; text-decoration: none; color: #333;
+        background-color: #fff; border: 1px solid #ccc; border-radius: 4px;
+        cursor: pointer; margin: 0 2px; white-space: nowrap;
+    }
+    .manage-btn:hover { background-color: #f0f0f0; border-color: #bbb; }
+    .pagination-container .page-btn {
+        display: inline-block; min-width: 32px; padding: 6px 10px;
+        font-size: 13px; font-weight: 500; text-align: center; text-decoration: none;
+        color: #333; background-color: #fff; border: 1px solid #ddd;
+        border-radius: 4px; cursor: pointer; transition: background-color 0.2s;
+    }
+    .pagination-container .page-btn:hover { background-color: #f5f5f5; }
+    .pagination-container .page-btn.active {
+        background-color: #333; color: #fff; border-color: #333; font-weight: bold;
+    }
+</style>
 </head>
 
 <body>
@@ -102,73 +132,77 @@
     <div class="header-dim"></div>
   </div>
 <!-- [E]basic-N3 -->
-  <main class="th-layout-main ">
-  <!-- [S]basic-N23 -->
-    <div class="basic-N23" data-bid="cE2cZu89X4e">
-      <div class="contents-inner">
-        <div class="contents-container container-md">
-          <div class="textset">
-            <img class="imageset-img"  src="/resources/images/img_basic_N23_1.png" alt="이미지" th-hoverbox="true">
-            <h2 class="textset-tit">상품 관리</h2>
-            <p class="textset-desc">상품의 추가, 수정, 삭제를 관리하며, 상품 정보와 재고 상태를 업데이트하는 페이지입니다.</p>
-          </div>
-          <ul class="contents-list">
-            <li class="contents-item">
-              <a href="goodsForm" class="btnset btnset-line btnset-round">상품 추가</a>
-              <a href="goodsIpgoList" class="btnset btnset-line btnset-round">상품 입고 현황</a>
-              <a href="goodsItem" class="btnset btnset-line btnset-round">상품 아이템</a>
-            </li>
-          </ul><br />
-          <form action="productsDelete" method="post" id="frm">
-            <table border="1" width="100%">
-              <thead>
-                <tr>
-                  <th>번호</th>
-                  <th>상품번호</th>
-                  <th>상품명</th>
-                  <th>상품가격</th>
-                  <th>등록일</th>
-                  <th>삭제</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr th:each="dto, idx : ${list}">
-                  <td>[[${idx.index + 1}]]</td>
-                  <td>
-                    <a th:href="@{/goods/goodsDetail(goodsNum=${dto.goodsNum})}">
-                      [[${dto.goodsNum}]]
-                    </a>
-                  </td>
-                  <td>
-                    <a th:href="@{/goods/goodsDetail(goodsNum=${dto.goodsNum})}">
-                      [[${dto.goodsName}]]
-                    </a>
-                  </td>
-                  <td>[[${dto.goodsPrice}]]</td>
-                  <td>[[${#dates.format(dto.goodsRegist, 'yyyy-MM-dd')}]]</td>
-                  <td>
-                    <input type="checkbox" name="nums" th:value="${dto.goodsNum}" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </form>
-          <div>
-            <span th:if="${page > 1}">
-              <a th:href="@{/goods/goodsList(page=${page - 1}, searchWord=${searchWord})}">이전</a>
-            </span>
-            <span th:each="i : ${#numbers.sequence(startPageNum, endPageNum)}">
-              <a th:href="@{/goods/goodsList(page=${i}, searchWord=${searchWord})}">[[${i}]]</a>
-            </span>
-            <span th:if="${page < maxPage}">
-              <a th:href="@{/goods/goodsList(page=${page + 1}, searchWord=${searchWord})}">다음</a>
-            </span>
-          </div>
+ <main class="th-layout-main">
+        <div class="basic-N23" data-bid="cE2cZu89X4e">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+
+                    <div class="textset" style="margin-bottom:14px;">
+                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+                        <h2 class="textset-tit">상품 관리</h2>
+                        <p class="textset-desc">상품의 추가, 수정, 삭제를 관리하며, 상품 정보와 재고 상태를 업데이트하는 페이지입니다.</p>
+                    </div>
+
+                    <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 16px;">
+                        <form th:action="@{/goods/list}" method="get" style="display:flex; gap:8px; align-items:center;">
+                            <input type="text" name="searchWord" th:value="${filter?.searchWord}" placeholder="상품명 또는 상품번호 검색" style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px; min-width:240px;">
+                            <button type="submit" class="btnset btnset-line btnset-round">검색</button>
+                            <a class="btnset btnset-line btnset-round" th:href="@{/goods/list}">전체보기</a>
+                        </form>
+                        <div style="display:flex; gap:8px;">
+                            <a class="btnset btnset-line btnset-round" th:href="@{/goods/add}">상품등록</a>
+                            <button type="button" class="btnset btnset-line btnset-round" onclick="submitBulkDelete()">선택삭제</button>
+                        </div>
+                    </div>
+
+                    <form id="bulkDeleteForm" th:action="@{/goods/delete}" method="post">
+                       <table>
+    <thead>
+        <tr>
+            <th style="width: 48px;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
+            <th style="width: 70px;">번호</th>
+            <th style="width: 220px;">상품번호</th>
+            <th>상품명</th>
+            <th style="width: 120px; text-align: center;">가격</th>
+            <th style="width: 140px; text-align: center;">등록일</th>
+            <th style="width: 200px; text-align: center;">관리</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:if="${#lists.isEmpty(goodsList)}">
+            <td colspan="7" style="text-align:center; padding:20px; color:#666;">표시할 상품이 없습니다.</td>
+        </tr>
+        <tr th:each="goods, stat : ${goodsList}">
+            <td style="text-align:center;"><input type="checkbox" name="nums" th:value="${goods.goodsNum}"></td>
+            <td style="text-align:center;" th:text="${(pageData.page - 1) * pageData.size + stat.count}"></td>
+            <td th:text="${goods.goodsNum}"></td>
+            <td th:text="${goods.goodsName}"></td>
+            <td style="text-align: center;" th:text="${#numbers.formatInteger(goods.goodsPrice, 0, 'COMMA')} + '원'"></td>
+            <td style="text-align:center;" th:text="${#dates.format(goods.goodsDate, 'yyyy-MM-dd')}"></td>
+            <td>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
+                    <a class="manage-btn" th:href="@{/goods/{num}(num=${goods.goodsNum})}">상세</a>
+                    <a class="manage-btn" th:href="@{/goods/{num}/edit(num=${goods.goodsNum})}">수정</a>
+                    <button type="button" class="manage-btn" th:data-goods-num="${goods.goodsNum}" onclick="deleteSingleItem(this)">삭제</button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+                    </form>
+
+                    <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:20px;"
+                         th:if="${pageData != null and pageData.total > 0 and pageData.startPage != null and pageData.endPage != null}">
+                        <a class="page-btn" th:href="@{/goods/list(page=${pageData.startPage - 1}, searchWord=${filter?.searchWord})}" th:if="${pageData.hasPrev}">이전</a>
+                        <a class="page-btn" th:each="i : ${#numbers.sequence(pageData.startPage, pageData.endPage)}" th:text="${i}"
+                           th:classappend="${pageData.page == i} ? 'active' : ''"
+                           th:href="@{/goods/list(page=${i}, searchWord=${filter?.searchWord})}"></a>
+                        <a class="page-btn" th:href="@{/goods/list(page=${pageData.endPage + 1}, searchWord=${filter?.searchWord})}" th:if="${pageData.hasNext}">다음</a>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-    <!-- [E]basic-N23 -->
-  </main>
+    </main>
   <!-- [S]basic-N4 -->
   <div class="basic-N4" data-bid="DB4JlD9e4fN">
     <div class="footer-inner">
@@ -239,6 +273,36 @@
       </div>
     </div>
   </div>
+  
+       <script>
+        function toggleAll(master) {
+            document.querySelectorAll('input[name="nums"]').forEach(cb => cb.checked = master.checked);
+        }
+        function submitBulkDelete() {
+            const checked = document.querySelectorAll('input[name="nums"]:checked');
+            if (checked.length === 0) {
+                alert('삭제할 상품을 선택하세요.'); return;
+            }
+            if (confirm('선택한 ' + checked.length + '개의 상품을 삭제하시겠습니까?')) {
+                document.getElementById('bulkDeleteForm').submit();
+            }
+        }
+        function deleteSingleItem(button) {
+            const goodsNum = button.getAttribute('data-goods-num'); 
+            if (confirm('상품번호 [' + goodsNum + '] 상품을 정말 삭제하시겠습니까?')) {
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/goods/delete';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'nums';
+                input.value = goodsNum;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
   <!-- [E]basic-N4 -->
   <script  src="/resources/js/setting.js"></script>
   <script  src="/resources/js/plugin.js"></script>
@@ -246,3 +310,5 @@
   <script  src="/resources/js/common.js"></script>
   <script  src="/resources/js/script.js"></script>
 </body>
+</html>
+

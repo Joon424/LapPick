@@ -22,12 +22,11 @@
   <link rel="stylesheet"  href="/resources/css/common.css">
   <link rel="stylesheet"  href="/resources/css/style.css">
     <style>
-    .product-image {
-      width: 600px;
-      height: auto;
-      object-fit: cover;
-    }
-  </style>
+        table { table-layout: fixed; border-collapse: collapse; width: 800px; }
+        th, td { border:1px solid #e5e7eb; padding:12px 15px; vertical-align: top; }
+        th { width:160px; background:#fafafa; text-align:left; font-weight: 600; }
+        .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; }
+    </style>
 </head>
 
 <body>
@@ -109,57 +108,81 @@
     <div class="header-dim"></div>
   </div>
   <!-- [E]basic-N3 -->
-  <main class="th-layout-main ">
-   <!-- [S]basic-N23 -->
-    <div class="basic-N23" data-bid="cE2cZu89X4e" id="">
-      <div class="contents-inner">
-        <div class="contents-container container-md">
-          <div class="textset">
-            <img class="imageset-img"  src="/resources/images/img_basic_N23_1.png" alt="이미지" th-hoverbox="true">
-            <h2 class="textset-tit">상품 상세</h2>
-            <p class="textset-desc">상품에 대한 상세 정보입니다. 필요한 정보를 확인하고 상품 관리 작업을 수행할 수 있습니다.</p>
-          </div>
-          <!-- 상품 상세보기 테이블 추가 -->
-          <table border="1" align="center" width="600">
-            <caption>상품 상세보기</caption>
-            <tr><th>상품번호</th><td>[[${goodsCommand.goodsNum}]]</td></tr>
-            <tr><th>상품명</th><td>[[${goodsCommand.goodsName}]]</td></tr>
-            <tr><th>상품가격</th><td>[[${goodsCommand.goodsPrice}]]</td></tr>
-            <tr><th>상품설명</th><td><span th:utext="${#strings.replace(goodsCommand.goodsContents, '\n', '<br />')}"></span></td></tr>
-            <tr><th>조회수</th><td>[[${goodsCommand.visitCount}]]</td></tr>
-            <tr><th>등록한 사원</th><td>[[${goodsCommand.empNum}]]</td></tr>
-            <tr><th>등록일</th><td>[[${#dates.format(goodsCommand.goodsRegist, 'yyyy-MM-dd')}]]</td></tr>
-            <tr><th>마지막 수정 사원</th><td>[[${goodsCommand.updateEmpNum}]]</td></tr>
-            <tr><th>마지막 수정일</th><td>[[${#dates.format(goodsCommand.goodsUpdateDate, 'yyyy-MM-dd')}]]</td></tr>
-<tr>
-    <td colspan="2">
-        대문 이미지<br />
-        <img class="product-image" th:src="@{'/upload/' + ${goodsCommand.goodsMainStoreImage}}" />
-    </td>
-</tr>
-<tr>
-    <td colspan="2">
-        상세 이미지<br />
-        <th:block th:each="image : ${#strings.arraySplit(goodsCommand.goodsDetailStoreImage, ',')}">
-            <img class="product-image" th:src="@{'/upload/' + ${image}}" /><br />
-        </th:block>
+   <main class="th-layout-main">
+        <div class="basic-N23" data-bid="wWM47SwZLN">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="textset">
+                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+                        <h2 class="textset-tit">상품 상세 정보</h2>
+                        <p class="textset-desc">상품의 상세 정보를 보여주는 페이지입니다.</p>
+                    </div>
+
+                    <table border="1">
+                        <tbody>
+                            <tr><th>상품번호</th><td th:text="${goodsCommand.goodsNum}"></td></tr>
+                            <tr><th>상품명</th><td th:text="${goodsCommand.goodsName}"></td></tr>
+                            <tr><th>가격</th><td th:text="${#numbers.formatInteger(goodsCommand.goodsPrice, 0, 'COMMA')} + '원'"></td></tr>
+                            <tr><th>브랜드</th><td th:text="${goodsCommand.goodsBrand}"></td></tr>
+                            <tr><th>용도</th><td th:text="${goodsCommand.goodsPurpose}"></td></tr>
+                            <tr><th>화면 크기</th><td th:text="${goodsCommand.goodsScreenSize} + '인치'"></td></tr>
+                            <tr><th>무게</th><td th:text="${goodsCommand.goodsWeight} + 'kg'"></td></tr>
+                            <tr><th>상품설명</th><td style="white-space: pre-wrap;" th:text="${goodsCommand.goodsContents}"></td></tr>
+                            
+                            <tr>
+                                <th>키워드</th>
+                                <td th:text="|#${goodsCommand.goodsKeyword1} #${goodsCommand.goodsKeyword2} #${goodsCommand.goodsKeyword3}|"></td>
+                            </tr>
+                            <tr><th>배송 정보</th><td th:text="${goodsCommand.goodsShippingInfo}"></td></tr>
+                            <tr><th>판매자 정보</th><td th:text="${goodsCommand.goodsSellerInfo}"></td></tr>
+
+                            <tr th:if="${goodsCommand.goodsMainStoreImage != null}">
+                                <th>대표이미지 (썸네일)</th>
+                                <td><img th:src="@{/upload/{img}(img=${goodsCommand.goodsMainStoreImage})}" alt="대표이미지" style="max-width: 300px; height: auto;"></td>
+                            </tr>
+                         <tr>
+    <th>상세이미지 (썸네일)</th>
+    <td>
+        <div th:if="${goodsCommand.goodsDetailStoreImage != null and !#strings.isEmpty(goodsCommand.goodsDetailStoreImage)}" style="display:flex; flex-wrap:wrap; gap:10px;">
+            <div th:each="img : ${#strings.listSplit(goodsCommand.goodsDetailStoreImage, '/')}">
+                <img th:if="${!img.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${img})}" alt="상세이미지" style="max-width: 200px; height: auto;">
+            </div>
+        </div>
+        <p th:if="${goodsCommand.goodsDetailStoreImage == null or #strings.isEmpty(goodsCommand.goodsDetailStoreImage)}">
+            등록된 상세 이미지가 없습니다.
+        </p>
     </td>
 </tr>
 
-            <tr>
-              <td colspan="2">
-                <a th:href="@{goodsUpdate(goodsNum=${goodsCommand.goodsNum})}">상품 수정</a> |
-                <a th:href="@{'goodsDel/'+${goodsCommand.goodsNum}}">상품 삭제</a> |
-                <a href="goodsList">상품목록</a> |
-                <a href="javascript:history.back();">뒤로가기</a>
-              </td>
-            </tr>
-          </table>
+<tr>
+    <th>상세 설명 이미지</th>
+    <td>
+        <div th:if="${goodsCommand.goodsDetailStore != null and !#strings.isEmpty(goodsCommand.goodsDetailStore)}" style="display:flex; flex-direction: column; gap:10px;">
+            <div th:each="img : ${#strings.listSplit(goodsCommand.goodsDetailStore, '/')}">
+                <img th:if="${!img.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${img})}" alt="상세 설명 이미지" style="max-width: 100%; height: auto;">
+            </div>
         </div>
-      </div>
-    </div>
-    <!-- [E]basic-N23 -->
-  </main>
+        <p th:if="${goodsCommand.goodsDetailStore == null or #strings.isEmpty(goodsCommand.goodsDetailStore)}">
+            등록된 상세 설명 이미지가 없습니다.
+        </p>
+    </td>
+</tr>
+
+<tr>
+    <th>등록일</th><td th:text="${#dates.format(goodsCommand.goodsDate, 'yyyy-MM-dd')}"></td>
+</tr>
+                        </tbody>
+                    </table>
+
+                    <div class="btnbar">
+                        <a th:href="@{/goods/list}" class="btnset btnset-line btnset-round">목록으로</a>
+                        <a th:href="@{/goods/{num}/edit(num=${goodsCommand.goodsNum})}" class="btnset btnset-line btnset-round">상품 수정</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
   <!-- [S]basic-N4 -->
   <div class="basic-N4" data-bid="DB4JlD9e4fN">
     <div class="footer-inner">

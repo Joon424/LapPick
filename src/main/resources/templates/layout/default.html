@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="imagetoolbar" content="no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="title" content="웹사이트">
+    <meta name="description" content="웹사이트입니다.">
+    <meta name="keywords" content="키워드,키워드,키워드">
+    <meta property="og:title" content="웹사이트">
+    <meta property="og:description" content="웹사이트입니다">
+    <meta property="og:image" content="https://웹사이트/images/opengraph.png">
+    <meta property="og:url" content="https://웹사이트">
+    
+    <title layout:title-pattern="$CONTENT_TITLE | LapPick"></title>
+
+    <link rel="stylesheet" href="/resources/css/setting.css">
+    <link rel="stylesheet" href="/resources/css/plugin.css">
+    <link rel="stylesheet" href="/resources/css/template.css">
+    <link rel="stylesheet" href="/resources/css/common.css">
+    <link rel="stylesheet" href="/resources/css/style.css">
+    
+    <th:block layout:fragment="css"></th:block>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: headerFragment}"></div>
+
+    <th:block layout:fragment="content"></th:block>
+
+    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+    
+    <script src="/resources/js/setting.js"></script>
+    <script src="/resources/js/plugin.js"></script>
+    <script src="/resources/js/template.js"></script>
+    <script src="/resources/js/common.js"></script>
+    <script src="/resources/js/script.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <script th:inline="javascript">
+        // 뱃지 스타일을 강제로 적용하는 함수
+        function forceCenterCartBadge(count) {
+            const cartCountSpan = $('#cart-item-count');
+            if (count > 0) {
+                cartCountSpan.text(count);
+                cartCountSpan.css({
+                    'display': 'flex',
+                    'justify-content': 'center',
+                    'align-items': 'center',
+                    
+                    /* [수정] 1. 위치를 아이콘의 '우측 하단'으로 재조정 */
+                    'position': 'absolute',
+                    'top': 'auto',      /* top 속성 초기화 */
+                    'bottom': '-4px',   /* 아래쪽 기준으로 위치 */
+                    'left': 'auto',     /* left 속성 초기화 */
+                    'right': '-5px',    /* 오른쪽 기준으로 위치 (살짝 왼쪽으로 이동) */
+
+                    /* [수정] 2. 폰트 위치 미세 조정 (살짝 아래로) */
+                    'padding-top': '3px',
+
+                    /* --- 나머지 필수 스타일 유지 --- */
+                    'height': '18px',
+                    'min-width': '18px',
+                    'padding-left': '3px', 
+                    'padding-right': '3px',
+                    'box-sizing': 'border-box',
+                    'background-color': '#222',
+                    'color': 'white',
+                    'border-radius': '50%',
+                    'font-size': '11px',
+                    'font-weight': '600',
+                    'line-height': '1'
+                });
+            } else {
+                cartCountSpan.hide();
+            }
+        }
+
+        $(document).ready(function() {
+            const isLoggedIn = /*[[${#authentication.principal != 'anonymousUser'}]]*/ false;
+            if (isLoggedIn) {
+                setTimeout(function() {
+                    $.get("/cart/count", function(count) {
+                        forceCenterCartBadge(count);
+                    });
+                }, 100);
+            }
+        });
+    </script>
+    
+    <th:block layout:fragment="script"></th:block>
+</body>
+</html>

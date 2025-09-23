@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<div class="basic-N3" data-bid="KrM47tVDk5" th:fragment="headerFragment">
+    <div class="header-inner">
+      <div class="header-container container-lg">
+        <div class="header-left">
+          <h1 class="header-title">
+            <a href="/">
+              <img src="/resources/images/img_logo_black.png" alt="로고">
+            </a>
+          </h1>
+          <div class="header-mobile-group">
+            <div class="header-mobile-top">
+              <p>로그인이 필요합니다.</p>
+              <a href="javascript:void(0)">로그인</a>
+            </div>
+            <ul class="header-gnblist">
+              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/brand"><span>BRAND</span></a></li>
+              <li class="header-gnbitem"><a class="header-gnblink" href="/goods/goodsFullList"><span>PRODUCTS</span></a></li>
+              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/notice"><span>NOTICE</span></a></li>
+              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/faq"><span>FAQ</span></a></li>
+              <li class="header-gnbitem">
+                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
+                  <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
+                </a>
+              </li>
+            </ul>
+            <button class="header-btn btn-close"><img src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘"></button>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="header-utils">
+            <button class="header-btn btn-seach"><img src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘"></button>
+            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
+              <img src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
+            </a>
+            <a href="/cart/cartList" class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
+  <img src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
+  <span class="badgeset-text" id="cart-item-count" style="display: none;">0</span>
+</a>
+            <button class="header-btn btn-allmenu"><img src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘"></button>
+            <button class="header-btn btn-momenu"><img src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘"></button>
+            <button class="header-btn btn-close"><img src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="header-dim"></div>
+</div>
+</html>

@@ -23,18 +23,16 @@ public class CartService {
     private final MemberMapper memberMapper;
 
     /**
-     * 사용자의 장바구니 목록과 합계 정보를 조회합니다.
-     * (기존 CartListService 역할)
-     * @param userId 현재 로그인한 사용자의 아이디
-     * @return 장바구니 아이템 리스트와 합계 정보가 담긴 Map
+     * [수정] 검색어(searchWord)를 받아 필터링하도록 변경
      */
-    @Transactional(readOnly = true) // 읽기 전용 트랜잭션
-    public Map<String, Object> getCartList(String userId) {
+    @Transactional(readOnly = true)
+    public Map<String, Object> getCartList(String userId, String searchWord) {
         String memberNum = memberMapper.memberNumSelect(userId);
         
-        List<GoodsCartDTO> list = cartMapper.cartSelectList(memberNum, null);
+        // Mapper에 searchWord 전달
+        List<GoodsCartDTO> list = cartMapper.cartSelectList(memberNum, null, searchWord);
         
-        long totalPrice = 0L; // long 타입으로 변경하여 큰 금액도 처리 가능
+        long totalPrice = 0L;
         int totalQty = 0;
         
         for (GoodsCartDTO dto : list) {
@@ -89,6 +87,16 @@ public class CartService {
         cartMapper.goodsNumsDelete(condition);
     }
     
+    
+    /**
+     * [신규] 장바구니의 모든 상품을 삭제합니다.
+     */
+    public void removeAllItems(String userId) {
+        String memberNum = memberMapper.memberNumSelect(userId);
+        if (memberNum != null) {
+            cartMapper.cartAllDelete(memberNum);
+        }
+    }
     /**
      * 장바구니 상품의 수량을 1 감소시킵니다.
      * (기존 CartQtyDownService 역할)
@@ -99,4 +107,15 @@ public class CartService {
         String memberNum = memberMapper.memberNumSelect(userId);
         cartMapper.cartQtyDown(goodsNum, memberNum);
     }
+    
+    
+    @Transactional(readOnly = true)
+    public int getCartItemCount(String userId) {
+        String memberNum = memberMapper.memberNumSelect(userId);
+        if (memberNum == null) {
+            return 0;
+        }
+        return cartMapper.countCartItems(memberNum);
+    }
+    
 }

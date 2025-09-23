@@ -27,14 +27,20 @@
     .mypage-sidebar { flex-shrink: 0; width: 200px; }
 
     /* 사이드바 버튼 그룹 스타일 */
-    .sidebar-group {
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
+.sidebar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    /* margin-bottom: 15px; <-- 이 줄을 삭제합니다. */
+}
 
+/* [추가] 첫 번째 그룹에만 구분선과 여백을 적용 */
+.sidebar-group:first-child {
+    padding-bottom: 15px; /* 그룹 내 마지막 버튼과 구분선 사이의 여백 */
+    margin-bottom: 15px;  /* 구분선과 아래 그룹 사이의 여백 */
+    border-bottom: 1px solid #e5e7eb; /* 연한 회색 구분선 */
+}
     /* [최종 수정] 버튼의 내부 여백(padding)을 직접 지정하여 높이를 강제로 통일 */
     .sidebar-group .btnset {
         box-sizing: border-box;
@@ -169,8 +175,8 @@
                             <a href="javascript:showSection('passwordSection');" class="btnset btnset-line btnset-round">비밀번호 변경</a>
                         </div>
                         <div class="sidebar-group">
-                            <a th:href="@{/item/orderList}" class="btnset btnset-line btnset-round">주문 내역</a>
-                            <a th:href="@{/item/cartList}" class="btnset btnset-line btnset-round">장바구니</a>
+                        	<a th:href="@{/item/cartList}" class="btnset btnset-line btnset-round">장바구니</a>
+                            <a th:href="@{/item/orderList}" class="btnset btnset-line btnset-round">주문 내역</a>                           
                         </div>
                     </div>
 

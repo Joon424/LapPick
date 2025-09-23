@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="/resources/css/common.css">
   <link rel="stylesheet" href="/resources/css/style.css">
    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
-  <script th:inline="javascript">
+ <script th:inline="javascript">
     $(function () {
         // 장바구니 추가
         $("#cartBtn").on("click", function() {
@@ -40,13 +40,13 @@
 
             $.ajax({
                 type: "POST",
-                url: "/item/cartAdd",
+                url: "/cart/cartAdd", // [수정] /item -> /cart
                 contentType: "application/json",
                 data: JSON.stringify({ goodsNum: goodsNum, qty: qty }),
                 success: function (response) {
                     if (response === "200") {
                         if (confirm("장바구니에 상품을 담았습니다. 장바구니로 이동하시겠습니까?")) {
-                            location.href = "/item/cartList";
+                            location.href = "/cart/cartList"; // [수정] /item -> /cart
                         }
                     }
                 },
@@ -68,10 +68,14 @@
                 }
                 return;
             }
-            location.href = `/item/buyItem?goodsNum=${goodsNum}&qty=${qty}`;
+            // '바로구매' 기능은 추후 PurchaseController에서 처리될 수 있으므로,
+            // 우선 장바구니에 담고 구매 페이지로 이동하는 로직으로 변경하거나
+            // 해당 기능의 컨트롤러를 확인해야 합니다.
+            // 여기서는 임시로 CartController를 호출하도록 수정합니다.
+            location.href = `/cart/buyItem?goodsNum=${goodsNum}&qty=${qty}`; // [수정] /item -> /cart
         });
     });
-    </script>
+</script>
 </head>
 
 <body>

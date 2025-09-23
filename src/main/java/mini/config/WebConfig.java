@@ -16,6 +16,8 @@ import java.util.Set;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+	
+	private String resourcePath = "file:///C:/lappick/upload/";
 
 	 @Value("${file.upload.dir}")
 	    private String uploadDir;
@@ -36,6 +38,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(0);
+        registry.addResourceHandler("/upload/**")
+        .addResourceLocations(resourcePath);
 
         // 2. [수정] 업로드 폴더 매핑 방식을 더 명확하게 변경하고, 확인용 로그를 추가합니다.
         String resourcePath = "file:///" + uploadDir.replace("\\", "/");

@@ -3,27 +3,20 @@
         "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mini.mapper.CartMapper">
+
 <sql id="goodsColumnsBase">
-	   goods_Num , goods_name , goods_price ,goods_contents , emp_num  
-	  ,goods_regist , GOODS_MAIN_IMAGE ,GOODS_MAIN_STORE_IMAGE 
-	  , GOODS_DETAIL_IMAGE ,GOODS_DETAIL_STORE_IMAGE 
-	  , visit_count ,update_Emp_Num , goods_Update_Date
+	   goods_Num, goods_name, goods_price, goods_contents
+	  ,GOODS_MAIN_STORE_IMAGE 
 </sql>
+
 <resultMap type="goods" id="goodsResultMap">
 	<id column="goods_Num" 						jdbcType="VARCHAR" 	property="goodsNum"/>
 	<result column="goods_Name" 				jdbcType="VARCHAR" 	property="goodsName" />
 	<result column="GOODS_PRICE" 				jdbcType="BIGINT" 	property="goodsPrice" />
 	<result column="goods_Contents"  			jdbcType="VARCHAR" 	property="goodsContents" />
-	<result column="emp_Num"  					jdbcType="VARCHAR"  property="empNum" />
-	<result column="visit_Count" 				jdbcType="BIGINT" 	property="visitCount" />
-	<result column="goods_Regist" 				jdbcType="DATE"  	property="goodsRegist" />
-	<result column="update_Emp_Num"  			jdbcType="VARCHAR"  property="updateEmpNum" />
-	<result column="goods_Update_Date" 			jdbcType="DATE"  	property="goodsUpdateDate" />
-	<result column="GOODS_MAIN_IMAGE"  			jdbcType="VARCHAR"  property="goodsMainImage" />
-	<result column="GOODS_MAIN_STORE_IMAGE"  	jdbcType="VARCHAR"  property="goodsMainStoreImage" />
-	<result column="GOODS_DETAIL_IMAGE"  		jdbcType="VARCHAR"  property="goodsDetailImage" />
-	<result column="GOODS_DETAIL_STORE_IMAGE"  	jdbcType="VARCHAR"  property="goodsDetailStoreImage" />		
+	<result column="GOODS_MAIN_STORE_IMAGE"  	jdbcType="VARCHAR"  property="goodsMainStoreImage" />		
 </resultMap>
+
 <select id="goodsSelect" parameterType="string" resultMap="goodsResultMap">
 	select <include refid="goodsColumnsBase" />
 	from goods  
@@ -45,22 +38,26 @@
 	<association property="goodsDTO" javaType="goods" column="goodsNum"  select="goodsSelect" />
 	<association property="cartDTO" javaType="cart" column="cartNum"  select="cartSelect"/>
 </resultMap>
+
 <select id="cartSelectList" resultMap="cartGoodsResultMap" >
-	select GOODS_NUM goodsNum, cart_num cartNum
-	from cart
-	<trim prefix="where" prefixOverrides="AND | OR">
-		member_num = #{memberNum}
-		<if test="nums != null">
-			and goods_num in 
-			<foreach collection="nums" item="goodsNum" close=")" open="(" index="index" 
-					separator=",">
-				#{goodsNum}
-			</foreach>
-		</if>
-	</trim>
+    SELECT c.GOODS_NUM goodsNum, c.cart_num cartNum
+    FROM cart c
+    <if test="searchWord != null and searchWord != ''">
+        JOIN goods g ON c.goods_num = g.goods_num
+    </if>
+    <trim prefix="where" prefixOverrides="AND | OR">
+        c.member_num = #{memberNum}
+        <if test="nums != null">
+            AND c.goods_num IN
+            <foreach collection="nums" item="goodsNum" close=")" open="(" separator=",">
+                #{goodsNum}
+            </foreach>
+        </if>
+        <if test="searchWord != null and searchWord != ''">
+            AND UPPER(g.goods_name) LIKE '%' || UPPER(#{searchWord}) || '%'
+        </if>
+    </trim>
 </select>
-
-
 
 <update id="cartMerge" parameterType="cart">
 merge into cart c	
@@ -74,27 +71,28 @@ WHEN NOT MATCHED THEN
 	values ((select COALESCE(max(cart_num ),0) + 1  from cart)
 			,#{memberNum}, #{goodsNum}, sysdate, #{cartQty})
 </update>
-
 <update id="cartQtyDown" >
 	update cart
 	set cart_qty = cart_qty - 1
 	where goods_num = #{goodsNum} 
 	and member_num = #{memberNum}
 </update>
-
 <delete id="goodsNumsDelete" parameterType="hashmap">
 delete from cart
 where member_num = #{memberNum}
 and goods_num in 
-	<foreach collection="goodsNums" item="goodsNum" close=")" open="(" index="index" 
-		separator=",">
+	<foreach collection="goodsNums" item="goodsNum" close=")" open="(" separator=",">
 		#{goodsNum}
 	</foreach>
 </delete>
+<delete id="cartAllDelete" parameterType="string">
+    DELETE FROM cart
+    WHERE member_num = #{memberNum}
+</delete>
+
+<select id="countCartItems" parameterType="string" resultType="int">
+    SELECT COUNT(*) 
+    FROM cart 
+    WHERE member_num = #{memberNum}
+</select>
 </mapper>
-
-
-
-
-
-

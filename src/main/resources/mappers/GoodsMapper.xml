@@ -121,27 +121,5 @@
         </foreach>
     </select>
     
-    <select id="wishCountSelectOne" parameterType="map" resultType="int">
-        SELECT count(*)
-        FROM WISH
-        WHERE GOODS_NUM = #{goodsNum} AND MEMBER_NUM = #{memberNum}
-    </select>
-    
-    <insert id="wishInsert" parameterType="map">
-        INSERT INTO WISH (GOODS_NUM, MEMBER_NUM)
-        VALUES(#{goodsNum}, #{memberNum})
-    </insert>
-    
-    <delete id="wishDelete" parameterType="map">
-        DELETE FROM WISH
-        WHERE GOODS_NUM = #{goodsNum} AND MEMBER_NUM = #{memberNum}
-    </delete>
-    
-    <select id="wishSelectList" parameterType="string" resultMap="goodsResultMap">
-        SELECT <include refid="goodsColumns"/>
-        FROM GOODS
-        WHERE GOODS_NUM IN (SELECT GOODS_NUM FROM WISH WHERE MEMBER_NUM = #{memberNum})
-        ORDER BY GOODS_NUM DESC
-    </select>
     
 </mapper>

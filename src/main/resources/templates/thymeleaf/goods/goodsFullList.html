@@ -1,115 +1,23 @@
 ﻿<!DOCTYPE html>
-<html lang="ko">
-
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="imagetoolbar" content="no">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="format-detection" content="telephone=no">
-  <meta name="title" content="웹사이트">
-  <meta name="description" content="웹사이트입니다.">
-  <meta name="keywords" content="키워드,키워드,키워드">
-  <meta property="og:title" content="웹사이트">
-  <meta property="og:description" content="웹사이트입니다">
-  <meta property="og:image" content="https://웹사이트/images/opengraph.png">
-  <meta property="og:url" content="https://웹사이트">
-  <title>상품 전체페이지 | Miso</title>
-  <script src="/static/js/cartButton.js"></script>
-  <link rel="stylesheet"  href="/resources/css/setting.css">
-  <link rel="stylesheet"  href="/resources/css/plugin.css">
-  <link rel="stylesheet"  href="/resources/css/template.css">
-  <link rel="stylesheet"  href="/resources/css/common.css">
-  <link rel="stylesheet"  href="/resources/css/style.css">
-  <style>
-    .pagiset-ctrl .disabled { pointer-events: none; opacity: 0.5; }
-    .accordset-header { cursor: pointer; }
-    .accordset-header .btn { pointer-events: none; }
-    /* 3. 필터 초기화 버튼 스타일 */
-    .filter-reset-btn { font-size: 12px; color: #888; text-decoration: underline; margin-top: 10px; cursor: pointer; display: block; text-align: right; }
-  </style>
+  <title>상품_전체보기</title>
+  <th:block layout:fragment="css">
+    <style>
+      .pagiset-ctrl .disabled { pointer-events: none; opacity: 0.5; }
+      .accordset-header { cursor: pointer; }
+      .accordset-header .btn { pointer-events: none; }
+      /* 3. 필터 초기화 버튼 스타일 */
+      .filter-reset-btn { font-size: 12px; color: #888; text-decoration: underline; margin-top: 10px; cursor: pointer; display: block; text-align: right; }
+    </style>
+  </th:block>
 </head>
-
 <body>
-  <!-- [S]basic-N3 -->
-  <div class="basic-N3" data-bid="uUm3Qv2irL">
-    <div class="header-inner">
-      <div class="header-container container-lg">
-        <div class="header-left">
-          <h1 class="header-title">
-            <a href="/">
-              <img  src="/resources/images/img_logo_black.png" alt="로고">
-            </a>
-          </h1>
-          <div class="header-mobile-group">
-            <div class="header-mobile-top">
-              <p>로그인이 필요합니다.</p>
-              <a href="javascript:void(0)">로그인</a>
-            </div>
-                       <ul class="header-gnblist">
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/brand">
-                  <span>BRAND</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/goods/goodsFullList">
-                  <span>PRODUCTS</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/notice">
-                  <span>NOTICE</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/faq">
-                  <span>FAQ</span>
-                </a>
-              </li>
-          <li class="header-gnbitem">
-  <a class="header-gnblink" 
-     th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
-    <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
-          th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
-  </a>
-</li>
-
-            </ul>
-            <button class="header-btn btn-close">
-              <img  src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘">
-            </button>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="header-utils">
-            <button class="header-btn btn-seach">
-              <img  src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘">
-            </button>
-            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
-              <img  src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
-            </a>
-            <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
-              <img  src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
-              <span class="badgeset-text">1</span>
-            </button>
-            <button class="header-btn btn-allmenu">
-              <img  src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘">
-            </button>
-            <button class="header-btn btn-momenu">
-              <img  src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘">
-            </button>
-            <button class="header-btn btn-close">
-              <img  src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘">
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="header-dim"></div>
-  </div>
-
-<main class="th-layout-main ">
+<div layout:fragment="content">
+  <main class="th-layout-main ">
     <div class="basic-N50" data-bid="zqM3qV2rT5">
       <div class="contents-inner">
         <div class="contents-container container-md">
@@ -119,97 +27,97 @@
           <div class="contents-body">
             <form th:action="@{/goods/goodsFullList}" method="get" id="filterForm" class="contents-left">
               <input type="hidden" name="openFilters" id="openFiltersInput">
-              
+
               <div class="contents-filter-header"><strong>필터</strong>
                 <button class="contents-btn btn-close"><img src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘"></button>
               </div>
               <div class="contents-filter-body">
-<div class="accordset accordset-plus">
-  <div class="accordset-item" id="filter-brand" th:classappend="(${param.openFilters == null} or ${param.openFilters != null and #strings.contains(param.openFilters, 'filter-brand')}) ? 'active' : ''">
-    <div class="accordset-header"><button class="accordset-button btn" type="button">브랜드</button></div>
-    <div class="accordset-body"><div class="accordset-content">
-        <div class="checkset">
-          <input id="brand-all" class="checkset-input input-round filter-input" type="checkbox" th:checked="${filter.goodsBrand == null or #lists.isEmpty(filter.goodsBrand)}" onclick="checkAllAndSubmit(this, 'goodsBrand')">
-          <label class="checkset-label" for="brand-all"></label><span class="checkset-text">전체</span>
-        </div>
-        <div class="checkset" th:each="brand : ${ {
-            'SAMSUNG':'삼성전자', 'LG':'LG전자', 'APPLE':'Apple', 'MSI':'MSI', 'ASUS':'ASUS', 
+                <div class="accordset accordset-plus">
+                  <div class="accordset-item" id="filter-brand" th:classappend="(${param.openFilters == null} or ${param.openFilters != null and #strings.contains(param.openFilters, 'filter-brand')}) ? 'active' : ''">
+                    <div class="accordset-header"><button class="accordset-button btn" type="button">브랜드</button></div>
+                    <div class="accordset-body"><div class="accordset-content">
+                      <div class="checkset">
+                        <input id="brand-all" class="checkset-input input-round filter-input" type="checkbox" th:checked="${filter.goodsBrand == null or #lists.isEmpty(filter.goodsBrand)}" onclick="checkAllAndSubmit(this, 'goodsBrand')">
+                        <label class="checkset-label" for="brand-all"></label><span class="checkset-text">전체</span>
+                      </div>
+                      <div class="checkset" th:each="brand : ${ {
+            'SAMSUNG':'삼성전자', 'LG':'LG전자', 'APPLE':'Apple', 'MSI':'MSI', 'ASUS':'ASUS',
             'LENOVO':'레노버', 'MICROSOFT':'마이크로소프트', 'HP':'HP', 'HANSUNG':'한성컴퓨터'} }">
-          <input th:id="${'brand-' + brand.key}" class="checkset-input input-round filter-input" type="checkbox" name="goodsBrand" th:value="${brand.key}" 
-                 th:checked="${filter.goodsBrand != null and #lists.contains(filter.goodsBrand, brand.key)}">
-          <label class="checkset-label" th:for="${'brand-' + brand.key}"></label>
-          <span class="checkset-text" th:text="${brand.value}"></span>
-        </div>
-        <a class="filter-reset-btn" onclick="resetFilter(this, 'goodsBrand')">필터초기화</a>
-    </div></div>
-  </div>
-  <div class="accordset-item" id="filter-price" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-price')} ? 'active' : ''">
-    <div class="accordset-header"><button class="accordset-button btn" type="button">가격</button></div>
-    <div class="accordset-body"><div class="accordset-content">
-        <div class="radioset">
-          <input id="price-all" name="priceRange" class="radioset-input input-line filter-input" type="radio" value="" th:checked="${filter.priceRange == null or filter.priceRange == ''}">
-          <label class="radioset-label" for="price-all"></label><span class="radioset-text">전체</span>
-        </div>
-        <div class="radioset" th:each="range : ${ {'0-50', '50-100', '100-'} }">
-           <input th:id="${'price-' + range}" name="priceRange" class="radioset-input input-line filter-input" type="radio" th:value="${range}" th:checked="${filter.priceRange == range}">
-           <label class="radioset-label" th:for="${'price-' + range}"></label>
-           <span class="radioset-text" th:text="${range == '0-50' ? '50만원 미만' : (range == '50-100' ? '50만원 ~ 100만원' : '100만원 이상')}"></span>
-        </div>
-        <a class="filter-reset-btn" onclick="resetFilter(this, 'priceRange')">필터초기화</a>
-    </div></div>
-  </div>
-  <div class="accordset-item" id="filter-purpose" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-purpose')} ? 'active' : ''">
-     <div class="accordset-header"><button class="accordset-button btn" type="button">용도</button></div>
-     <div class="accordset-body"><div class="accordset-content">
-        <div class="checkset">
-            <input id="purpose-all" class="checkset-input input-round filter-input" type="checkbox" th:checked="${filter.goodsPurpose == null or #lists.isEmpty(filter.goodsPurpose)}" onclick="checkAllAndSubmit(this, 'goodsPurpose')">
-            <label class="checkset-label" for="purpose-all"></label><span class="checkset-text">전체</span>
-        </div>
-        <div class="checkset" th:each="purpose : ${ {'OFFICE':'사무/인강용', 'GAMING':'게이밍 용', 'VIDEO_EDIT':'영상/디자인 작업용'} }">
-            <input th:id="${'purpose-' + purpose.key}" class="checkset-input input-round filter-input" type="checkbox" name="goodsPurpose" th:value="${purpose.key}"
-                    th:checked="${filter.goodsPurpose != null and #lists.contains(filter.goodsPurpose, purpose.key)}">
-            <label class="checkset-label" th:for="${'purpose-' + purpose.key}"></label>
-            <span class="checkset-text" th:text="${purpose.value}"></span>
-        </div>
-        <a class="filter-reset-btn" onclick="resetFilter(this, 'goodsPurpose')">필터초기화</a>
-     </div></div>
-  </div>
-<div class="accordset-item" id="filter-screensize" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-screensize')} ? 'active' : ''">
-   <div class="accordset-header"><button class="accordset-button btn" type="button">화면 크기</button></div>
-   <div class="accordset-body"><div class="accordset-content" style="display:flex; align-items:center; gap:5px;">
-       <input type="number" step="0.1" name="minScreenSize" th:value="${filter.minScreenSize}" placeholder="(예: 13.3)" class="realtime-filter" style="width:100px; text-align:center;">
-       <span>~</span>
-       <input type="number" step="0.1" name="maxScreenSize" th:value="${filter.maxScreenSize}" placeholder="(예: 17.3)" class="realtime-filter" style="width:100px; text-align:center;">
-       <span>인치</span>
-   </div></div>
-</div>
-<div class="accordset-item" id="filter-weight" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-weight')} ? 'active' : ''">
-   <div class="accordset-header"><button class="accordset-button btn" type="button">무게</button></div>
-   <div class="accordset-body"><div class="accordset-content" style="display:flex; align-items:center; gap:5px;">
-       <input type="number" step="0.1" name="minWeight" th:value="${filter.minWeight}" placeholder="(예: 1.0)" class="realtime-filter" style="width:100px; text-align:center;">
-       <span>~</span>
-       <input type="number" step="0.1" name="maxWeight" th:value="${filter.maxWeight}" placeholder="(예: 1.7)" class="realtime-filter" style="width:100px; text-align:center;">
-       <span>kg</span>
-   </div></div>
-</div>
-  <div class="accordset-item" id="filter-benefit" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-benefit')} ? 'active' : ''">
-    <div class="accordset-header"><button class="accordset-button btn" type="button">혜택</button></div>
-    <div class="accordset-body"><div class="accordset-content">
-        <div class="checkset"><input id="checkset-6-1" class="checkset-input input-round" type="checkbox" checked><label class="checkset-label" for="checkset-6-1"></label><span class="checkset-text">무료배송</span></div>
-        <div class="checkset"><input id="checkset-6-2" class="checkset-input input-round" type="checkbox"><label class="checkset-label" for="checkset-6-2"></label><span class="checkset-text">쿠폰</span></div>
-        <div class="checkset"><input id="checkset-6-3" class="checkset-input input-round" type="checkbox"><label class="checkset-label" for="checkset-6-3"></label><span class="checkset-text">상품할인</span></div>
-    </div></div>
-  </div>
-</div>
+                        <input th:id="${'brand-' + brand.key}" class="checkset-input input-round filter-input" type="checkbox" name="goodsBrand" th:value="${brand.key}"
+                               th:checked="${filter.goodsBrand != null and #lists.contains(filter.goodsBrand, brand.key)}">
+                        <label class="checkset-label" th:for="${'brand-' + brand.key}"></label>
+                        <span class="checkset-text" th:text="${brand.value}"></span>
+                      </div>
+                      <a class="filter-reset-btn" onclick="resetFilter(this, 'goodsBrand')">필터초기화</a>
+                    </div></div>
+                  </div>
+                  <div class="accordset-item" id="filter-price" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-price')} ? 'active' : ''">
+                    <div class="accordset-header"><button class="accordset-button btn" type="button">가격</button></div>
+                    <div class="accordset-body"><div class="accordset-content">
+                      <div class="radioset">
+                        <input id="price-all" name="priceRange" class="radioset-input input-line filter-input" type="radio" value="" th:checked="${filter.priceRange == null or filter.priceRange == ''}">
+                        <label class="radioset-label" for="price-all"></label><span class="radioset-text">전체</span>
+                      </div>
+                      <div class="radioset" th:each="range : ${ {'0-50', '50-100', '100-'} }">
+                        <input th:id="${'price-' + range}" name="priceRange" class="radioset-input input-line filter-input" type="radio" th:value="${range}" th:checked="${filter.priceRange == range}">
+                        <label class="radioset-label" th:for="${'price-' + range}"></label>
+                        <span class="radioset-text" th:text="${range == '0-50' ? '50만원 미만' : (range == '50-100' ? '50만원 ~ 100만원' : '100만원 이상')}"></span>
+                      </div>
+                      <a class="filter-reset-btn" onclick="resetFilter(this, 'priceRange')">필터초기화</a>
+                    </div></div>
+                  </div>
+                  <div class="accordset-item" id="filter-purpose" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-purpose')} ? 'active' : ''">
+                    <div class="accordset-header"><button class="accordset-button btn" type="button">용도</button></div>
+                    <div class="accordset-body"><div class="accordset-content">
+                      <div class="checkset">
+                        <input id="purpose-all" class="checkset-input input-round filter-input" type="checkbox" th:checked="${filter.goodsPurpose == null or #lists.isEmpty(filter.goodsPurpose)}" onclick="checkAllAndSubmit(this, 'goodsPurpose')">
+                        <label class="checkset-label" for="purpose-all"></label><span class="checkset-text">전체</span>
+                      </div>
+                      <div class="checkset" th:each="purpose : ${ {'OFFICE':'사무/인강용', 'GAMING':'게이밍 용', 'VIDEO_EDIT':'영상/디자인 작업용'} }">
+                        <input th:id="${'purpose-' + purpose.key}" class="checkset-input input-round filter-input" type="checkbox" name="goodsPurpose" th:value="${purpose.key}"
+                               th:checked="${filter.goodsPurpose != null and #lists.contains(filter.goodsPurpose, purpose.key)}">
+                        <label class="checkset-label" th:for="${'purpose-' + purpose.key}"></label>
+                        <span class="checkset-text" th:text="${purpose.value}"></span>
+                      </div>
+                      <a class="filter-reset-btn" onclick="resetFilter(this, 'goodsPurpose')">필터초기화</a>
+                    </div></div>
+                  </div>
+                  <div class="accordset-item" id="filter-screensize" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-screensize')} ? 'active' : ''">
+                    <div class="accordset-header"><button class="accordset-button btn" type="button">화면 크기</button></div>
+                    <div class="accordset-body"><div class="accordset-content" style="display:flex; align-items:center; gap:5px;">
+                      <input type="number" step="0.1" name="minScreenSize" th:value="${filter.minScreenSize}" placeholder="(예: 13.3)" class="realtime-filter" style="width:100px; text-align:center;">
+                      <span>~</span>
+                      <input type="number" step="0.1" name="maxScreenSize" th:value="${filter.maxScreenSize}" placeholder="(예: 17.3)" class="realtime-filter" style="width:100px; text-align:center;">
+                      <span>인치</span>
+                    </div></div>
+                  </div>
+                  <div class="accordset-item" id="filter-weight" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-weight')} ? 'active' : ''">
+                    <div class="accordset-header"><button class="accordset-button btn" type="button">무게</button></div>
+                    <div class="accordset-body"><div class="accordset-content" style="display:flex; align-items:center; gap:5px;">
+                      <input type="number" step="0.1" name="minWeight" th:value="${filter.minWeight}" placeholder="(예: 1.0)" class="realtime-filter" style="width:100px; text-align:center;">
+                      <span>~</span>
+                      <input type="number" step="0.1" name="maxWeight" th:value="${filter.maxWeight}" placeholder="(예: 1.7)" class="realtime-filter" style="width:100px; text-align:center;">
+                      <span>kg</span>
+                    </div></div>
+                  </div>
+                  <div class="accordset-item" id="filter-benefit" th:classappend="${param.openFilters != null and #strings.contains(param.openFilters, 'filter-benefit')} ? 'active' : ''">
+                    <div class="accordset-header"><button class="accordset-button btn" type="button">혜택</button></div>
+                    <div class="accordset-body"><div class="accordset-content">
+                      <div class="checkset"><input id="checkset-6-1" class="checkset-input input-round" type="checkbox" checked><label class="checkset-label" for="checkset-6-1"></label><span class="checkset-text">무료배송</span></div>
+                      <div class="checkset"><input id="checkset-6-2" class="checkset-input input-round" type="checkbox"><label class="checkset-label" for="checkset-6-2"></label><span class="checkset-text">쿠폰</span></div>
+                      <div class="checkset"><input id="checkset-6-3" class="checkset-input input-round" type="checkbox"><label class="checkset-label" for="checkset-6-3"></label><span class="checkset-text">상품할인</span></div>
+                    </div></div>
+                  </div>
+                </div>
               </div>
-            <div class="contents-filter-footer">
-    <a th:href="@{/goods/goodsFullList}" class="contents-btn btn-refresh" style="text-decoration: none; color: inherit;">
-        <span>전체 초기화</span>
-        <img src="/resources/icons/ico_refresh_black.svg" alt="초기화 아이콘">
-    </a>
-</div>
+              <div class="contents-filter-footer">
+                <a th:href="@{/goods/goodsFullList}" class="contents-btn btn-refresh" style="text-decoration: none; color: inherit;">
+                  <span>전체 초기화</span>
+                  <img src="/resources/icons/ico_refresh_black.svg" alt="초기화 아이콘">
+                </a>
+              </div>
             </form>
-            
+
             <div class="contents-right">
               <div class="contents-sort">
                 <p class="contents-sort-total"> 총 <span th:text="${pageData.total}">0</span>개의 제품이 있습니다. </p>
@@ -225,50 +133,50 @@
                 </div>
               </div>
               <div class="contents-list">
-                  <th:block th:if="${#lists.isEmpty(goodsList)}">
-                    <p style="text-align: center; width: 100%; padding: 50px 0;">조건에 맞는 상품이 없습니다.</p>
-                  </th:block>
-                  <th:block th:each="goods : ${goodsList}">
-                      <a th:href="@{'/corner/detailView/' + ${goods.goodsNum}}" class="cardset cardset-shopping">
-                          <figure class="cardset-figure">
-                              <img th:src="@{'/upload/' + ${goods.goodsMainStoreImage}}" class="cardset-img" alt="상품 이미지"
-                                   onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=Image+Not+Found'">
-                          </figure>
-                          <div class="cardset-body">
-                              <h2 class="cardset-tit" th:text="${goods.goodsName}">상품명</h2>
-                              <p class="cardset-desc">
-                                  <span th:text="${#numbers.formatInteger(goods.goodsPrice, 3, 'COMMA')}">가격</span><small>원</small>
-                              </p>
-                          </div>
-                      </a>
-                  </th:block>
+                <th:block th:if="${#lists.isEmpty(goodsList)}">
+                  <p style="text-align: center; width: 100%; padding: 50px 0;">조건에 맞는 상품이 없습니다.</p>
+                </th:block>
+                <th:block th:each="goods : ${goodsList}">
+                  <a th:href="@{'/corner/detailView/' + ${goods.goodsNum}}" class="cardset cardset-shopping">
+                    <figure class="cardset-figure">
+                      <img th:src="@{'/upload/' + ${goods.goodsMainStoreImage}}" class="cardset-img" alt="상품 이미지"
+                           onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=Image+Not+Found'">
+                    </figure>
+                    <div class="cardset-body">
+                      <h2 class="cardset-tit" th:text="${goods.goodsName}">상품명</h2>
+                      <p class="cardset-desc">
+                        <span th:text="${#numbers.formatInteger(goods.goodsPrice, 3, 'COMMA')}">가격</span><small>원</small>
+                      </p>
+                    </div>
+                  </a>
+                </th:block>
               </div>
-          <nav class="pagiset pagiset-line" th:if="${pageData.total > 0}">
-    <div class="pagiset-ctrl">
-        <a class="pagiset-link pagiset-first" th:classappend="${pageData.page == 1} ? 'disabled' : ''"
-           th:href="@{/goods/goodsFullList(page=1, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">처음</span></a>
-    </div>
-    <div class="pagiset-ctrl">
-        <a class="pagiset-link pagiset-prev" th:classappend="${pageData.page == 1} ? 'disabled' : ''"
-           th:href="@{/goods/goodsFullList(page=${pageData.page - 1}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">이전</span></a>
-    </div>
-    <div class="pagiset-list">
-        <th:block th:each="p : ${#numbers.sequence(startPage, endPage)}">
-            <a class="pagiset-link"
-               th:href="@{/goods/goodsFullList(page=${p}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"
-               th:text="${p}"
-               th:classappend="${p == pageData.page} ? 'active-fill' : ''"></a>
-        </th:block>
-    </div>
-    <div class="pagiset-ctrl">
-        <a class="pagiset-link pagiset-next" th:classappend="${pageData.page == pageData.totalPages} ? 'disabled' : ''"
-           th:href="@{/goods/goodsFullList(page=${pageData.page + 1}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">다음</span></a>
-    </div>
-    <div class="pagiset-ctrl">
-        <a class="pagiset-link pagiset-last" th:classappend="${pageData.page == pageData.totalPages} ? 'disabled' : ''"
-           th:href="@{/goods/goodsFullList(page=${pageData.totalPages}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">마지막</span></a>
-    </div>
-</nav>
+              <nav class="pagiset pagiset-line" th:if="${pageData.total > 0}">
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-first" th:classappend="${pageData.page == 1} ? 'disabled' : ''"
+                     th:href="@{/goods/goodsFullList(page=1, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">처음</span></a>
+                </div>
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-prev" th:classappend="${pageData.page == 1} ? 'disabled' : ''"
+                     th:href="@{/goods/goodsFullList(page=${pageData.page - 1}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">이전</span></a>
+                </div>
+                <div class="pagiset-list">
+                  <th:block th:each="p : ${#numbers.sequence(startPage, endPage)}">
+                    <a class="pagiset-link"
+                       th:href="@{/goods/goodsFullList(page=${p}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"
+                       th:text="${p}"
+                       th:classappend="${p == pageData.page} ? 'active-fill' : ''"></a>
+                  </th:block>
+                </div>
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-next" th:classappend="${pageData.page == pageData.totalPages} ? 'disabled' : ''"
+                     th:href="@{/goods/goodsFullList(page=${pageData.page + 1}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">다음</span></a>
+                </div>
+                <div class="pagiset-ctrl">
+                  <a class="pagiset-link pagiset-last" th:classappend="${pageData.page == pageData.totalPages} ? 'disabled' : ''"
+                     th:href="@{/goods/goodsFullList(page=${pageData.totalPages}, goodsBrand=${filter.goodsBrand}, priceRange=${filter.priceRange}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">마지막</span></a>
+                </div>
+              </nav>
             </div>
           </div>
         </div>
@@ -276,178 +184,104 @@
       <div class="contents-dim"></div>
     </div>
   </main>
+</div>
 
-  <!-- [S]basic-N4 -->
-  <div class="basic-N4" data-bid="PzM3qV3K9p">
-    <div class="footer-inner">
-      <div class="footer-container container-lg">
-        <div class="footer-top">
-          <h1 class="footer-logo">
-            <a href="javascript:void(0)">
-              <img  src="/resources/images/img_logo_lightgray.png" alt="로고">
-            </a>
-          </h1>
- <ul class="footer-menulist">
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>이용약관</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>개인정보처리방침</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>국비교육</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>미니프로젝트</span>
-              </a>
-            </li>
-          </ul>
-          <ul class="footer-snslist">
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_instagram_lightgrey.svg" alt="인스타그램">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_youtube_lightgrey.svg" alt="유튜브">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_facebook_lightgrey.svg" alt="페이스북">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_kakao_lightgrey.svg" alt="카카오톡">
-              </a>
-            </li>
-          </ul>
-        </div>
-         <div class="footer-bottom">
-          <div class="footer-txt">
-            <p> 성결대학교 성결관 301호 </p>
-            <p>
-              <span>T. 010-8246-6830</span>
-              <span>E. wnflqm010203@sungkyul.ac.kr</span>
-            </p>
-          </div>
-          <div class="footer-txt">
-            <p>2024 BY JeongJunGyo. ALL RIGHTS RESEVED</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- [E]basic-N4 -->
-  <script  src="/resources/js/setting.js"></script>
-  <script  src="/resources/js/plugin.js"></script>
-  <script  src="/resources/js/template.js"></script>
-  <script  src="/resources/js/common.js"></script>
-  <script  src="/resources/js/script.js"></script>
-<script>
+<th:block layout:fragment="script">
+  <script>
     document.addEventListener('DOMContentLoaded', function() {
-        let debounceTimer;
+      let debounceTimer;
 
-        // --- 아코디언 기능 ---
-        const accordsetHeaders = document.querySelectorAll('.accordset-header');
-        accordsetHeaders.forEach(header => {
-            header.addEventListener('click', function(event) {
-                event.preventDefault();
-                this.closest('.accordset-item').classList.toggle('active');
-            });
+      // --- 아코디언 기능 ---
+      const accordsetHeaders = document.querySelectorAll('.accordset-header');
+      accordsetHeaders.forEach(header => {
+        header.addEventListener('click', function(event) {
+          event.preventDefault();
+          this.closest('.accordset-item').classList.toggle('active');
         });
+      });
 
-        // --- 체크박스/라디오 필터 자동 제출 ---
-        const filterInputs = document.querySelectorAll('.filter-input');
-        filterInputs.forEach(input => {
-            input.addEventListener('change', () => saveStateAndSubmit());
+      // --- 체크박스/라디오 필터 자동 제출 ---
+      const filterInputs = document.querySelectorAll('.filter-input');
+      filterInputs.forEach(input => {
+        input.addEventListener('change', () => saveStateAndSubmit());
+      });
+
+      // --- 숫자 입력 필터 실시간(디바운싱) 제출 ---
+      const realtimeInputs = document.querySelectorAll('.realtime-filter');
+      realtimeInputs.forEach(input => {
+        input.addEventListener('keyup', function() {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => saveStateAndSubmit(), 500);
         });
+      });
 
-        // --- 숫자 입력 필터 실시간(디바운싱) 제출 ---
-        const realtimeInputs = document.querySelectorAll('.realtime-filter');
-        realtimeInputs.forEach(input => {
-            input.addEventListener('keyup', function() {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => saveStateAndSubmit(), 500);
-            });
-        });
-
-        // [삭제] 'change' 이벤트에 있던 자동 소수점 변환 기능은 saveStateAndSubmit 함수로 통합되었으므로 삭제합니다.
-
-        // --- 페이지 로드 시 스크롤 위치 복원 ---
-        const scrollPos = sessionStorage.getItem('scrollPos');
-        if (scrollPos) {
-            window.scrollTo(0, parseInt(scrollPos));
-            sessionStorage.removeItem('scrollPos');
-        }
+      // --- 페이지 로드 시 스크롤 위치 복원 ---
+      const scrollPos = sessionStorage.getItem('scrollPos');
+      if (scrollPos) {
+        window.scrollTo(0, parseInt(scrollPos));
+        sessionStorage.removeItem('scrollPos');
+      }
     });
 
     // '전체' 체크박스 클릭 로직
     function checkAllAndSubmit(allCheckbox, name) {
-        if (allCheckbox.checked) {
-            document.getElementsByName(name).forEach(cb => cb.checked = false);
-        }
-        saveStateAndSubmit();
+      if (allCheckbox.checked) {
+        document.getElementsByName(name).forEach(cb => cb.checked = false);
+      }
+      saveStateAndSubmit();
     }
-    
+
     // 개별 필터 초기화 로직
     function resetFilter(element, name) {
-        const filterContent = element.closest('.accordset-content');
-        const inputs = filterContent.querySelectorAll(`input[name="${name}"]`);
-        
-        inputs.forEach(input => {
-            if (input.type === 'checkbox' || input.type === 'radio') {
-                input.checked = false;
-            }
-        });
-        
-        const allButton = filterContent.querySelector('input[id*="-all"]');
-        if (allButton) {
-            allButton.checked = true;
+      const filterContent = element.closest('.accordset-content');
+      const inputs = filterContent.querySelectorAll(`input[name="${name}"]`);
+
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          input.checked = false;
         }
-        
-        saveStateAndSubmit();
+      });
+
+      const allButton = filterContent.querySelector('input[id*="-all"]');
+      if (allButton) {
+        allButton.checked = true;
+      }
+
+      saveStateAndSubmit();
     }
-    
+
     // [수정] 상태 저장 및 폼 제출 통합 함수
     function saveStateAndSubmit() {
-        // ▼▼▼▼▼ [추가] 폼 제출 직전에 자동 소수점 변환 로직을 실행 ▼▼▼▼▼
-        const screenSizeInputs = document.querySelectorAll('input[name="minScreenSize"], input[name="maxScreenSize"]');
-        screenSizeInputs.forEach(input => {
-            let value = input.value;
-            if (value && value.indexOf('.') === -1 && value.length === 3) {
-                input.value = (parseInt(value) / 10).toFixed(1);
-            }
-        });
+      // ▼▼▼▼▼ [추가] 폼 제출 직전에 자동 소수점 변환 로직을 실행 ▼▼▼▼▼
+      const screenSizeInputs = document.querySelectorAll('input[name="minScreenSize"], input[name="maxScreenSize"]');
+      screenSizeInputs.forEach(input => {
+        let value = input.value;
+        if (value && value.indexOf('.') === -1 && value.length === 3) {
+          input.value = (parseInt(value) / 10).toFixed(1);
+        }
+      });
 
-        const weightInputs = document.querySelectorAll('input[name="minWeight"], input[name="maxWeight"]');
-        weightInputs.forEach(input => {
-            let value = input.value;
-            if (value && value.indexOf('.') === -1 && value.length === 2) {
-                input.value = (parseInt(value) / 10).toFixed(1);
-            }
-        });
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+      const weightInputs = document.querySelectorAll('input[name="minWeight"], input[name="maxWeight"]');
+      weightInputs.forEach(input => {
+        let value = input.value;
+        if (value && value.indexOf('.') === -1 && value.length === 2) {
+          input.value = (parseInt(value) / 10).toFixed(1);
+        }
+      });
+      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-        // 스크롤 위치 및 필터 열림 상태 저장
-        sessionStorage.setItem('scrollPos', window.scrollY);
-        const openFilters = [];
-        document.querySelectorAll('.accordset-item.active').forEach(item => {
-            openFilters.push(item.id);
-        });
-        document.getElementById('openFiltersInput').value = openFilters.join(',');
-        
-        // 폼 제출
-        document.getElementById('filterForm').submit();
+      // 스크롤 위치 및 필터 열림 상태 저장
+      sessionStorage.setItem('scrollPos', window.scrollY);
+      const openFilters = [];
+      document.querySelectorAll('.accordset-item.active').forEach(item => {
+        openFilters.push(item.id);
+      });
+      document.getElementById('openFiltersInput').value = openFilters.join(',');
+
+      // 폼 제출
+      document.getElementById('filterForm').submit();
     }
-</script>
+  </script>
+</th:block>
 </body>
+</html>

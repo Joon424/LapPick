@@ -1,112 +1,47 @@
 ﻿<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="imagetoolbar" content="no">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>직원_회원관리 | Miso</title>
-
-  <!-- memInfo.html과 동일 리소스 -->
-  <script src="/static/js/cartButton.js"></script>
-  <link rel="stylesheet"  href="/resources/css/setting.css">
-  <link rel="stylesheet"  href="/resources/css/plugin.css">
-  <link rel="stylesheet"  href="/resources/css/template.css">
-  <link rel="stylesheet"  href="/resources/css/common.css">
-  <link rel="stylesheet"  href="/resources/css/style.css">
-  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
-  
-  <style type="text/css">
-    /* 💥 [추가] 페이지네이션 전용 스타일 */
-    .pagination-container .page-btn {
-      display: inline-block;
-      min-width: 32px; /* 버튼의 최소 너비 지정 */
-      padding: 6px 10px;
-      font-size: 13px;
-      font-weight: 500;
-      text-align: center;
-      text-decoration: none;
-      color: #333;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s; /* 부드러운 효과 */
-    }
-    .pagination-container .page-btn:hover {
-      background-color: #f5f5f5;
-    }
-
-    /* 현재 활성화된 페이지 버튼 스타일 */
-    .pagination-container .page-btn.active {
-      background-color: #333;
-      color: #fff;
-      border-color: #333;
-      font-weight: bold;
-  </style>
+  <title>직원_회원관리</title>
+  <th:block layout:fragment="css">
+    <style>
+      table { table-layout: fixed; border-collapse: collapse; }
+      th, td { vertical-align: middle; padding: 8px; }
+      .manage-btn {
+        display: inline-block; padding: 5px 10px; font-size: 12px;
+        text-align: center; text-decoration: none; color: #333;
+        background-color: #fff; border: 1px solid #ccc; border-radius: 4px;
+        cursor: pointer; margin: 0 2px; white-space: nowrap;
+      }
+      .manage-btn:hover { background-color: #f0f0f0; border-color: #bbb; }
+      .pagination-container .page-btn {
+        display: inline-block; min-width: 32px; padding: 6px 10px;
+        font-size: 13px; font-weight: 500; text-align: center; text-decoration: none;
+        color: #333; background-color: #fff; border: 1px solid #ddd;
+        border-radius: 4px; cursor: pointer; transition: background-color 0.2s;
+      }
+      .pagination-container .page-btn:hover { background-color: #f5f5f5; }
+      .pagination-container .page-btn.active {
+        background-color: #333; color: #fff; border-color: #333; font-weight: bold;
+      }
+    </style>
+  </th:block>
 </head>
-<body>
-  <!-- === 헤더 (memInfo.html과 동일 블록) === -->
-  <div class="basic-N3" data-bid="znM47Svc81">
-    <div class="header-inner">
-      <div class="header-container container-lg">
-        <div class="header-left">
-          <h1 class="header-title">
-            <a href="/"><img src="/resources/images/img_logo_black.png" alt="로고"></a>
-          </h1>
-          <div class="header-mobile-group">
-            <div class="header-mobile-top">
-              <p>로그인이 필요합니다.</p>
-              <a href="javascript:void(0)">로그인</a>
-            </div>
-            <ul class="header-gnblist">
-              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/brand"><span>BRAND</span></a></li>
-              <li class="header-gnbitem"><a class="header-gnblink" href="/goods/goodsFullList"><span>PRODUCTS</span></a></li>
-              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/notice"><span>NOTICE</span></a></li>
-              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/faq"><span>FAQ</span></a></li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
-                  <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
-                </a>
-              </li>
-            </ul>
-            <button class="header-btn btn-close"><img src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘"></button>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="header-utils">
-            <button class="header-btn btn-seach"><img src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘"></button>
-            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon"><img src="/resources/icons/ico_user_black.svg" alt="유저 아이콘"></a>
-            <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
-              <img src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘"><span class="badgeset-text">1</span>
-            </button>
-            <button class="header-btn btn-allmenu"><img src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘"></button>
-            <button class="header-btn btn-momenu"><img src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘"></button>
-            <button class="header-btn btn-close"><img src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘"></button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="header-dim"></div>
-  </div>
-
-  <main class="th-layout-main">
+<div layout:fragment="content">
     <div class="basic-N23" data-bid="wWM47SwZLN">
       <div class="contents-inner">
         <div class="contents-container container-md">
 
-          <!-- 타이틀/설명 (memInfo.html 스타일) -->
           <div class="textset" style="margin-bottom:14px;">
-            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지" th-hoverbox="true">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
             <h2 class="textset-tit">회원 관리</h2>
             <p class="textset-desc">회원 목록을 조회/관리합니다.</p>
-            <div class="alert"
-                 th:if="${msg != null or error != null}"
-                 th:text="${msg != null ? msg : error}"
+            <div class="alert" th:if="${msg != null or error != null}" th:text="${msg != null ? msg : error}"
                  style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
           </div>
 
-          <!-- 검색/버튼 라인 -->
           <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 16px;">
             <form th:action="@{/employee/members}" method="get" style="display:flex; gap:8px; align-items:center;">
               <input type="text" name="searchWord" th:value="${searchWord}" placeholder="이름 또는 아이디 검색"
@@ -121,7 +56,6 @@
             </div>
           </div>
 
-          <!-- 목록 테이블: memInfo.html처럼 심플한 테이블 디자인(plain border) -->
           <form id="bulkDeleteForm" th:action="@{/employee/members/delete}" method="post">
           <table border="1" width="100%" style="border-collapse:collapse;">
               <thead>
@@ -140,7 +74,6 @@
                 <tr th:if="${members == null or #lists.isEmpty(members)}">
                   <td colspan="8" style="text-align:center; padding:20px; color:#666;">표시할 회원이 없습니다.</td>
                 </tr>
-                
                 <tr th:each="m, stat : ${members}">
                   <td style="text-align:center;"><input type="checkbox" name="memberNums" th:value="${m.memberNum}"></td>
                   <td style="text-align:center;" th:text="${(pageData.page - 1) * pageData.size + stat.index + 1}">1</td>
@@ -151,13 +84,9 @@
                   <td th:text="${#dates.format(m.memberRegist, 'yyyy-MM-dd')}">2024-01-01</td>
                   <td>
                     <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
-                      <a class="manage-btn"
-                         th:href="@{/employee/members/{num}(num=${m.memberNum})}">상세</a>
-                      <a class="manage-btn"
-                         th:href="@{/employee/members/{num}/edit(num=${m.memberNum})}">수정</a>
-                      <a class="manage-btn"
-                         th:href="@{/employee/members/delete/{num}(num=${m.memberNum})}"
-                         onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                      <a class="manage-btn" th:href="@{/employee/members/{num}(num=${m.memberNum})}">상세</a>
+                      <a class="manage-btn" th:href="@{/employee/members/{num}/edit(num=${m.memberNum})}">수정</a>
+                      <a class="manage-btn" th:href="@{/employee/members/delete/{num}(num=${m.memberNum})}" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
                     </div>
                   </td>
                 </tr>
@@ -165,91 +94,24 @@
             </table>
           </form>
 
-          <!-- 페이지네이션: memInfo 스타일 버튼으로 간단히 -->
-    <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:20px;"
+          <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:20px;"
                th:if="${pageData != null and pageData.total > 0}">
-
-            <a class="page-btn"
-               th:href="@{/employee/members(page=${pageData.page - 1}, searchWord=${searchWord})}"
-               th:if="${pageData.page > 1}">이전</a>
-
-            <a class="page-btn"
-               th:each="i : ${#numbers.sequence(1, pageData.totalPages)}"
-               th:text="${i}"
+            <a class="page-btn" th:href="@{/employee/members(page=${pageData.page - 1}, searchWord=${searchWord})}" th:if="${pageData.page > 1}">이전</a>
+            <a class="page-btn" th:each="i : ${#numbers.sequence(1, pageData.totalPages)}" th:text="${i}"
                th:classappend="${pageData.page == i} ? 'active' : ''"
                th:href="@{/employee/members(page=${i}, searchWord=${searchWord})}"></a>
-
-            <a class="page-btn"
-               th:href="@{/employee/members(page=${pageData.page + 1}, searchWord=${searchWord})}"
-               th:if="${pageData.page < pageData.totalPages}">다음</a>
+            <a class="page-btn" th:href="@{/employee/members(page=${pageData.page + 1}, searchWord=${searchWord})}" th:if="${pageData.page < pageData.totalPages}">다음</a>
           </div>
-
         </div>
       </div>
     </div>
-  </main>
-
-  <!-- === 푸터 (memInfo.html과 동일 블록) === -->
-  <div class="basic-N4" data-bid="asM47Svmx7">
-    <div class="footer-inner">
-      <div class="footer-container container-lg">
-        <div class="footer-top">
-          <h1 class="footer-logo"><a href="javascript:void(0)"><img src="/resources/images/img_logo_lightgray.png" alt="로고"></a></h1>
-          <ul class="footer-menulist">
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>이용약관</span></a></li>
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>개인정보처리방침</span></a></li>
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>국비교육</span></a></li>
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>미니프로젝트</span></a></li>
-          </ul>
-          <ul class="footer-snslist">
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_instagram_lightgrey.svg" alt="인스타그램"></a></li>
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_youtube_lightgrey.svg" alt="유튜브"></a></li>
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_facebook_lightgrey.svg" alt="페이스북"></a></li>
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_kakao_lightgrey.svg" alt="카카오톡"></a></li>
-          </ul>
-        </div>
-        <div class="footer-bottom">
-          <div class="footer-txt">
-            <p> 성결대학교 성결관 301호 </p>
-            <p><span>T. 010-8246-6830</span><span>E. wnflqm010203@sungkyul.ac.kr</span></p>
-          </div>
-          <div class="footer-txt"><p>2024 BY JeongJunGyo. ALL RIGHTS RESEVED</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 테이블 줄바꿈/정렬 보정 (memInfo의 심플 느낌 유지) -->
-  <style>
-    table { table-layout: fixed; }
-    th, td { vertical-align: middle; padding: 8px; }
-    
-        .manage-btn {
-      display: inline-block;
-      padding: 5px 10px;      /* 버튼 내부 여백 줄이기 */
-      font-size: 12px;        /* 글자 크기 줄이기 */
-      text-align: center;
-      text-decoration: none;
-      color: #333;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 0 2px;          /* 버튼 사이 간격 */
-      white-space: nowrap;    /* 버튼 이름이 두 줄로 바뀌는 것 방지 */
-    }
-    .manage-btn:hover {
-      background-color: #f0f0f0;
-      border-color: #bbb;
-  </style>
-
+</div>
+<th:block layout:fragment="script">
   <script>
-  function toggleAll(master){
-      // 💥 [확인] 여기도 "memberNums"
+    function toggleAll(master){
       document.querySelectorAll('input[name="memberNums"]').forEach(cb => cb.checked = master.checked);
     }
     function submitBulkDelete(){
-      // 💥 [확인] 여기도 "memberNums"
       const checked = document.querySelectorAll('input[name="memberNums"]:checked');
       if(checked.length === 0){ alert('삭제할 항목을 선택하세요.'); return; }
       if(confirm('선택한 ' + checked.length + '명의 회원을 삭제하시겠습니까?')){
@@ -257,11 +119,5 @@
       }
     }
   </script>
-
-  <script src="/resources/js/setting.js"></script>
-  <script src="/resources/js/plugin.js"></script>
-  <script src="/resources/js/template.js"></script>
-  <script src="/resources/js/common.js"></script>
-  <script src="/resources/js/script.js"></script>
-</body>
+</th:block>
 </html>

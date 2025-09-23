@@ -104,22 +104,25 @@
         UPDATE GOODS SET GOODS_NAME = #{goodsName}, GOODS_PRICE = #{goodsPrice}, GOODS_CONTENTS = #{goodsContents}, GOODS_BRAND = #{goodsBrand}, GOODS_PURPOSE = #{goodsPurpose}, GOODS_SCREEN_SIZE = #{goodsScreenSize}, GOODS_WEIGHT = #{goodsWeight}, GOODS_KEYWORD1 = #{goodsKeyword1}, GOODS_KEYWORD2 = #{goodsKeyword2}, GOODS_KEYWORD3 = #{goodsKeyword3}, GOODS_SHIPPING_INFO = #{goodsShippingInfo}, GOODS_SELLER_INFO = #{goodsSellerInfo}, GOODS_MAIN_IMAGE = #{goodsMainImage, jdbcType=VARCHAR}, GOODS_MAIN_STORE_IMAGE = #{goodsMainStoreImage, jdbcType=VARCHAR}, GOODS_DETAIL_IMAGE = #{goodsDetailImage, jdbcType=VARCHAR}, GOODS_DETAIL_STORE_IMAGE = #{goodsDetailStoreImage, jdbcType=VARCHAR}, GOODS_DETAIL = #{goodsDetail, jdbcType=VARCHAR}, GOODS_DETAIL_STORE = #{goodsDetailStore, jdbcType=VARCHAR}, UPDATE_EMP_NUM = #{updateEmpNum, jdbcType=VARCHAR}, UPDATE_DATE = SYSDATE WHERE GOODS_NUM = #{goodsNum}
     </update>
     
-    <delete id="goodsDelete" parameterType="list">
-        DELETE FROM GOODS 
-        WHERE GOODS_NUM IN
-        <foreach collection="list" item="goodsNum" open="(" separator="," close=")">
-            #{goodsNum}
-        </foreach>
-    </delete>
+<delete id="goodsDelete" parameterType="java.util.List">
+    DELETE FROM GOODS
+    WHERE GOODS_NUM IN
+    <foreach item="num" collection="list" open="(" separator="," close=")">
+        #{num}
+    </foreach>
+</delete>
 
-    <select id="selectGoodsForDelete" parameterType="list" resultMap="goodsResultMap">
-        SELECT GOODS_MAIN_STORE_IMAGE, GOODS_DETAIL_STORE_IMAGE, GOODS_DETAIL_STORE
-        FROM GOODS
-        WHERE GOODS_NUM IN
-        <foreach collection="list" item="goodsNum" open="(" separator="," close=")">
-            #{goodsNum}
-        </foreach>
-    </select>
+<select id="selectGoodsByNumList" parameterType="java.util.List" resultType="mini.domain.GoodsDTO">
+    SELECT
+        GOODS_MAIN_STORE_IMAGE,
+        GOODS_DETAIL_STORE_IMAGE,
+        GOODS_DETAIL_STORE
+    FROM GOODS
+    WHERE GOODS_NUM IN
+    <foreach item="num" collection="list" open="(" separator="," close=")">
+        #{num}
+    </foreach>
+</select>
     
     
 </mapper>

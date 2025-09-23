@@ -86,6 +86,21 @@
                     });
                 }, 100);
             }
+         // ▼▼▼▼▼ [추가] 장바구니 아이콘 클릭 이벤트 처리 ▼▼▼▼▼
+            $('#header-cart-icon').on('click', function() {
+                // Thymeleaf Security Expression을 사용하여 현재 사용자 권한 확인
+                if (/*[[${#authorization.expression('isAnonymous()')}]]*/) {
+                    if (confirm('장바구니를 이용하시려면 로그인 하셔야 합니다. 로그인 페이지로 이동하시겠습니까?')) {
+                        window.location.href = '/login/item.login';
+                    }
+                } else if (/*[[${#authorization.expression('hasRole(''ROLE_EMP'')')}]]*/) {
+                    alert('직원은 장바구니 이용이 불가합니다.');
+                } else {
+                    // 일반 회원(ROLE_MEM)은 장바구니 페이지로 이동
+                    window.location.href = '/cart/cartList';
+                }
+            });
+            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
         });
     </script>
     

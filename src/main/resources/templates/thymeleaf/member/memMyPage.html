@@ -1,372 +1,206 @@
 ﻿<!DOCTYPE html>
-<html lang="ko">
-
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="imagetoolbar" content="no">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="format-detection" content="telephone=no">
-  <meta name="title" content="웹사이트">
-  <meta name="description" content="웹사이트입니다.">
-  <meta name="keywords" content="키워드,키워드,키워드">
-  <meta property="og:title" content="웹사이트">
-  <meta property="og:description" content="웹사이트입니다">
-  <meta property="og:image" content="https://웹사이트/images/opengraph.png">
-  <meta property="og:url" content="https://웹사이트">
-  <title>회원_마이페이지 | Miso</title>
-  <script src="/static/js/cartButton.js"></script>
-  <link rel="stylesheet"  href="/resources/css/setting.css">
-  <link rel="stylesheet"  href="/resources/css/plugin.css">
-  <link rel="stylesheet"  href="/resources/css/template.css">
-  <link rel="stylesheet"  href="/resources/css/common.css">
-  <link rel="stylesheet"  href="/resources/css/style.css">
-<style>
-    /* 마이페이지 레이아웃 */
-    .mypage-container { display: flex; gap: 40px; }
-    .mypage-sidebar { flex-shrink: 0; width: 200px; }
+  <title>회원_마이페이지</title>
+  <th:block layout:fragment="css">
+    <style>
+      /* 마이페이지 레이아웃 */
+      .mypage-container { display: flex; gap: 40px; }
+      .mypage-sidebar { flex-shrink: 0; width: 200px; }
 
-    /* 사이드바 버튼 그룹 스타일 */
-.sidebar-group {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    /* margin-bottom: 15px; <-- 이 줄을 삭제합니다. */
-}
+      /* 사이드바 버튼 그룹 스타일 */
+      .sidebar-group {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        /* margin-bottom: 15px; <-- 이 줄을 삭제합니다. */
+      }
 
-/* [추가] 첫 번째 그룹에만 구분선과 여백을 적용 */
-.sidebar-group:first-child {
-    padding-bottom: 15px; /* 그룹 내 마지막 버튼과 구분선 사이의 여백 */
-    margin-bottom: 15px;  /* 구분선과 아래 그룹 사이의 여백 */
-    border-bottom: 1px solid #e5e7eb; /* 연한 회색 구분선 */
-}
-    /* [최종 수정] 버튼의 내부 여백(padding)을 직접 지정하여 높이를 강제로 통일 */
-    .sidebar-group .btnset {
+      /* [추가] 첫 번째 그룹에만 구분선과 여백을 적용 */
+      .sidebar-group:first-child {
+        padding-bottom: 15px; /* 그룹 내 마지막 버튼과 구분선 사이의 여백 */
+        margin-bottom: 15px;  /* 구분선과 아래 그룹 사이의 여백 */
+        border-bottom: 1px solid #e5e7eb; /* 연한 회색 구분선 */
+      }
+      /* [최종 수정] 버튼의 내부 여백(padding)을 직접 지정하여 높이를 강제로 통일 */
+      .sidebar-group .btnset {
         box-sizing: border-box;
         justify-content: center;
         margin: 0; /* 외부 CSS의 margin값을 초기화하여 gap과의 충돌 방지 */
         padding: 12px 10px; /* 모든 버튼의 상하/좌우 여백을 고정하여 높이를 통일 */
-    }
+      }
 
-    /* 버튼 호버 및 활성화 상태는 그대로 유지 */
-    .sidebar-group .btnset:not(.active):hover {
+      /* 버튼 호버 및 활성화 상태는 그대로 유지 */
+      .sidebar-group .btnset:not(.active):hover {
         background-color: #f0f0f0;
-    }
-    .sidebar-group .btnset.active {
+      }
+      .sidebar-group .btnset.active {
         border-color: #333;
         background-color: #333;
         color: #fff;
-    }
+      }
 
-    /* --- 이하 기존 스타일 유지 --- */
-    .mypage-content { flex-grow: 1; }
-    .mypage-content h3 { font-size: 1.8rem; margin-bottom: 10px; }
-    .mypage-content p.desc { color: #777; margin-bottom: 30px; }
-    .mypage-table { width: 100%; border-collapse: collapse; border-top: 2px solid #333; }
-    .mypage-table th, .mypage-table td { border-bottom: 1px solid #e5e7eb; padding: 15px; vertical-align: middle; }
-    .mypage-table th { width: 160px; background: #fafafa; text-align: left; font-weight: 600; }
-   /* [수정] input[type="date"]에도 동일 스타일 적용 */
-.mypage-table input[type="text"], .mypage-table input[type="email"], .mypage-table input[type="password"], .mypage-table input[type="date"] {
-    width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;
-}
-</style>
-  <script th:if="${message}" th:inline="javascript">
-    /*<![CDATA[*/
-      alert([[${message}]]);
-    /*]]>*/
-  </script>
+      /* --- 이하 기존 스타일 유지 --- */
+      .mypage-content { flex-grow: 1; }
+      .mypage-content h3 { font-size: 1.8rem; margin-bottom: 10px; }
+      .mypage-content p.desc { color: #777; margin-bottom: 30px; }
+      .mypage-table { width: 100%; border-collapse: collapse; border-top: 2px solid #333; }
+      .mypage-table th, .mypage-table td { border-bottom: 1px solid #e5e7eb; padding: 15px; vertical-align: middle; }
+      .mypage-table th { width: 160px; background: #fafafa; text-align: left; font-weight: 600; }
+      /* [수정] input[type="date"]에도 동일 스타일 적용 */
+      .mypage-table input[type="text"], .mypage-table input[type="email"], .mypage-table input[type="password"], .mypage-table input[type="date"] {
+        width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;
+      }
+    </style>
+  </th:block>
 </head>
-
 <body>
-  <!-- [S]basic-N3 -->
-  <div class="basic-N3" data-bid="KrM47tVDk5" id="">
-    <div class="header-inner">
-      <div class="header-container container-lg">
-        <div class="header-left">
-          <h1 class="header-title">
-            <a href="/">
-              <img  src="/resources/images/img_logo_black.png" alt="로고">
-            </a>
-          </h1>
-          <div class="header-mobile-group">
-            <div class="header-mobile-top">
-              <p>로그인이 필요합니다.</p>
-              <a href="javascript:void(0)">로그인</a>
-            </div>
-                        <ul class="header-gnblist">
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/brand">
-                  <span>BRAND</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/goods/goodsFullList">
-                  <span>PRODUCTS</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/notice">
-                  <span>NOTICE</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/faq">
-                  <span>FAQ</span>
-                </a>
-              </li>
-     <li class="header-gnbitem">
-                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
-                  <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
-                </a>
-              </li>
-
-            </ul>
-            <button class="header-btn btn-close">
-              <img  src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘">
-            </button>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="header-utils">
-            <button class="header-btn btn-seach">
-              <img  src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘">
-            </button>
-            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
-              <img  src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
-            </a>
-            <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
-              <img  src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
-              <span class="badgeset-text">1</span>
-            </button>
-            <button class="header-btn btn-allmenu">
-              <img  src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘">
-            </button>
-            <button class="header-btn btn-momenu">
-              <img  src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘">
-            </button>
-            <button class="header-btn btn-close">
-              <img  src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘">
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="header-dim"></div>
-  </div>
-  <!-- [E]basic-N3 -->
- 
+<div layout:fragment="content">
   <main class="th-layout-main">
     <div class="basic-N23" data-bid="wWM47SwZLN">
-        <div class="contents-inner">
-            <div class="contents-container container-md">
-                <div class="textset" style="margin-bottom: 40px;">
-                    <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
-                    <h2 class="textset-tit">마이페이지</h2>
-                    <p class="textset-desc">회원님의 정보를 관리하고 주문 내역을 확인할 수 있습니다.</p>
-                </div>
-
-                <div class="mypage-container">
-                    <!-- 1. 사이드바 메뉴 (버튼 그룹핑) -->
-                    <div class="mypage-sidebar">
-                        <div class="sidebar-group">
-                            <a href="javascript:showSection('infoSection');" class="btnset btnset-line btnset-round">내 정보 보기</a>
-                            <a href="javascript:showSection('editSection');" class="btnset btnset-line btnset-round">내 정보 수정</a>
-                            <a href="javascript:showSection('passwordSection');" class="btnset btnset-line btnset-round">비밀번호 변경</a>
-                        </div>
-                        <div class="sidebar-group">
-                        	<a th:href="@{/item/cartList}" class="btnset btnset-line btnset-round">장바구니</a>
-                            <a th:href="@{/item/orderList}" class="btnset btnset-line btnset-round">주문 내역</a>                           
-                        </div>
-                    </div>
-
-                    <!-- 2. 메인 콘텐츠 영역 (테이블 스타일 클래스 적용) -->
-                    <div class="mypage-content">
-                        <div id="infoSection">
-                            <h3>내 정보</h3>
-                            <p class="desc">회원님의 정보를 확인하실 수 있습니다.</p>
-                            <table class="mypage-table">
-                                <tr><th>이름</th><td th:text="${memberCommand.memberName}"></td></tr>
-                                <tr><th>아이디</th><td th:text="${memberCommand.memberId}"></td></tr>
-                                <tr><th>주소</th><td th:text="|(${memberCommand.memberPost}) ${memberCommand.memberAddr} ${memberCommand.memberAddrDetail}|"></td></tr>
-                                <tr><th>연락처</th><td th:text="${memberCommand.memberPhone1}"></td></tr>
-                                <tr><th>이메일</th><td th:text="${memberCommand.memberEmail}"></td></tr>
-                                <tr><th>생년월일</th><td th:text="${#dates.format(memberCommand.memberBirth, 'yyyy-MM-dd')}"></td></tr>
-                                <tr><th>가입일</th><td th:text="${#dates.format(memberCommand.memberRegist, 'yyyy-MM-dd')}"></td></tr>
-                            </table>
-                            <a href="javascript:confirmWithdraw();" class="btnset btnset-line btnset-round" style="margin-top:20px; float:right; background-color: #f5f5f5;">회원 탈퇴</a>
-                        </div>
-
-                      <div id="editSection" style="display:none;">
-    <h3>내 정보 수정</h3>
-    <p class="desc">회원님의 정보를 수정합니다. (아이디는 변경 불가)</p>
-    <form th:action="@{/member/my-page/update}" th:object="${memberCommand}" method="post">
-        <table class="mypage-table">
-            <tr><th>이름</th><td><input type="text" th:field="*{memberName}"></td></tr>
-            <tr><th>아이디</th><td><input type="text" th:field="*{memberId}" readonly style="background:#f5f5f5; color:#777;"></td></tr>
-            
-            <tr><th>생년월일</th><td><input type="date" th:field="*{memberBirth}"></td></tr>
-
-            <input type="hidden" th:field="*{memberNum}">
-            <tr><th>주소</th><td>
-                <input type="text" th:field="*{memberAddr}" placeholder="기본 주소"><br>
-                <input type="text" th:field="*{memberAddrDetail}" placeholder="상세 주소" style="margin-top:5px;"><br>
-                <input type="text" th:field="*{memberPost}" placeholder="우편번호" style="margin-top:5px; width:120px;">
-            </td></tr>
-            <tr><th>연락처</th><td><input type="text" th:field="*{memberPhone1}"></td></tr>
-            <tr><th>이메일</th><td><input type="email" th:field="*{memberEmail}"></td></tr>
-            <tr><th>비밀번호 확인</th><td>
-                <input type="password" name="memberPw" placeholder="수정을 위해 현재 비밀번호를 입력하세요" required>
-                <p style="font-size:12px; color:#888; margin-top:5px;">개인정보 보호를 위해, 정보 수정 시 현재 비밀번호를 다시 한번 입력해 주세요.</p>
-            </td></tr>
-        </table>
-        <div style="text-align:right; margin-top:20px;">
-            <button type="submit" class="btnset">수정 완료</button>
-        </div>
-    </form>
-</div>
-
-                        <div id="passwordSection" style="display:none;">
-                            <h3>비밀번호 변경</h3>
-                            <p class="desc">새로운 비밀번호를 설정합니다.</p>
-                            <form th:action="@{/member/my-page/change-password}" method="post">
-                                <table class="mypage-table">
-                                    <tr><th>현재 비밀번호</th><td><input type="password" name="oldPw" required></td></tr>
-                                    <tr><th>새 비밀번호</th><td><input type="password" name="newPw" required></td></tr>
-                                </table>
-                                <div style="text-align:right; margin-top:20px;">
-                                     <button type="submit" class="btnset">비밀번호 변경</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-  </main>
-
-  <!-- [S]basic-N4 -->
-  <div class="basic-N4" data-bid="OXm47tvnu9">
-    <div class="footer-inner">
-      <div class="footer-container container-lg">
-        <div class="footer-top">
-          <h1 class="footer-logo">
-            <a href="javascript:void(0)">
-              <img  src="/resources/images/img_logo_lightgray.png" alt="로고">
-            </a>
-          </h1>
-     <ul class="footer-menulist">
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>이용약관</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>개인정보처리방침</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>국비교육</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>미니프로젝트</span>
-              </a>
-            </li>
-          </ul>
-          <ul class="footer-snslist">
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_instagram_lightgrey.svg" alt="인스타그램">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_youtube_lightgrey.svg" alt="유튜브">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_facebook_lightgrey.svg" alt="페이스북">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_kakao_lightgrey.svg" alt="카카오톡">
-              </a>
-            </li>
-          </ul>
-        </div>
-         <div class="footer-bottom">
-          <div class="footer-txt">
-            <p> 성결대학교 성결관 301호 </p>
-            <p>
-              <span>T. 010-8246-6830</span>
-              <span>E. wnflqm010203@sungkyul.ac.kr</span>
-            </p>
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="textset" style="margin-bottom: 40px;">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">마이페이지</h2>
+            <p class="textset-desc">회원님의 정보를 관리하고 주문 내역을 확인할 수 있습니다.</p>
           </div>
-          <div class="footer-txt">
-            <p>2024 BY JeongJunGyo. ALL RIGHTS RESEVED</p>
+
+          <div class="mypage-container">
+            <div class="mypage-sidebar">
+              <div class="sidebar-group">
+                <a href="javascript:showSection('infoSection');" class="btnset btnset-line btnset-round">내 정보 보기</a>
+                <a href="javascript:showSection('editSection');" class="btnset btnset-line btnset-round">내 정보 수정</a>
+                <a href="javascript:showSection('passwordSection');" class="btnset btnset-line btnset-round">비밀번호 변경</a>
+              </div>
+              <div class="sidebar-group">
+                <a th:href="@{/item/cartList}" class="btnset btnset-line btnset-round">장바구니</a>
+                <a th:href="@{/item/orderList}" class="btnset btnset-line btnset-round">주문 내역</a>
+              </div>
+            </div>
+
+            <div class="mypage-content">
+              <div id="infoSection">
+                <h3>내 정보</h3>
+                <p class="desc">회원님의 정보를 확인하실 수 있습니다.</p>
+                <table class="mypage-table">
+                  <tr><th>이름</th><td th:text="${memberCommand.memberName}"></td></tr>
+                  <tr><th>아이디</th><td th:text="${memberCommand.memberId}"></td></tr>
+                  <tr><th>주소</th><td th:text="|(${memberCommand.memberPost}) ${memberCommand.memberAddr} ${memberCommand.memberAddrDetail}|"></td></tr>
+                  <tr><th>연락처</th><td th:text="${memberCommand.memberPhone1}"></td></tr>
+                  <tr><th>이메일</th><td th:text="${memberCommand.memberEmail}"></td></tr>
+                  <tr><th>생년월일</th><td th:text="${#dates.format(memberCommand.memberBirth, 'yyyy-MM-dd')}"></td></tr>
+                  <tr><th>가입일</th><td th:text="${#dates.format(memberCommand.memberRegist, 'yyyy-MM-dd')}"></td></tr>
+                </table>
+                <a href="javascript:confirmWithdraw();" class="btnset btnset-line btnset-round" style="margin-top:20px; float:right; background-color: #f5f5f5;">회원 탈퇴</a>
+              </div>
+
+              <div id="editSection" style="display:none;">
+                <h3>내 정보 수정</h3>
+                <p class="desc">회원님의 정보를 수정합니다. (아이디는 변경 불가)</p>
+                <form th:action="@{/member/my-page/update}" th:object="${memberCommand}" method="post">
+                  <table class="mypage-table">
+                    <tr><th>이름</th><td><input type="text" th:field="*{memberName}"></td></tr>
+                    <tr><th>아이디</th><td><input type="text" th:field="*{memberId}" readonly style="background:#f5f5f5; color:#777;"></td></tr>
+
+                    <tr><th>생년월일</th><td><input type="date" th:field="*{memberBirth}"></td></tr>
+
+                    <input type="hidden" th:field="*{memberNum}">
+                    <tr><th>주소</th><td>
+                      <input type="text" th:field="*{memberAddr}" placeholder="기본 주소"><br>
+                      <input type="text" th:field="*{memberAddrDetail}" placeholder="상세 주소" style="margin-top:5px;"><br>
+                      <input type="text" th:field="*{memberPost}" placeholder="우편번호" style="margin-top:5px; width:120px;">
+                    </td></tr>
+                    <tr><th>연락처</th><td><input type="text" th:field="*{memberPhone1}"></td></tr>
+                    <tr><th>이메일</th><td><input type="email" th:field="*{memberEmail}"></td></tr>
+                    <tr><th>비밀번호 확인</th><td>
+                      <input type="password" name="memberPw" placeholder="수정을 위해 현재 비밀번호를 입력하세요" required>
+                      <p style="font-size:12px; color:#888; margin-top:5px;">개인정보 보호를 위해, 정보 수정 시 현재 비밀번호를 다시 한번 입력해 주세요.</p>
+                    </td></tr>
+                  </table>
+                  <div style="text-align:right; margin-top:20px;">
+                    <button type="submit" class="btnset">수정 완료</button>
+                  </div>
+                </form>
+              </div>
+
+              <div id="passwordSection" style="display:none;">
+                <h3>비밀번호 변경</h3>
+                <p class="desc">새로운 비밀번호를 설정합니다.</p>
+                <form th:action="@{/member/my-page/change-password}" method="post">
+                  <table class="mypage-table">
+                    <tr><th>현재 비밀번호</th><td><input type="password" name="oldPw" required></td></tr>
+                    <tr><th>새 비밀번호</th><td><input type="password" name="newPw" required></td></tr>
+                  </table>
+                  <div style="text-align:right; margin-top:20px;">
+                    <button type="submit" class="btnset">비밀번호 변경</button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <!-- [E]basic-N4 -->
-  <script  src="/resources/js/setting.js"></script>
-  <script  src="/resources/js/plugin.js"></script>
-  <script  src="/resources/js/template.js"></script>
-  <script  src="/resources/js/common.js"></script>
-  <script  src="/resources/js/script.js"></script>
- 
+  </main>
+</div>
+
+<th:block layout:fragment="script">
+  <script th:if="${message}" th:inline="javascript">
+    /*<![CDATA[*/
+    alert([[${message}]]);
+    /*]]>*/
+  </script>
   <script>
     const sections = ['infoSection', 'editSection', 'passwordSection'];
     // [수정] 클릭 이벤트를 감지할 대상을 명확히 지정
     const menuLinks = document.querySelectorAll('.mypage-sidebar a[href*="javascript:showSection"]');
 
     function showSection(activeSectionId) {
-        // 모든 콘텐츠 섹션을 숨김
-        sections.forEach(id => {
-            const section = document.getElementById(id);
-            if (section) section.style.display = 'none';
-        });
-        // 클릭된 섹션만 표시
-        const activeSection = document.getElementById(activeSectionId);
-        if (activeSection) activeSection.style.display = 'block';
+      // 모든 콘텐츠 섹션을 숨김
+      sections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) section.style.display = 'none';
+      });
+      // 클릭된 섹션만 표시
+      const activeSection = document.getElementById(activeSectionId);
+      if (activeSection) activeSection.style.display = 'block';
 
-        // [수정] 모든 메뉴 링크의 'active' 클래스를 먼저 전부 제거
-        menuLinks.forEach(link => {
-            link.classList.remove('active');
-        });
-        // [수정] 그 다음, 클릭된 메뉴에만 'active' 클래스를 추가
-        const activeLink = document.querySelector(`a[href*="javascript:showSection('${activeSectionId}')"]`);
-        if(activeLink) activeLink.classList.add('active');
+      // [수정] 모든 메뉴 링크의 'active' 클래스를 먼저 전부 제거
+      menuLinks.forEach(link => {
+        link.classList.remove('active');
+      });
+      // [수정] 그 다음, 클릭된 메뉴에만 'active' 클래스를 추가
+      const activeLink = document.querySelector(`a[href*="javascript:showSection('${activeSectionId}')"]`);
+      if(activeLink) activeLink.classList.add('active');
     }
 
     function confirmWithdraw() {
-        if (!confirm("정말 탈퇴하시겠습니까? 탈퇴 시 모든 정보가 삭제됩니다.")) return;
-        var pw = prompt("계정 삭제를 위해 비밀번호를 입력하세요.");
-        if (pw && pw.trim().length > 0) {
-            var form = document.createElement('form');
-            form.method = 'post';
-            form.action = '/member/withdraw';
-            var hiddenField = document.createElement('input');
-            hiddenField.type = 'hidden';
-            hiddenField.name = 'memberPw';
-            hiddenField.value = pw.trim();
-            form.appendChild(hiddenField);
-            document.body.appendChild(form);
-            form.submit();
-        }
+      if (!confirm("정말 탈퇴하시겠습니까? 탈퇴 시 모든 정보가 삭제됩니다.")) return;
+      var pw = prompt("계정 삭제를 위해 비밀번호를 입력하세요.");
+      if (pw && pw.trim().length > 0) {
+        var form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/member/withdraw';
+        var hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = 'memberPw';
+        hiddenField.value = pw.trim();
+        form.appendChild(hiddenField);
+        document.body.appendChild(form);
+        form.submit();
+      }
     }
 
     // 페이지가 처음 로드될 때 '내 정보 보기'를 기본으로 표시
     document.addEventListener('DOMContentLoaded', function() {
-        showSection('infoSection');
+      showSection('infoSection');
     });
   </script>
+</th:block>
 </body>
+</html>

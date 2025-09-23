@@ -1,81 +1,30 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="imagetoolbar" content="no">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>직원_회원수정 | Miso</title>
+  <title>직원_회원수정</title>
 
-  <!-- memberList.html / memInfo.html 과 동일 리소스 -->
-  <script src="/static/js/cartButton.js"></script>
-  <link rel="stylesheet"  href="/resources/css/setting.css">
-  <link rel="stylesheet"  href="/resources/css/plugin.css">
-  <link rel="stylesheet"  href="/resources/css/template.css">
-  <link rel="stylesheet"  href="/resources/css/common.css">
-  <link rel="stylesheet"  href="/resources/css/style.css">
-  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js"></script>
-
-  <style>
-    /* memInfo와 형태 유지 */
-    table { table-layout: fixed; border-collapse: collapse; width:600px; }
-    th, td { border:1px solid #e5e7eb; padding:10px; vertical-align:top; }
-    th { width:160px; background:#fafafa; text-align:left; }
-    .row { display:flex; gap:8px; align-items:center; }
-    .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; flex-wrap:wrap; }
-    input[type="text"], input[type="date"], input[type="email"], select {
-      width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px;
-    }
-    .w-120 { width:120px; }
-    .hint { color:#777; font-size:12px; margin-top:4px; }
-    .alert { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:10px 12px; border-radius:6px; margin-bottom:12px; }
-  </style>
+  <th:block layout:fragment="css">
+    <style>
+      /* memInfo와 형태 유지 */
+      table { table-layout: fixed; border-collapse: collapse; width:600px; }
+      th, td { border:1px solid #e5e7eb; padding:10px; vertical-align:top; }
+      th { width:160px; background:#fafafa; text-align:left; }
+      .row { display:flex; gap:8px; align-items:center; }
+      .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; flex-wrap:wrap; }
+      input[type="text"], input[type="date"], input[type="email"], select {
+        width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px;
+      }
+      .w-120 { width:120px; }
+      .hint { color:#777; font-size:12px; margin-top:4px; }
+      .alert { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:10px 12px; border-radius:6px; margin-bottom:12px; }
+    </style>
+  </th:block>
 </head>
 <body>
-  <!-- 헤더 (memInfo 동일) -->
-  <div class="basic-N3" data-bid="znM47Svc81">
-    <div class="header-inner">
-      <div class="header-container container-lg">
-        <div class="header-left">
-          <h1 class="header-title">
-            <a href="/"><img src="/resources/images/img_logo_black.png" alt="로고"></a>
-          </h1>
-          <div class="header-mobile-group">
-            <div class="header-mobile-top">
-              <p>로그인이 필요합니다.</p>
-              <a href="javascript:void(0)">로그인</a>
-            </div>
-            <ul class="header-gnblist">
-              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/brand"><span>BRAND</span></a></li>
-              <li class="header-gnbitem"><a class="header-gnblink" href="/goods/goodsFullList"><span>PRODUCTS</span></a></li>
-              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/notice"><span>NOTICE</span></a></li>
-              <li class="header-gnbitem"><a class="header-gnblink" href="/banner/faq"><span>FAQ</span></a></li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
-                  <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
-                </a>
-              </li>
-            </ul>
-            <button class="header-btn btn-close"><img src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘"></button>
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="header-utils">
-            <button class="header-btn btn-seach"><img src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘"></button>
-            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon"><img src="/resources/icons/ico_user_black.svg" alt="유저 아이콘"></a>
-            <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
-              <img src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘"><span class="badgeset-text">1</span>
-            </button>
-            <button class="header-btn btn-allmenu"><img src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘"></button>
-            <button class="header-btn btn-momenu"><img src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘"></button>
-            <button class="header-btn btn-close"><img src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘"></button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="header-dim"></div>
-  </div>
-
+<div layout:fragment="content">
   <main class="th-layout-main">
     <div class="basic-N23" data-bid="wWM47SwZLN">
       <div class="contents-inner">
@@ -85,11 +34,10 @@
             <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지" th-hoverbox="true">
             <h2 class="textset-tit">회원 수정</h2>
             <p class="textset-desc">회원 정보를 수정하는 페이지입니다.</p>
-            <!-- 성공/실패 메시지 -->
             <div class="alert" th:if="${message}" th:text="${message}"></div>
           </div>
 
-        <form id="memberEditForm"
+          <form id="memberEditForm"
                 th:action="@{/employee/members/update}"
                 th:object="${memberCommand}"
                 method="post">
@@ -155,13 +103,12 @@
                   </div>
                 </td>
               </tr>
-
- <tr>
-    <th>생년월일</th>
-    <td>
-        <input type="date" name="memberBirth" th:value="${#dates.format(memberCommand.memberBirth, 'yyyy-MM-dd')}" required>
-    </td>
-</tr>
+              <tr>
+                <th>생년월일</th>
+                <td>
+                  <input type="date" name="memberBirth" th:value="${#dates.format(memberCommand.memberBirth, 'yyyy-MM-dd')}" required>
+                </td>
+              </tr>
 
               <tr>
                 <th>가입일</th>
@@ -182,41 +129,11 @@
       </div>
     </div>
   </main>
+</div>
 
-  <!-- 푸터 (memInfo 동일) -->
-  <div class="basic-N4" data-bid="asM47Svmx7">
-    <div class="footer-inner">
-      <div class="footer-container container-lg">
-        <div class="footer-top">
-          <h1 class="footer-logo"><a href="javascript:void(0)"><img src="/resources/images/img_logo_lightgray.png" alt="로고"></a></h1>
-          <ul class="footer-menulist">
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>이용약관</span></a></li>
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>개인정보처리방침</span></a></li>
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>국비교육</span></a></li>
-            <li class="footer-menuitem"><a href="javascript:void(0)"><span>미니프로젝트</span></a></li>
-          </ul>
-          <ul class="footer-snslist">
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_instagram_lightgrey.svg" alt="인스타그램"></a></li>
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_youtube_lightgrey.svg" alt="유튜브"></a></li>
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_facebook_lightgrey.svg" alt="페이스북"></a></li>
-            <li class="footer-snsitem"><a class="footer-snslink" href="javascript:void(0)"><img src="/resources/icons/ico_kakao_lightgrey.svg" alt="카카오톡"></a></li>
-          </ul>
-        </div>
-        <div class="footer-bottom">
-          <div class="footer-txt">
-            <p> 성결대학교 성결관 301호 </p>
-            <p><span>T. 010-8246-6830</span><span>E. wnflqm010203@sungkyul.ac.kr</span></p>
-          </div>
-          <div class="footer-txt"><p>2024 BY JeongJunGyo. ALL RIGHTS RESEVED</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
+<th:block layout:fragment="script">
+  <script src="/static/js/cartButton.js"></script>
+</th:block>
 
-  <script src="/resources/js/setting.js"></script>
-  <script src="/resources/js/plugin.js"></script>
-  <script src="/resources/js/template.js"></script>
-  <script src="/resources/js/common.js"></script>
-  <script src="/resources/js/script.js"></script>
 </body>
 </html>

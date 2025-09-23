@@ -200,24 +200,44 @@ public class GoodsService {
         return fileList.stream().collect(Collectors.joining("/"));
     }
     
-    /**
-     * 상품 삭제 (개별/다중)
-     */
-    public void deleteGoods(String[] goodsNums) {
-        for (String goodsNum : goodsNums) {
-            GoodsDTO dto = goodsMapper.selectOne(goodsNum);
-            if (dto != null) {
-                deleteFile(dto.getGoodsMainStoreImage());
-                if (dto.getGoodsDetailStoreImage() != null) {
-                    for (String storeFile : dto.getGoodsDetailStoreImage().split("/")) {
-                        deleteFile(storeFile);
+    @Transactional
+    public void deleteGoods(String[] nums) {
+        // 1. String 배열을 List로 변환
+        List<String> goodsNumList = Arrays.asList(nums);
+        
+        // 2. 삭제할 상품들의 파일 정보를 DB에서 한 번에 조회
+        List<GoodsDTO> goodsForDelete = goodsMapper.selectGoodsByNumList(goodsNumList);
+
+        // 3. 조회된 정보를 바탕으로 실제 파일 삭제
+        for (GoodsDTO goods : goodsForDelete) {
+            // 메인 이미지 파일 삭제
+            if (goods.getGoodsMainStoreImage() != null) {
+                File file = new File(fileDir + "/" + goods.getGoodsMainStoreImage());
+                if (file.exists()) file.delete();
+            }
+            // 상세 썸네일 이미지 파일 삭제
+            if (goods.getGoodsDetailStoreImage() != null) {
+                for (String fileName : goods.getGoodsDetailStoreImage().split("/")) {
+                    if (!fileName.isEmpty()) {
+                        File file = new File(fileDir + "/" + fileName);
+                        if (file.exists()) file.delete();
                     }
                 }
-                goodsMapper.goodsDelete(goodsNum);
+            }
+            // 상세 설명 이미지 파일 삭제
+            if (goods.getGoodsDetailStore() != null) {
+                for (String fileName : goods.getGoodsDetailStore().split("/")) {
+                    if (!fileName.isEmpty()) {
+                        File file = new File(fileDir + "/" + fileName);
+                        if (file.exists()) file.delete();
+                    }
+                }
             }
         }
-    }
 
+        // 4. DB에서 상품 정보들을 한 번에(일괄) 삭제
+        goodsMapper.goodsDelete(goodsNumList);
+    }
 
     // --- 파일 처리 Helper Methods (기존과 동일) ---
     private String getUploadDirectory() {

@@ -1,262 +1,95 @@
 ﻿<!DOCTYPE html>
-<html lang="ko">
-
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="imagetoolbar" content="no">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="format-detection" content="telephone=no">
-  <meta name="title" content="웹사이트">
-  <meta name="description" content="웹사이트입니다.">
-  <meta name="keywords" content="키워드,키워드,키워드">
-  <meta property="og:title" content="웹사이트">
-  <meta property="og:description" content="웹사이트입니다">
-  <meta property="og:image" content="https://웹사이트/images/opengraph.png">
-  <meta property="og:url" content="https://웹사이트">
-  <title>직원_상품상세 | Miso</title>
-  <script src="/static/js/cartButton.js"></script>
-  <link rel="stylesheet"  href="/resources/css/setting.css">
-  <link rel="stylesheet"  href="/resources/css/plugin.css">
-  <link rel="stylesheet"  href="/resources/css/template.css">
-  <link rel="stylesheet"  href="/resources/css/common.css">
-  <link rel="stylesheet"  href="/resources/css/style.css">
+  <title>직원_상품상세</title>
+  <th:block layout:fragment="css">
     <style>
-        table { table-layout: fixed; border-collapse: collapse; width: 800px; }
-        th, td { border:1px solid #e5e7eb; padding:12px 15px; vertical-align: top; }
-        th { width:160px; background:#fafafa; text-align:left; font-weight: 600; }
-        .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; }
+      table { table-layout: fixed; border-collapse: collapse; width: 800px; }
+      th, td { border:1px solid #e5e7eb; padding:12px 15px; vertical-align: top; }
+      th { width:160px; background:#fafafa; text-align:left; font-weight: 600; }
+      .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; }
     </style>
+  </th:block>
 </head>
-
 <body>
-  <!-- [S]basic-N3 -->
-  <div class="basic-N3" data-bid="ow11u4ESzXm">
-    <div class="header-inner">
-      <div class="header-container container-lg">
-        <div class="header-left">
-          <h1 class="header-title">
-            <a href="/">
-              <img  src="/resources/images/img_logo_black.png" alt="로고">
-            </a>
-          </h1>
-          <div class="header-mobile-group">
-            <div class="header-mobile-top">
-              <p>로그인이 필요합니다.</p>
-              <a href="javascript:void(0)">로그인</a>
-            </div>
-                        <ul class="header-gnblist">
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/brand">
-                  <span>BRAND</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/goods/goodsFullList">
-                  <span>PRODUCTS</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/notice">
-                  <span>NOTICE</span>
-                </a>
-              </li>
-              <li class="header-gnbitem">
-                <a class="header-gnblink" href="/banner/faq">
-                  <span>FAQ</span>
-                </a>
-              </li>
-          <li class="header-gnbitem">
-  <a class="header-gnblink" 
-     th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
-    <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'"
-          th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
-  </a>
-</li>
-
-            </ul>
-            <button class="header-btn btn-close">
-              <img  src="/resources/icons/ico_close_white.svg" alt="닫기 아이콘">
-            </button>
+<div layout:fragment="content">
+  <main class="th-layout-main">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="textset">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">상품 상세 정보</h2>
+            <p class="textset-desc">상품의 상세 정보를 보여주는 페이지입니다.</p>
           </div>
-        </div>
-        <div class="header-right">
-          <div class="header-utils">
-            <button class="header-btn btn-seach">
-              <img  src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘">
-            </button>
-            <a href="/login/userIcon" class="header-btn btn-user" id="user-icon">
-              <img  src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
-            </a>
-            <button class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
-              <img  src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
-              <span class="badgeset-text">1</span>
-            </button>
-            <button class="header-btn btn-allmenu">
-              <img  src="/resources/icons/ico_menu2_black.svg" alt="PC메뉴 아이콘">
-            </button>
-            <button class="header-btn btn-momenu">
-              <img  src="/resources/icons/ico_menu2_black.svg" alt="모바일메뉴 아이콘">
-            </button>
-            <button class="header-btn btn-close">
-              <img  src="/resources/icons/ico_close_black.svg" alt="닫기 아이콘">
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="header-dim"></div>
-  </div>
-  <!-- [E]basic-N3 -->
-   <main class="th-layout-main">
-        <div class="basic-N23" data-bid="wWM47SwZLN">
-            <div class="contents-inner">
-                <div class="contents-container container-md">
-                    <div class="textset">
-                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
-                        <h2 class="textset-tit">상품 상세 정보</h2>
-                        <p class="textset-desc">상품의 상세 정보를 보여주는 페이지입니다.</p>
-                    </div>
 
-                    <table border="1">
-                        <tbody>
-                            <tr><th>상품번호</th><td th:text="${goodsCommand.goodsNum}"></td></tr>
-                            <tr><th>상품명</th><td th:text="${goodsCommand.goodsName}"></td></tr>
-                            <tr><th>가격</th><td th:text="${#numbers.formatInteger(goodsCommand.goodsPrice, 0, 'COMMA')} + '원'"></td></tr>
-                            <tr><th>브랜드</th><td th:text="${goodsCommand.goodsBrand}"></td></tr>
-                            <tr><th>용도</th><td th:text="${goodsCommand.goodsPurpose}"></td></tr>
-                            <tr><th>화면 크기</th><td th:text="${goodsCommand.goodsScreenSize} + '인치'"></td></tr>
-                            <tr><th>무게</th><td th:text="${goodsCommand.goodsWeight} + 'kg'"></td></tr>
-                            <tr><th>상품설명</th><td style="white-space: pre-wrap;" th:text="${goodsCommand.goodsContents}"></td></tr>
-                            
-                            <tr>
-                                <th>키워드</th>
-                                <td th:text="|#${goodsCommand.goodsKeyword1} #${goodsCommand.goodsKeyword2} #${goodsCommand.goodsKeyword3}|"></td>
-                            </tr>
-                            <tr><th>배송 정보</th><td th:text="${goodsCommand.goodsShippingInfo}"></td></tr>
-                            <tr><th>판매자 정보</th><td th:text="${goodsCommand.goodsSellerInfo}"></td></tr>
+          <table border="1">
+            <tbody>
+            <tr><th>상품번호</th><td th:text="${goodsCommand.goodsNum}"></td></tr>
+            <tr><th>상품명</th><td th:text="${goodsCommand.goodsName}"></td></tr>
+            <tr><th>가격</th><td th:text="${#numbers.formatInteger(goodsCommand.goodsPrice, 0, 'COMMA')} + '원'"></td></tr>
+            <tr><th>브랜드</th><td th:text="${goodsCommand.goodsBrand}"></td></tr>
+            <tr><th>용도</th><td th:text="${goodsCommand.goodsPurpose}"></td></tr>
+            <tr><th>화면 크기</th><td th:text="${goodsCommand.goodsScreenSize} + '인치'"></td></tr>
+            <tr><th>무게</th><td th:text="${goodsCommand.goodsWeight} + 'kg'"></td></tr>
+            <tr><th>상품설명</th><td style="white-space: pre-wrap;" th:text="${goodsCommand.goodsContents}"></td></tr>
 
-                            <tr th:if="${goodsCommand.goodsMainStoreImage != null}">
-                                <th>대표이미지 (썸네일)</th>
-                                <td><img th:src="@{/upload/{img}(img=${goodsCommand.goodsMainStoreImage})}" alt="대표이미지" style="max-width: 300px; height: auto;"></td>
-                            </tr>
-                         <tr>
-    <th>상세이미지 (썸네일)</th>
-    <td>
-        <div th:if="${goodsCommand.goodsDetailStoreImage != null and !#strings.isEmpty(goodsCommand.goodsDetailStoreImage)}" style="display:flex; flex-wrap:wrap; gap:10px;">
-            <div th:each="img : ${#strings.listSplit(goodsCommand.goodsDetailStoreImage, '/')}">
-                <img th:if="${!img.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${img})}" alt="상세이미지" style="max-width: 200px; height: auto;">
-            </div>
-        </div>
-        <p th:if="${goodsCommand.goodsDetailStoreImage == null or #strings.isEmpty(goodsCommand.goodsDetailStoreImage)}">
-            등록된 상세 이미지가 없습니다.
-        </p>
-    </td>
-</tr>
+            <tr>
+              <th>키워드</th>
+              <td th:text="|#${goodsCommand.goodsKeyword1} #${goodsCommand.goodsKeyword2} #${goodsCommand.goodsKeyword3}|"></td>
+            </tr>
+            <tr><th>배송 정보</th><td th:text="${goodsCommand.goodsShippingInfo}"></td></tr>
+            <tr><th>판매자 정보</th><td th:text="${goodsCommand.goodsSellerInfo}"></td></tr>
 
-<tr>
-    <th>상세 설명 이미지</th>
-    <td>
-        <div th:if="${goodsCommand.goodsDetailStore != null and !#strings.isEmpty(goodsCommand.goodsDetailStore)}" style="display:flex; flex-direction: column; gap:10px;">
-            <div th:each="img : ${#strings.listSplit(goodsCommand.goodsDetailStore, '/')}">
-                <img th:if="${!img.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${img})}" alt="상세 설명 이미지" style="max-width: 100%; height: auto;">
-            </div>
-        </div>
-        <p th:if="${goodsCommand.goodsDetailStore == null or #strings.isEmpty(goodsCommand.goodsDetailStore)}">
-            등록된 상세 설명 이미지가 없습니다.
-        </p>
-    </td>
-</tr>
-
-<tr>
-    <th>등록일</th><td th:text="${#dates.format(goodsCommand.goodsDate, 'yyyy-MM-dd')}"></td>
-</tr>
-                        </tbody>
-                    </table>
-
-                    <div class="btnbar">
-                        <a th:href="@{/goods/list}" class="btnset btnset-line btnset-round">목록으로</a>
-                        <a th:href="@{/goods/{num}/edit(num=${goodsCommand.goodsNum})}" class="btnset btnset-line btnset-round">상품 수정</a>
-                    </div>
+            <tr th:if="${goodsCommand.goodsMainStoreImage != null}">
+              <th>대표이미지 (썸네일)</th>
+              <td><img th:src="@{/upload/{img}(img=${goodsCommand.goodsMainStoreImage})}" alt="대표이미지" style="max-width: 300px; height: auto;"></td>
+            </tr>
+            <tr>
+              <th>상세이미지 (썸네일)</th>
+              <td>
+                <div th:if="${goodsCommand.goodsDetailStoreImage != null and !#strings.isEmpty(goodsCommand.goodsDetailStoreImage)}" style="display:flex; flex-wrap:wrap; gap:10px;">
+                  <div th:each="img : ${#strings.listSplit(goodsCommand.goodsDetailStoreImage, '/')}">
+                    <img th:if="${!img.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${img})}" alt="상세이미지" style="max-width: 200px; height: auto;">
+                  </div>
                 </div>
-            </div>
-        </div>
-    </main>
-    
-  <!-- [S]basic-N4 -->
-  <div class="basic-N4" data-bid="DB4JlD9e4fN">
-    <div class="footer-inner">
-      <div class="footer-container container-lg">
-        <div class="footer-top">
-          <h1 class="footer-logo">
-            <a href="javascript:void(0)">
-              <img  src="/resources/images/img_logo_lightgray.png" alt="로고">
-            </a>
-          </h1>
-     <ul class="footer-menulist">
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>이용약관</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>개인정보처리방침</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>국비교육</span>
-              </a>
-            </li>
-            <li class="footer-menuitem">
-              <a href="javascript:void(0)">
-                <span>미니프로젝트</span>
-              </a>
-            </li>
-          </ul>
-          <ul class="footer-snslist">
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_instagram_lightgrey.svg" alt="인스타그램">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_youtube_lightgrey.svg" alt="유튜브">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_facebook_lightgrey.svg" alt="페이스북">
-              </a>
-            </li>
-            <li class="footer-snsitem">
-              <a class="footer-snslink" href="javascript:void(0)">
-                <img  src="/resources/icons/ico_kakao_lightgrey.svg" alt="카카오톡">
-              </a>
-            </li>
-          </ul>
-        </div>
-         <div class="footer-bottom">
-          <div class="footer-txt">
-            <p> 성결대학교 성결관 301호 </p>
-            <p>
-              <span>T. 010-8246-6830</span>
-              <span>E. wnflqm010203@sungkyul.ac.kr</span>
-            </p>
-          </div>
-          <div class="footer-txt">
-            <p>2024 BY JeongJunGyo. ALL RIGHTS RESEVED</p>
+                <p th:if="${goodsCommand.goodsDetailStoreImage == null or #strings.isEmpty(goodsCommand.goodsDetailStoreImage)}">
+                  등록된 상세 이미지가 없습니다.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <th>상세 설명 이미지</th>
+              <td>
+                <div th:if="${goodsCommand.goodsDetailStore != null and !#strings.isEmpty(goodsCommand.goodsDetailStore)}" style="display:flex; flex-direction: column; gap:10px;">
+                  <div th:each="img : ${#strings.listSplit(goodsCommand.goodsDetailStore, '/')}">
+                    <img th:if="${!img.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${img})}" alt="상세 설명 이미지" style="max-width: 100%; height: auto;">
+                  </div>
+                </div>
+                <p th:if="${goodsCommand.goodsDetailStore == null or #strings.isEmpty(goodsCommand.goodsDetailStore)}">
+                  등록된 상세 설명 이미지가 없습니다.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <th>등록일</th><td th:text="${#dates.format(goodsCommand.goodsDate, 'yyyy-MM-dd')}"></td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div class="btnbar">
+            <a th:href="@{/goods/list}" class="btnset btnset-line btnset-round">목록으로</a>
+            <a th:href="@{/goods/{num}/edit(num=${goodsCommand.goodsNum})}" class="btnset btnset-line btnset-round">상품 수정</a>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <!-- [E]basic-N4 -->
-  <script  src="/resources/js/setting.js"></script>
-  <script  src="/resources/js/plugin.js"></script>
-  <script  src="/resources/js/template.js"></script>
-  <script  src="/resources/js/common.js"></script>
-  <script  src="/resources/js/script.js"></script>
+  </main>
+</div>
 </body>
+</html>

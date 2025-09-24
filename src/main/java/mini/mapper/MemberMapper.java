@@ -34,6 +34,8 @@ public interface MemberMapper {
     public List<MemberDTO> selectAllMembers();
     public void updatePassword(MemberDTO member);
     // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+    
+    public MemberDTO selectOneById(String memberId);
 }
 
 

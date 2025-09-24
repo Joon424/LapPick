@@ -36,6 +36,7 @@
             object-fit: cover;
             border-radius: 6px;
         }
+   /* [수정] 이 부분을 교체하세요 */
         .td-info {
             text-align: center;
             padding: 0 15px;
@@ -79,32 +80,40 @@
             align-items: center;
             margin-bottom: 20px;
         }
+ /* [수정] 이 부분을 통째로 교체하세요 */
         .cart-summary {
             margin-top: 40px;
-            padding: 25px;
+            padding: 25px 40px;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             background-color: #fafafa;
             display: flex;
-            justify-content: space-between;
+            justify-content: space-between; /* 왼쪽 그룹과 오른쪽 그룹을 양 끝으로 분리 */
             align-items: center;
         }
+        .summary-group-left, .summary-group-right {
+            display: flex;
+            align-items: center;
+            gap: 30px; /* 각 그룹 내 항목 간 간격 */
+        }
         .summary-item { text-align: right; }
+        .summary-item .label, .summary-item .value {
+            font-size: 1.4rem;
+        }
         .summary-item .label {
-            font-size: 15px;
             color: #555;
-            margin-right: 15px;
         }
         .summary-item .value {
-            font-size: 1.3rem;
             font-weight: bold;
             color: #333;
         }
         .summary-item .value.price { color: #d63333; }
+
+        /* ▼▼▼ 2. 구매하기 버튼 텍스트 크기 확대 ▼▼▼ */
         .btn-purchase {
-            height: 50px;
-            padding: 0 40px;
-            font-size: 1rem;
+            height: 55px; /* 높이 소폭 증가 */
+            padding: 0 45px; /* 좌우 여백 소폭 증가 */
+            font-size: 1.3rem; /* 폰트 크기 확대 */
             font-weight: 600;
             color: #fff;
             background-color: #333;
@@ -112,6 +121,8 @@
             border-radius: 6px;
             cursor: pointer;
         }
+        /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
+        
         .btn-purchase:hover { background-color: #555; }
         .search-form {
             display: flex;
@@ -143,13 +154,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 300px;
+            /* [추가] 이 한 줄을 추가하여 가운데 정렬합니다. */
             margin: 6px auto 0;
         }
     </style>
   </th:block>
 </head>
 <div layout:fragment="content">
-    <main class="th-layout-main">
+     <main class="th-layout-main">
       <div class="basic-N23" data-bid="Zk2czu8Wyib">
         <div class="contents-inner">
           <div class="contents-container container-md">
@@ -172,72 +184,77 @@
               </div>
             </div>
 
-            <form action="/purchase/goodsBuy" method="post" name="cartForm">
-                <table class="cart-table">
-                  <thead>
-                    <tr>
-                      <th style="width: 5%;"><input type="checkbox" id="checkAll" checked></th>
-                      <th style="width: 10%;">이미지</th>
-                      <th style="width: 45%;">상품 이름</th>
-                      <th style="width: 15%;">수량</th>
-                      <th style="width: 15%;">상품금액</th>
-                      <th style="width: 10%;">관리</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr th:if="${list == null or #lists.isEmpty(list)}">
-                      <td colspan="6" class="empty-cart">
-                        <span th:if="${searchWord == null or searchWord == ''}">장바구니에 담긴 상품이 없습니다.</span>
-                        <span th:unless="${searchWord == null or searchWord == ''}">검색된 상품이 없습니다.</span>
-                      </td>
-                    </tr>
-                    <tr th:each="dto : ${list}" class="cart-item">
-                      <td class="td-check">
-                        <input type="checkbox" name="nums" checked th:value="${dto.goodsDTO.goodsNum}" class="item-check">
-                      </td>
-                      <td class="td-image">
-                        <a th:href="@{/corner/detailView/{num}(num=${dto.goodsDTO.goodsNum})}">
-                          <img th:src="|/upload/${dto.goodsDTO.goodsMainStoreImage}|" alt="상품 이미지">
-                        </a>
-                      </td>
-                      <td class="td-info">
-                        <a th:href="@{/corner/detailView/{num}(num=${dto.goodsDTO.goodsNum})}" class="goods-name-link">
-                          <p class="goods-name">[[${dto.goodsDTO.goodsName}]]</p>
-                        </a>
-                        <p class="goods-desc">[[${dto.goodsDTO.goodsContents}]]</p>
-                      </td>
-                      <td class="td-quantity">
-                        <div class="quantity-control">
-                          <button type="button" class="btn-qty minus" th:data-goods-num="${dto.goodsDTO.goodsNum}" th:data-goods-price="${dto.goodsDTO.goodsPrice}" onclick="handleQty('minus', this)">-</button>
-                          <span class="qty-display" th:id="${dto.goodsDTO.goodsNum}">[[${dto.cartDTO.cartQty}]]</span>
-                          <button type="button" class="btn-qty plus" th:data-goods-num="${dto.goodsDTO.goodsNum}" th:data-goods-price="${dto.goodsDTO.goodsPrice}" onclick="handleQty('plus', this)">+</button>
-                        </div>
-                      </td>
-                      <td class="td-total">
-                        <span class="total-price" th:id="${'t_' + dto.goodsDTO.goodsNum}">
-                          [[${#numbers.formatCurrency(dto.goodsDTO.goodsPrice * dto.cartDTO.cartQty)}]]
-                        </span>원
-                      </td>
-                      <td class="td-manage">
-                        <a class="btn-delete" th:href="|javascript:deleteItem('${dto.goodsDTO.goodsNum}')|">삭제</a>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+            <form action="/purchase/order" method="post" name="cartForm">
+              <table class="cart-table">
+                <thead>
+                  <tr>
+                    <th style="width: 5%;"><input type="checkbox" id="checkAll" checked></th>
+                    <th style="width: 10%;">이미지</th>
+                    <th style="width: 45%;">상품 이름</th>
+                    <th style="width: 15%;">수량</th>
+                    <th style="width: 15%;">상품금액</th>
+                    <th style="width: 10%;">관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${list == null or #lists.isEmpty(list)}">
+                    <td colspan="6" class="empty-cart">
+                      <span th:if="${searchWord == null or searchWord == ''}">장바구니에 담긴 상품이 없습니다.</span>
+                      <span th:unless="${searchWord == null or searchWord == ''}">검색된 상품이 없습니다.</span>
+                    </td>
+                  </tr>
+                  <tr th:each="dto : ${list}" class="cart-item">
+                    <td class="td-check"><input type="checkbox" name="nums" checked th:value="${dto.goodsDTO.goodsNum}" class="item-check"></td>
+                    <td class="td-image">
+                      <a th:href="@{/corner/detailView/{num}(num=${dto.goodsDTO.goodsNum})}">
+                        <img th:src="|/upload/${dto.goodsDTO.goodsMainStoreImage}|" alt="상품 이미지">
+                      </a>
+                    </td>
+                    <td class="td-info">
+                      <a th:href="@{/corner/detailView/{num}(num=${dto.goodsDTO.goodsNum})}" class="goods-name-link">
+                        <p class="goods-name">[[${dto.goodsDTO.goodsName}]]</p>
+                      </a>
+                      <p class="goods-desc">[[${dto.goodsDTO.goodsContents}]]</p>
+                    </td>
+                    <td class="td-quantity">
+                      <div class="quantity-control">
+                        <button type="button" class="btn-qty minus" th:data-goods-num="${dto.goodsDTO.goodsNum}" th:data-goods-price="${dto.goodsDTO.goodsPrice}" onclick="handleQty('minus', this)">-</button>
+                        <span class="qty-display" th:id="${dto.goodsDTO.goodsNum}">[[${dto.cartDTO.cartQty}]]</span>
+                        <button type="button" class="btn-qty plus" th:data-goods-num="${dto.goodsDTO.goodsNum}" th:data-goods-price="${dto.goodsDTO.goodsPrice}" onclick="handleQty('plus', this)">+</button>
+                      </div>
+                    </td>
+                    <td class="td-total">
+                      <span class="total-price" th:id="${'t_' + dto.goodsDTO.goodsNum}">
+                        [[${#numbers.formatCurrency(dto.goodsDTO.goodsPrice * dto.cartDTO.cartQty)}]]
+                      </span>원
+                    </td>
+                    <td class="td-manage">
+                      <a class="btn-delete" th:href="|javascript:deleteItem('${dto.goodsDTO.goodsNum}')|">삭제</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
               
               <div class="cart-summary">
-                  <div class="summary-item">
-                    <span class="label">총 선택 상품</span>
-                    <span class="value" id="totalItemCount">0개</span>
+                  <div class="summary-group-left">
+                      <div class="summary-item">
+                        <span class="label">총 선택 상품:</span>
+                        <span class="value" id="totalItemCount">0개</span>
+                      </div>
+                      <div class="summary-item">
+                        <span class="label">총 수량:</span>
+                        <span class="value" id="totalItemQty">0개</span>
+                      </div>
                   </div>
-                  <div class="summary-item">
-                    <span class="label">총 상품 금액</span>
-                    <span class="value price" id="totalPrice">0원</span>
+                  <div class="summary-group-right">
+                      <div class="summary-item">
+                        <span class="label">총 상품 금액:</span>
+                        <span class="value price" id="totalPrice">0원</span>
+                      </div>
+                      <button type="submit" class="btn-purchase">구매하기</button>
                   </div>
-                  <button type="submit" class="btn-purchase">구매하기</button>
               </div>
             </form>
-
           </div>
         </div>
       </div>
@@ -246,23 +263,33 @@
 <th:block layout:fragment="script">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        function calculateTotals() {
-            let checkedItemCount = 0;
-            let totalPrice = 0;
+    // [수정] 이 함수를 통째로 교체하세요
+    function calculateTotals() {
+        let checkedItemCount = 0;
+        let totalQuantity = 0; // 총 수량을 위한 변수 추가
+        let totalPrice = 0;
+        
+        $('input.item-check:checked').each(function() {
+            checkedItemCount++;
+            const row = $(this).closest('tr');
             
-            $('input.item-check:checked').each(function() {
-                checkedItemCount++;
-                const row = $(this).closest('tr');
-                const priceText = row.find('.total-price').text().replace(/[^0-9]/g, '');
-                
-                if (priceText) {
-                    totalPrice += parseInt(priceText);
-                }
-            });
+            // 현재 상품의 수량 가져오기
+            const qtyText = row.find('.qty-display').text();
+            if(qtyText) {
+                totalQuantity += parseInt(qtyText);
+            }
 
-            $('#totalItemCount').text(checkedItemCount.toLocaleString() + '개');
-            $('#totalPrice').text(totalPrice.toLocaleString() + '원');
-        }
+            // 현재 상품의 합계 금액 가져오기
+            const priceText = row.find('.total-price').text().replace(/[^0-9]/g, '');
+            if (priceText) {
+                totalPrice += parseInt(priceText);
+            }
+        });
+
+        $('#totalItemCount').text(checkedItemCount.toLocaleString() + '개');
+        $('#totalItemQty').text(totalQuantity.toLocaleString() + '개'); // 총 수량 업데이트
+        $('#totalPrice').text(totalPrice.toLocaleString() + '원');
+    }
 
         function handleQty(action, button) {
             const goodsNum = $(button).data('goods-num');

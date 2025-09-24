@@ -195,7 +195,31 @@
         WHERE MEMBER_ID = #{memberId}
     </update>
 
+<select id="selectOneById" parameterType="string" resultType="mini.domain.MemberDTO">
+    SELECT
+        MEMBER_NUM as memberNum,
+        MEMBER_ID as memberId,
+        MEMBER_PW as memberPw,
+        MEMBER_NAME as memberName,
+        MEMBER_PHONE1 as memberPhone1,
+        MEMBER_PHONE2 as memberPhone2,
+        MEMBER_ADDR as memberAddr,
+        MEMBER_ADDR_DETAIL as memberAddrDetail,
+        MEMBER_POST as memberPost,
+        GENDER as gender,
+        MEMBER_EMAIL as memberEmail,
+        MEMBER_BIRTH as memberBirth,
+        MEMBER_REGIST as memberRegist,
+        MEMBER_EMAIL_CONF as memberEmailConf
+    FROM
+        MEMBERS
+    WHERE
+        MEMBER_ID = #{memberId}
+</select>
+
 </mapper>
+
+
 
 
 

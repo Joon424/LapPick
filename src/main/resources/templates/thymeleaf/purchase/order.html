@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>주문/결제</title>
+    <th:block layout:fragment="css">
+        <style>
+            .section-title { font-size: 1.8rem; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 0; }
+            .order-table { width: 100%; border-collapse: collapse; margin-bottom: 50px; border-spacing: 0; }
+            .order-table th, .order-table td { padding: 15px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; text-align: center; }
+            .order-table thead th { background-color: #fafafa; font-weight: 600; }
+            .order-table .td-product-img img { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; }
+            .order-table .td-product-info { text-align: center; }
+            /* [수정 3] 상품명만 볼드 처리 유지 */
+            .order-table .goods-name { font-weight: 600; margin-bottom: 6px;}
+            /* [수정 2] 상품 설명 스타일 추가 (장바구니와 동일) */
+            .goods-desc {
+                color: #777;
+                font-size: 13px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+            /* [수정 3] 상품 금액 볼드 제거 */
+            .order-table .td-price {
+                text-align: center;
+            }
+            .shipping-table th { 
+                width: 160px; 
+                text-align: left; 
+                background-color: #fafafa; 
+                padding-left: 20px;
+                /* [수정 1] 배송지 정보 라벨 볼드 처리 */
+                font-weight: 600; 
+            }
+            .shipping-table input[type="text"] { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+                 /* [수정] cartList.html과 동일한 스타일 적용 */
+            .cart-summary {
+                margin-top: 40px;
+                padding: 25px 50px;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                background-color: #fafafa;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .summary-group-left, .summary-group-right {
+                display: flex;
+                align-items: center;
+                gap: 30px;
+            }
+            .summary-item { text-align: right; }
+            .summary-item .label, .summary-item .value {
+                font-size: 1.4rem;
+            }
+            .summary-item .label {
+                color: #555;
+            }
+            .summary-item .value {
+                font-weight: bold;
+                color: #333;
+            }
+            .summary-item .value.price { color: #d63333; }
+            .btn-purchase {
+                height: 60px;
+                padding: 0 50px;
+                font-size: 1.3rem;
+                font-weight: bold;
+                color: #fff;
+                background-color: #333;
+                border: 1px solid #333;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+            .btn-purchase:hover { background-color: #555; }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="basic-N23">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="textset" style="margin-bottom: 40px;">
+                        <h2 class="textset-tit">주문/결제</h2>
+                    </div>
+
+                    <form th:action="@{/purchase/placeOrder}" method="post">
+                        <h3 class="section-title">주문 상품 정보</h3>
+                        <table class="order-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">이미지</th>
+                                    <th style="width: 45%;">상품명</th>
+                                    <th style="width: 15%;">수량</th>
+                                    <th style="width: 25%;">상품 금액</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item, stat : ${items}">
+                                    <td class="td-product-img"><img th:src="@{|/upload/${item.goodsDTO.goodsMainStoreImage}|}" alt="상품 이미지"></td>
+                                    <td class="td-product-info">
+                                        <p class="goods-name" th:text="${item.goodsDTO.goodsName}"></p>
+                                        <p class="goods-desc" th:text="${item.goodsDTO.goodsContents}"></p>
+                                    </td>
+                                    <td th:text="${item.cartDTO.cartQty}"></td>
+                                    <td class="td-price" th:text="${#numbers.formatInteger(item.goodsDTO.goodsPrice * item.cartDTO.cartQty, 3, 'COMMA')} + '원'"></td>
+                                    
+                                    <input type="hidden" th:name="|goodsNums[${stat.index}]|" th:value="${item.goodsDTO.goodsNum}">
+                                    <input type="hidden" th:name="|goodsQtys[${stat.index}]|" th:value="${item.cartDTO.cartQty}">
+                                    <input type="hidden" th:name="|goodsPrices[${stat.index}]|" th:value="${item.goodsDTO.goodsPrice}">
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h3 class="section-title">배송지 정보</h3>
+                        <table class="order-table shipping-table">
+                            <tbody>
+                                <tr>
+                                    <th>받으시는 분</th>
+                                    <td><input type="text" name="receiverName" th:value="${member.memberName}" required></td>
+                                </tr>
+                                <tr>
+                                    <th>연락처</th>
+                                    <td><input type="text" name="receiverPhone" th:value="${member.memberPhone1}" required></td>
+                                </tr>
+                                <tr>
+                                    <th>주소</th>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input type="text" id="postcode" name="purchasePost" th:value="${member.memberPost}" placeholder="우편번호" style="width: 120px; flex-grow: 0;">
+                                            <button type="button" class="btnset btnset-line" style="flex-shrink: 0;" onclick="execDaumPostcode();">우편번호 찾기</button>
+                                        </div>
+                                        <input type="text" id="address" name="purchaseAddr" th:value="${member.memberAddr}" placeholder="기본주소" style="margin-top: 8px;">
+                                        <input type="text" id="detailAddress" name="purchaseAddrDetail" th:value="${member.memberAddrDetail}" placeholder="상세주소" style="margin-top: 8px;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>배송 메시지</th>
+                                    <td><input type="text" name="purchaseMsg" placeholder="배송 기사님께 남길 메시지를 입력하세요."></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                         <div class="cart-summary">
+                            <div class="summary-group-left">
+                                <div class="summary-item">
+                                    <span class="label">총 상품:</span>
+                                    <span class="value" th:text="${totalItemCount} + '종'"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">총 수량:</span>
+                                    <span class="value" th:text="${totalQuantity} + '개'"></span>
+                                </div>
+                            </div>
+                            <div class="summary-group-right">
+                                <div class="summary-item">
+                                    <span class="label">최종 결제 금액:</span>
+                                    <span class="value price" th:text="${#numbers.formatInteger(totalPayment, 3, 'COMMA')} + '원'"></span>
+                                </div>
+                                <button type="submit" class="btn-purchase">결제하기</button>
+                            </div>
+                            <input type="hidden" name="totalPayment" th:value="${totalPayment}">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block layout:fragment="script">
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script>
+        function execDaumPostcode() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    document.getElementById('postcode').value = data.zonecode;
+                    document.getElementById('address').value = data.roadAddress;
+                    document.getElementById('detailAddress').focus();
+                }
+            }).open();
+        }
+    </script>
+</th:block>
+</body>
+</html>

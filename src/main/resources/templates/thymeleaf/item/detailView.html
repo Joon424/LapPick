@@ -150,20 +150,23 @@
         });
       });
 
-      // 구매하기
+      // ▼▼▼▼▼ [수정] 구매하기 버튼 로직 ▼▼▼▼▼
       $("#buyItem").on("click", function() {
         const goodsNum = /*[[${goods.goodsNum}]]*/ 'default';
-        const qty = 1;
-
+        const qty = 1; // 바로 구매 시 수량은 1개로 고정
         const isLoggedIn = /*[[${isLoggedIn}]]*/ false;
+
         if (!isLoggedIn) {
           if(confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
             window.location.href = "/login/item.login";
           }
           return;
         }
-        location.href = `/cart/buyItem?goodsNum=${goodsNum}&qty=${qty}`; // [수정] /item -> /cart
+
+        // 새로 만든 Direct URL로 GET 방식 요청
+        location.href = `/purchase/orderDirect?goodsNum=${goodsNum}&qty=${qty}`;
       });
+      // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     });
   </script>
 </th:block>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>주문 내역</title>
+    <th:block layout:fragment="css">
+        <style>
+            .order-group {
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                margin-bottom: 30px;
+                overflow: hidden;
+            }
+            .order-item-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .order-item-table th, .order-item-table td {
+                padding: 15px 10px;
+                vertical-align: middle;
+                text-align: center;
+                border-bottom: 1px solid #f2f2f2;
+            }
+            .order-item-table thead {
+                background-color: #fafafa;
+                font-size: 14px;
+                font-weight: 600;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .order-item-table tr:last-child td { border-bottom: none; }
+            .td-image img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+            .td-info { text-align: left; padding-left: 20px; }
+            .goods-name { font-weight: 600; margin-bottom: 6px; }
+            .goods-desc { color: #777; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px; }
+            .item-status { font-weight: 600; }
+            .status-paid { color: #28a745; }
+            .status-preparing { color: #fd7e14; }
+            .status-shipping { color: #17a2b8; }
+            .status-delivered { color: #6c757d; }
+            .status-canceled { color: #dc3545; }
+            .empty-list { text-align: center; padding: 80px 0; color: #777; }
+            .search-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 8px; }
+            .search-bar input { height: 36px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 6px; min-width: 240px; }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="basic-N23">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    
+                    <div class="textset" style="margin-bottom: 40px;">
+                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+                        <h2 class="textset-tit">주문 내역</h2>
+                        <p class="textset-desc">회원님의 주문 내역을 확인하고 배송 상태를 조회할 수 있습니다.</p>
+                    </div>
+
+                    <div class="search-bar">
+                        <form th:action="@{/purchase/my-orders}" method="get" style="display: flex; gap: 8px;">
+                            <input type="text" name="searchWord" th:value="${searchWord}" placeholder="주문하신 상품명으로 검색">
+                            <button type="submit" class="btnset btnset-line btnset-round">검색</button>
+                            <a class="btnset btnset-line btnset-round" th:href="@{/purchase/my-orders}">전체보기</a>
+                        </form>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(orderList)}" class="empty-list">
+                        <p>주문 내역이 없습니다.</p>
+                    </div>
+
+                    <div th:each="order : ${orderList}" class="order-group">
+                        <table class="order-item-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">주문일</th>
+                                    <th style="width: 10%;"></th> <th style="width: 35%;">상품정보</th>
+                                    <th style="width: 10%;">주문가격</th>
+                                    <th style="width: 10%;">수량</th>
+                                    <th style="width: 10%;">주문상태</th>
+                                    <th style="width: 10%;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody th:if="${!#lists.isEmpty(order.purchaseList)}">
+                                <tr th:each="item, itemStat : ${order.purchaseList}">
+                                    <td th:if="${itemStat.first}" th:rowspan="${#lists.size(order.purchaseList)}" style="vertical-align: middle;"
+                                        th:text="${#dates.format(order.purchaseDate, 'yyyy-MM-dd HH:mm')}">
+                                    </td>
+                                    <td class="td-image">
+                                        <img th:src="@{|/upload/${item.goodsDTO.goodsMainStoreImage}|}" alt="상품 이미지">
+                                    </td>
+                                    <td class="td-info">
+                                        <a th:href="@{/purchase/detail/{num}(num=${order.purchaseNum})}" style="text-decoration: none; color: inherit;">
+                                            <p class="goods-name" th:text="${item.goodsDTO.goodsName}"></p>
+                                            <p class="goods-desc" th:text="${item.goodsDTO.goodsContents}"></p>
+                                        </a>
+                                    </td>
+                                    <td th:text="${#numbers.formatInteger(item.purchasePrice, 0, 'COMMA')} + '원'"></td>
+                                    <td th:text="${item.purchaseQty} + '개'"></td>
+                                    <td class="item-status"
+                                        th:text="${order.purchaseStatus}"
+                                        th:classappend="${order.purchaseStatus == '결제완료'} ? 'status-paid' :
+                                                       (${order.purchaseStatus == '상품준비중'} ? 'status-preparing' :
+                                                       (${order.purchaseStatus == '배송중'} ? 'status-shipping' :
+                                                       (${order.purchaseStatus == '배송완료'} ? 'status-delivered' : 'status-canceled')))">
+                                    </td>
+                                    <td>
+                                        <a th:if="${order.purchaseStatus == '배송중' or order.purchaseStatus == '배송완료'}"
+                                           href="javascript:void(0);"
+                                           th:onclick="trackDelivery([[${order.deliveryDTO?.deliveryCompany}]], [[${order.deliveryDTO?.trackingNumber}]])"
+                                           class="btnset btnset-line btnset-sm">배송조회</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block layout:fragment="script">
+    <script>
+        function trackDelivery(company, trackingNum) {
+            if (!company || !trackingNum) {
+                alert('배송 정보가 아직 등록되지 않았습니다.');
+                return;
+            }
+            alert('택배사: ' + company + '\n송장번호: ' + trackingNum + '\n(실제 사이트에서는 택배사 조회 페이지로 연결됩니다.)');
+        }
+    </script>
+</th:block>
+</body>
+</html>

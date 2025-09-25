@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>나의 상품 문의</title>
+    <th:block layout:fragment="css">
+        <style>
+            .section { margin-bottom: 50px; }
+            .section-title { font-size: 1.5rem; font-weight: 600; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+            
+            /* 문의 내역 테이블 스타일 */
+            .qna-table { width: 100%; text-align: center; border-collapse: collapse; }
+            .qna-table th, .qna-table td { padding: 12px 8px; border-bottom: 1px solid #e5e7eb; }
+            .qna-table thead { background-color: #fafafa; }
+
+            /* 문의 작성 폼 테이블 스타일 (goodsWrite.html 참고) */
+            .form-table { table-layout: fixed; border-collapse: collapse; width: 100%; border-top: 2px solid #333; }
+            .form-table th, .form-table td { border-bottom:1px solid #e5e7eb; padding:12px 15px; vertical-align: top; }
+            .form-table th { width:180px; background:#fafafa; text-align:left; font-weight: 600; }
+            .form-table input[type="text"], .form-table select, .form-table textarea {
+              width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px; font-size:14px;
+            }
+            .form-table textarea { resize: vertical; min-height: 150px; }
+            .btn-bar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-end; }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="contents-container container-md">
+            <div class="textset" style="margin-bottom: 40px;">
+                <h2 class="textset-tit">나의 상품 문의</h2>
+                <p class="textset-desc">작성하신 상품 문의 내역을 확인하고, 새로운 문의를 작성할 수 있습니다.</p>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">문의 내역</h3>
+                <table class="qna-table">
+                    <thead>
+                        <tr>
+                            <th style="width:10%;">상태</th>
+                            <th style="width:15%;">유형</th>
+                            <th style="width:25%;">상품명</th>
+                            <th style="width:35%;">제목</th>
+                            <th style="width:15%;">작성일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(myQnaList)}"><td colspan="5" style="padding:40px 0;">등록된 문의가 없습니다.</td></tr>
+                        <tr th:each="qna : ${myQnaList}">
+                            <td th:text="${qna.qnaStatus}">답변대기</td>
+                            <td th:text="${qna.qnaType}">상품</td>
+                            <td th:text="${qna.goodsDTO.goodsName}">상품명</td>
+                            <td style="text-align:left;" th:text="${qna.qnaTitle}">제목입니다.</td>
+                            <td th:text="${#dates.format(qna.qnaDate, 'yyyy-MM-dd')}">2025-09-25</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">새 문의 작성</h3>
+                <form action="/qna/write" method="post">
+                    <table class="form-table">
+                        <tr>
+                            <th>문의 상품</th>
+                            <td>
+                                <select name="goodsNum" required>
+                                    <option value="">-- 문의할 주문 상품을 선택하세요 --</option>
+                                    <option th:each="item : ${purchaseList}" 
+                                            th:value="${item.goodsNum}" 
+                                            th:text="${item.goodsDTO.goodsName}"
+                                            th:selected="${param.goodsNum != null and item.goodsNum == param.goodsNum[0]}"></option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>문의 유형</th>
+                            <td>
+                                <select name="qnaType" required>
+                                    <option value="상품">상품</option>
+                                    <option value="배송">배송</option>
+                                    <option value="교환/반품">교환/반품</option>
+                                    <option value="기타">기타</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>제목</th>
+                            <td><input type="text" name="qnaTitle" required></td>
+                        </tr>
+                        <tr>
+                            <th>내용</th>
+                            <td><textarea name="qnaContent" rows="8" required></textarea></td>
+                        </tr>
+                    </table>
+                    <div class="btn-bar">
+                        <button type="submit" class="btnset">문의 등록</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mini.mapper.QnaMapper">
+
+    <resultMap id="qnaResultMap" type="mini.domain.QnaDTO">
+        <id property="qnaNum" column="QNA_NUM"/>
+        <result property="memberNum" column="MEMBER_NUM"/>
+        <result property="goodsNum" column="GOODS_NUM"/>
+        <result property="qnaType" column="QNA_TYPE"/>
+        <result property="qnaTitle" column="QNA_TITLE"/>
+        <result property="qnaContent" column="QNA_CONTENT"/>
+        <result property="qnaDate" column="QNA_DATE"/>
+        <result property="answerContent" column="ANSWER_CONTENT"/>
+        <result property="answerDate" column="ANSWER_DATE"/>
+        <result property="qnaStatus" column="QNA_STATUS"/>
+        <association property="goodsDTO" javaType="mini.domain.GoodsDTO">
+            <result property="goodsName" column="GOODS_NAME"/>
+        </association>
+        <association property="memberDTO" javaType="mini.domain.MemberDTO">
+            <result property="memberId" column="MEMBER_ID"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertQna" parameterType="mini.domain.QnaDTO">
+        INSERT INTO QNA (
+            QNA_NUM, MEMBER_NUM, GOODS_NUM, QNA_TYPE, QNA_TITLE, QNA_CONTENT
+        ) VALUES (
+            QNA_SEQ.NEXTVAL, #{memberNum}, #{goodsNum}, #{qnaType}, #{qnaTitle}, #{qnaContent}
+        )
+    </insert>
+
+    <select id="selectQnaByGoodsNum" parameterType="string" resultMap="qnaResultMap">
+        SELECT Q.*, M.MEMBER_ID
+        FROM QNA Q
+        JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM
+        WHERE Q.GOODS_NUM = #{goodsNum}
+        ORDER BY Q.QNA_DATE DESC
+    </select>
+
+    <select id="selectQnaByMemberNum" parameterType="string" resultMap="qnaResultMap">
+        SELECT Q.*, G.GOODS_NAME
+        FROM QNA Q
+        JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+        WHERE Q.MEMBER_NUM = #{memberNum}
+        ORDER BY Q.QNA_DATE DESC
+    </select>
+</mapper>

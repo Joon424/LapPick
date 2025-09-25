@@ -7,12 +7,32 @@
     <title>주문 내역</title>
     <th:block layout:fragment="css">
         <style>
+            .page-actions {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .search-form {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+            .search-form input[type="text"] {
+                height: 36px;
+                padding: 0 10px;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                min-width: 240px;
+            }
+
             .order-group {
                 border: 1px solid #e5e7eb;
                 border-radius: 8px;
                 margin-bottom: 30px;
                 overflow: hidden;
             }
+
             .order-item-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -21,17 +41,33 @@
                 padding: 15px 10px;
                 vertical-align: middle;
                 text-align: center;
-                border-bottom: 1px solid #f2f2f2;
+            }
+            .order-item-table tbody tr:not(:last-child) td {
+                 border-bottom: 1px solid #f2f2f2;
             }
             .order-item-table thead {
                 background-color: #fafafa;
                 font-size: 14px;
-                font-weight: 600;
                 border-bottom: 1px solid #e5e7eb;
             }
             .order-item-table tr:last-child td { border-bottom: none; }
-            .td-image img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
-            .td-info { text-align: left; padding-left: 20px; }
+
+            .td-image {
+                text-align: left;
+                padding-left: 20px;
+            }
+            .td-image img { 
+                width: 80px; 
+                height: 80px; 
+                object-fit: cover; 
+                border-radius: 6px; 
+            }
+            
+            .td-info { 
+                text-align: left; 
+                padding-left: 0;
+            }
+
             .goods-name { font-weight: 600; margin-bottom: 6px; }
             .goods-desc { color: #777; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px; }
             .item-status { font-weight: 600; }
@@ -41,8 +77,24 @@
             .status-delivered { color: #6c757d; }
             .status-canceled { color: #dc3545; }
             .empty-list { text-align: center; padding: 80px 0; color: #777; }
-            .search-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 8px; }
-            .search-bar input { height: 36px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 6px; min-width: 240px; }
+
+            .manage-btn {
+              display: inline-block; padding: 5px 10px; font-size: 12px;
+              text-align: center; text-decoration: none; color: #333;
+              background-color: #fff; border: 1px solid #ccc; border-radius: 4px;
+              cursor: pointer; margin: 0 2px; white-space: nowrap;
+            }
+            .manage-btn:hover { background-color: #f0f0f0; border-color: #bbb; }
+			
+			 .pagination-container .page-btn {
+              display: inline-block; min-width: 32px; padding: 6px 10px;
+              font-size: 13px; font-weight: 500; text-align: center; text-decoration: none;
+              color: #333; background-color: #fff; border: 1px solid #ddd;
+              border-radius: 4px; cursor: pointer;
+            }
+            .pagination-container .page-btn.active {
+              background-color: #333; color: #fff; border-color: #333; font-weight: bold;
+            }
         </style>
     </th:block>
 </head>
@@ -59,35 +111,35 @@
                         <p class="textset-desc">회원님의 주문 내역을 확인하고 배송 상태를 조회할 수 있습니다.</p>
                     </div>
 
-                    <div class="search-bar">
-                        <form th:action="@{/purchase/my-orders}" method="get" style="display: flex; gap: 8px;">
+                    <div class="page-actions">
+                        <form class="search-form" th:action="@{/purchase/my-orders}" method="get">
                             <input type="text" name="searchWord" th:value="${searchWord}" placeholder="주문하신 상품명으로 검색">
                             <button type="submit" class="btnset btnset-line btnset-round">검색</button>
                             <a class="btnset btnset-line btnset-round" th:href="@{/purchase/my-orders}">전체보기</a>
                         </form>
                     </div>
 
-                    <div th:if="${#lists.isEmpty(orderList)}" class="empty-list">
+                   <div th:if="${#lists.isEmpty(pageData.items)}" class="empty-list">
                         <p>주문 내역이 없습니다.</p>
                     </div>
 
-                    <div th:each="order : ${orderList}" class="order-group">
+                     <div th:each="order : ${pageData.items}" class="order-group">
                         <table class="order-item-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 15%;">주문일</th>
-                                    <th style="width: 10%;"></th> <th style="width: 35%;">상품정보</th>
-                                    <th style="width: 10%;">주문가격</th>
-                                    <th style="width: 10%;">수량</th>
+                                    <th style="width: 15%; text-align: left; padding-left: 20px; font-size: 15px;">
+                                        <strong>주문일:</strong>
+                                        <span style="font-weight: 400;" th:text="${#dates.format(order.purchaseDate, 'yyyy-MM-dd HH:mm')}"></span>
+                                    </th>
+                                    <th style="width: 45%; text-align: center;">상품정보</th>
+                                    <th style="width: 15%;">주문가격</th>
+                                    <th style="width: 5%;">수량</th>
                                     <th style="width: 10%;">주문상태</th>
                                     <th style="width: 10%;">관리</th>
                                 </tr>
                             </thead>
                             <tbody th:if="${!#lists.isEmpty(order.purchaseList)}">
-                                <tr th:each="item, itemStat : ${order.purchaseList}">
-                                    <td th:if="${itemStat.first}" th:rowspan="${#lists.size(order.purchaseList)}" style="vertical-align: middle;"
-                                        th:text="${#dates.format(order.purchaseDate, 'yyyy-MM-dd HH:mm')}">
-                                    </td>
+                                <tr th:each="item : ${order.purchaseList}">
                                     <td class="td-image">
                                         <img th:src="@{|/upload/${item.goodsDTO.goodsMainStoreImage}|}" alt="상품 이미지">
                                     </td>
@@ -109,26 +161,43 @@
                                     <td>
                                         <a th:if="${order.purchaseStatus == '배송중' or order.purchaseStatus == '배송완료'}"
                                            href="javascript:void(0);"
-                                           th:onclick="trackDelivery([[${order.deliveryDTO?.deliveryCompany}]], [[${order.deliveryDTO?.trackingNumber}]])"
-                                           class="btnset btnset-line btnset-sm">배송조회</a>
+                                           th:onclick="trackDelivery([[${order.deliveryDTO?.deliveryCompany}]], [[${order.deliveryDTO?.trackingNumber}]], [[${order.purchaseStatus}]])"
+                                           class="manage-btn">배송조회</a>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                       <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:40px;"
+                         th:if="${pageData != null and pageData.total > 0}">
+                        <a class="page-btn" th:href="@{/purchase/my-orders(page=${pageData.startPage - 1}, searchWord=${searchWord})}" th:if="${pageData.hasPrev}">이전</a>
+                        <a class="page-btn" th:each="p : ${#numbers.sequence(pageData.startPage, pageData.endPage)}" th:text="${p}"
+                           th:classappend="${pageData.page == p} ? 'active' : ''"
+                           th:href="@{/purchase/my-orders(page=${p}, searchWord=${searchWord})}"></a>
+                        <a class="page-btn" th:href="@{/purchase/my-orders(page=${pageData.endPage + 1}, searchWord=${searchWord})}" th:if="${pageData.hasNext}">다음</a>
+                    </div>
                 </div>
             </div>
         </div>
+   
     </main>
 </div>
 <th:block layout:fragment="script">
-    <script>
-        function trackDelivery(company, trackingNum) {
+   <script>
+        function trackDelivery(company, trackingNum, status) {
             if (!company || !trackingNum) {
                 alert('배송 정보가 아직 등록되지 않았습니다.');
                 return;
             }
-            alert('택배사: ' + company + '\n송장번호: ' + trackingNum + '\n(실제 사이트에서는 택배사 조회 페이지로 연결됩니다.)');
+
+            let statusText = '';
+            if (status === '배송중') {
+                statusText = '배송중';
+            } else if (status === '배송완료') {
+                statusText = '배송완료';
+            }
+
+            alert('택배사: ' + company + '\n송장번호: ' + trackingNum + '\n배송현황: ' + statusText);
         }
     </script>
 </th:block>

@@ -7,6 +7,7 @@ import mini.domain.GoodsCartDTO;
 import mini.domain.GoodsDTO;
 import mini.domain.MemberDTO;
 import mini.domain.PurchaseDTO;
+import mini.domain.PurchaseListPage;
 import mini.mapper.CartMapper;
 import mini.mapper.GoodsMapper;
 import mini.mapper.MemberMapper;
@@ -116,16 +117,19 @@ public class PurchaseController {
     
     @GetMapping("/my-orders")
     public String myOrderList(Authentication auth, Model model,
-                            @RequestParam(value="searchWord", required=false) String searchWord) {
+                              @RequestParam(value="searchWord", required=false) String searchWord,
+                              @RequestParam(value="page", defaultValue = "1") int page) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
         
-        List<PurchaseDTO> orderList = purchaseService.getMyOrderList(memberDTO.getMemberNum(), searchWord);
+        // 한 페이지에 5개씩 표시
+        int pageSize = 5;
+        PurchaseListPage pageData = purchaseService.getMyOrderListPage(memberDTO.getMemberNum(), searchWord, page, pageSize);
         
-        model.addAttribute("orderList", orderList);
+        model.addAttribute("pageData", pageData);
         model.addAttribute("searchWord", searchWord); // 검색어 유지를 위해 추가
         return "thymeleaf/purchase/orderList";
-    }
+    }   
     
     @GetMapping("/detail/{purchaseNum}")
     public String orderDetail(@PathVariable("purchaseNum") String purchaseNum, Model model) {
@@ -133,4 +137,17 @@ public class PurchaseController {
         model.addAttribute("order", order);
         return "thymeleaf/purchase/orderDetail";
     }
+    
+    @GetMapping("/cancel/{purchaseNum}")
+    public String cancelOrderRequest(@PathVariable("purchaseNum") String purchaseNum, Authentication auth) {
+        // 본인의 주문이 맞는지 간단히 확인 (선택적이지만 권장)
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
+        
+        purchaseService.requestCancelOrder(purchaseNum, memberDTO.getMemberNum());
+        
+        // 처리 후 다시 상세 페이지로 리다이렉트
+        return "redirect:/purchase/detail/" + purchaseNum;
+    }
+
 }

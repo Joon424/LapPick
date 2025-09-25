@@ -26,4 +26,9 @@ public class PurchaseDTO {
     String paymentMethod;
     String cardCompany;
     String cardNumber;
+    
+    // ▼▼▼ [추가] 무통장입금 정보 필드 ▼▼▼
+    private String bankName;
+    private String depositorName;
+    
 }

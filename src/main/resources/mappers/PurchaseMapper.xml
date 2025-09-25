@@ -17,7 +17,7 @@
         </association>
     </resultMap>
 
-    <resultMap id="purchaseResultMap" type="mini.domain.PurchaseDTO">
+   <resultMap id="purchaseResultMap" type="mini.domain.PurchaseDTO">
         <id property="purchaseNum" column="PURCHASE_NUM"/>
         <result property="memberNum" column="MEMBER_NUM"/>
         <result property="purchaseDate" column="PURCHASE_DATE"/>
@@ -30,7 +30,14 @@
         <result property="paymentMethod" column="PAYMENT_METHOD"/>
         <result property="cardCompany" column="CARD_COMPANY"/>
         <result property="cardNumber" column="CARD_NUMBER"/>
+        <result property="bankName" column="BANK_NAME"/>
+        <result property="depositorName" column="DEPOSITOR_NAME"/>
         
+        <association property="memberDTO" javaType="mini.domain.MemberDTO">
+            <result property="memberId" column="MEMBER_ID"/>
+            <result property="memberName" column="MEMBER_NAME"/>
+        </association>
+
         <association property="deliveryDTO" javaType="mini.domain.DeliveryDTO">
             <result property="deliveryCompany" column="DELIVERY_COMPANY"/>
             <result property="trackingNumber" column="TRACKING_NUMBER"/>
@@ -40,44 +47,59 @@
     </resultMap>
 
 <select id="selectPurchaseList" parameterType="map" resultMap="purchaseResultMap">
-    SELECT
-        P.PURCHASE_NUM, P.PURCHASE_DATE, P.PURCHASE_TOTAL, P.PURCHASE_STATUS,
-        PL.GOODS_NUM, PL.PURCHASE_QTY, PL.PURCHASE_PRICE,
-        G.GOODS_NAME, G.GOODS_MAIN_STORE_IMAGE, G.GOODS_CONTENTS,
-        D.DELIVERY_COMPANY, D.TRACKING_NUMBER
-    FROM PURCHASE P
-    JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
-    JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
-    LEFT JOIN DELIVERY D ON P.PURCHASE_NUM = D.PURCHASE_NUM
-    WHERE P.MEMBER_NUM = #{memberNum}
-    <if test="searchWord != null and searchWord != ''">
-        AND G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
-    </if>
-    ORDER BY P.PURCHASE_DATE DESC
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, T.*
+        FROM (
+            SELECT
+                P.PURCHASE_NUM, P.PURCHASE_DATE, P.PURCHASE_TOTAL, P.PURCHASE_STATUS,
+                P.PAYMENT_METHOD, P.BANK_NAME, P.DEPOSITOR_NAME, P.CARD_COMPANY, P.CARD_NUMBER,
+                PL.GOODS_NUM, PL.PURCHASE_QTY, PL.PURCHASE_PRICE,
+                G.GOODS_NAME, G.GOODS_MAIN_STORE_IMAGE, G.GOODS_CONTENTS,
+                D.DELIVERY_COMPANY, D.TRACKING_NUMBER
+            FROM PURCHASE P
+            JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+            JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+            LEFT JOIN DELIVERY D ON P.PURCHASE_NUM = D.PURCHASE_NUM
+            WHERE P.MEMBER_NUM = #{memberNum}
+            <if test="searchWord != null and searchWord != ''">
+                AND G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
+            </if>
+            ORDER BY P.PURCHASE_DATE DESC
+        ) T
+    )
+    WHERE RN BETWEEN #{startRow} AND #{endRow}
 </select>
     
-    <select id="selectPurchaseDetail" parameterType="string" resultMap="purchaseResultMap">
+<select id="selectPurchaseDetail" parameterType="string" resultMap="purchaseResultMap">
         SELECT
-            P.PURCHASE_NUM, P.PURCHASE_DATE, P.PURCHASE_TOTAL, P.PURCHASE_STATUS,
+            P.PURCHASE_NUM, P.MEMBER_NUM, P.PURCHASE_DATE, P.PURCHASE_TOTAL, P.PURCHASE_STATUS,
             P.RECEIVER_NAME, P.RECEIVER_PHONE, P.PURCHASE_ADDR, P.PURCHASE_MSG,
             P.PAYMENT_METHOD, P.CARD_COMPANY, P.CARD_NUMBER,
-            PL.GOODS_NUM, PL.PURCHASE_QTY, PL.PURCHASE_PRICE,
-            G.GOODS_NAME, G.GOODS_MAIN_STORE_IMAGE,
-            D.DELIVERY_COMPANY, D.TRACKING_NUMBER
+            P.BANK_NAME, P.DEPOSITOR_NAME,
+            PL.GOODS_NUM, 
+            PL.PURCHASE_QTY, PL.PURCHASE_PRICE,
+            G.GOODS_NAME, G.GOODS_MAIN_STORE_IMAGE, G.GOODS_CONTENTS,
+            D.DELIVERY_COMPANY, D.TRACKING_NUMBER,
+            M.MEMBER_ID, M.MEMBER_NAME
         FROM PURCHASE P
         JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
         JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+        JOIN MEMBERS M ON P.MEMBER_NUM = M.MEMBER_NUM
         LEFT JOIN DELIVERY D ON P.PURCHASE_NUM = D.PURCHASE_NUM
         WHERE P.PURCHASE_NUM = #{purchaseNum}
     </select>
     
-    <insert id="insertPurchase" parameterType="mini.domain.PurchaseDTO">
+     <insert id="insertPurchase" parameterType="mini.domain.PurchaseDTO">
         INSERT INTO PURCHASE (
             PURCHASE_NUM, MEMBER_NUM, PURCHASE_DATE, PURCHASE_TOTAL,
-            RECEIVER_NAME, RECEIVER_PHONE, PURCHASE_ADDR, PURCHASE_MSG, PURCHASE_STATUS
+            RECEIVER_NAME, RECEIVER_PHONE, PURCHASE_ADDR, PURCHASE_MSG, PURCHASE_STATUS,
+            PAYMENT_METHOD, CARD_COMPANY, CARD_NUMBER,
+            BANK_NAME, DEPOSITOR_NAME
         ) VALUES (
             #{purchaseNum}, #{memberNum}, SYSTIMESTAMP, #{purchaseTotal},
-            #{receiverName}, #{receiverPhone}, #{purchaseAddr}, #{purchaseMsg}, '결제완료'
+            #{receiverName}, #{receiverPhone}, #{purchaseAddr}, #{purchaseMsg}, '결제완료',
+            #{paymentMethod}, #{cardCompany}, #{cardNumber},
+            #{bankName}, #{depositorName}
         )
     </insert>
 
@@ -155,5 +177,27 @@
             #{purchaseNum}, #{deliveryCompany}, #{trackingNumber}, SYSTIMESTAMP
         )
     </insert>
+
+ <select id="countMyOrders" parameterType="map" resultType="int">
+        SELECT COUNT(DISTINCT P.PURCHASE_NUM)
+        FROM PURCHASE P
+        JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+        JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+        WHERE P.MEMBER_NUM = #{memberNum}
+        <if test="searchWord != null and searchWord != ''">
+            AND G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
+        </if>
+    </select>
+    
+    <select id="selectPurchasedItemsByMemberNum" parameterType="string" resultMap="purchaseListResultMap">
+    SELECT DISTINCT
+        PL.GOODS_NUM,
+        G.GOODS_NAME
+    FROM PURCHASE_LIST PL
+    JOIN PURCHASE P ON PL.PURCHASE_NUM = P.PURCHASE_NUM
+    JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+    WHERE P.MEMBER_NUM = #{memberNum}
+    ORDER BY G.GOODS_NAME
+</select>
 
 </mapper>

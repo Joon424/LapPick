@@ -6,77 +6,34 @@
 <head>
     <title>주문/결제</title>
     <th:block layout:fragment="css">
-        <style>
+  <style>
             .section-title { font-size: 1.8rem; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 0; }
             .order-table { width: 100%; border-collapse: collapse; margin-bottom: 50px; border-spacing: 0; }
             .order-table th, .order-table td { padding: 15px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; text-align: center; }
             .order-table thead th { background-color: #fafafa; font-weight: 600; }
             .order-table .td-product-img img { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; }
             .order-table .td-product-info { text-align: center; }
-            /* [수정 3] 상품명만 볼드 처리 유지 */
             .order-table .goods-name { font-weight: 600; margin-bottom: 6px;}
-            /* [수정 2] 상품 설명 스타일 추가 (장바구니와 동일) */
-            .goods-desc {
-                color: #777;
-                font-size: 13px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-width: 300px;
-                margin: 0 auto;
-            }
-            /* [수정 3] 상품 금액 볼드 제거 */
-            .order-table .td-price {
-                text-align: center;
-            }
-            .shipping-table th { 
-                width: 160px; 
-                text-align: left; 
-                background-color: #fafafa; 
-                padding-left: 20px;
-                /* [수정 1] 배송지 정보 라벨 볼드 처리 */
-                font-weight: 600; 
-            }
-            .shipping-table input[type="text"] { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
-                 /* [수정] cartList.html과 동일한 스타일 적용 */
-            .cart-summary {
-                margin-top: 40px;
-                padding: 25px 50px;
-                border: 1px solid #e5e7eb;
-                border-radius: 8px;
-                background-color: #fafafa;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .summary-group-left, .summary-group-right {
-                display: flex;
-                align-items: center;
-                gap: 30px;
-            }
+            .goods-desc { color: #777; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; margin: 0 auto; }
+            .order-table .td-price { text-align: center; }
+
+            .info-table th { width: 160px; text-align: left; background-color: #fafafa; padding-left: 20px; font-weight: 600; }
+            .info-table input[type="text"], .info-table select { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+            .payment-options { display: flex; gap: 20px; align-items: center; }
+            .payment-options label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+            /* ▼▼▼ [추가] 카드 정보 입력 필드를 위한 스타일 ▼▼▼ */
+            #cardInfo { display: none; } /* 기본적으로 숨김 */
+            #cardInfo .card-input-group { display: flex; gap: 10px; margin-top: 10px; }
+            #cardInfo .card-input-group > * { flex: 1; }
+
+            .cart-summary { margin-top: 40px; padding: 25px 50px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #fafafa; display: flex; justify-content: space-between; align-items: center; }
+            .summary-group-left, .summary-group-right { display: flex; align-items: center; gap: 30px; }
             .summary-item { text-align: right; }
-            .summary-item .label, .summary-item .value {
-                font-size: 1.4rem;
-            }
-            .summary-item .label {
-                color: #555;
-            }
-            .summary-item .value {
-                font-weight: bold;
-                color: #333;
-            }
+            .summary-item .label, .summary-item .value { font-size: 1.4rem; }
+            .summary-item .label { color: #555; }
+            .summary-item .value { font-weight: bold; color: #333; }
             .summary-item .value.price { color: #d63333; }
-            .btn-purchase {
-                height: 60px;
-                padding: 0 50px;
-                font-size: 1.3rem;
-                font-weight: bold;
-                color: #fff;
-                background-color: #333;
-                border: 1px solid #333;
-                border-radius: 6px;
-                cursor: pointer;
-            }
+            .btn-purchase { height: 60px; padding: 0 50px; font-size: 1.3rem; font-weight: bold; color: #fff; background-color: #333; border: 1px solid #333; border-radius: 6px; cursor: pointer; }
             .btn-purchase:hover { background-color: #555; }
         </style>
     </th:block>
@@ -119,8 +76,8 @@
                             </tbody>
                         </table>
                         
-                        <h3 class="section-title">배송지 정보</h3>
-                        <table class="order-table shipping-table">
+                             <h3 class="section-title">배송지 정보</h3>
+                        <table class="order-table info-table">
                             <tbody>
                                 <tr>
                                     <th>받으시는 분</th>
@@ -147,7 +104,54 @@
                                 </tr>
                             </tbody>
                         </table>
-
+                        
+                      <h3 class="section-title">결제 수단</h3>
+                        <table class="order-table info-table">
+                            <tbody>
+                                <tr>
+                                    <th>결제 수단 선택</th>
+                                    <td>
+                                        <div class="payment-options">
+                                            <label>
+                                                <input type="radio" name="paymentMethod" value="신용카드" checked onchange="togglePaymentInfo()">
+                                                <span>신용카드</span>
+                                            </label>
+                                            <label>
+                                                <input type="radio" name="paymentMethod" value="무통장입금" onchange="togglePaymentInfo()">
+                                                <span>무통장입금</span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="cardInfo">
+                                    <th>카드 정보</th>
+                                    <td>
+                                        <div class="card-input-group">
+                                            <select name="cardCompany">
+                                                <option value="신한카드">신한카드</option>
+                                                <option value="국민카드">국민카드</option>
+                                                <option value="삼성카드">삼성카드</option>
+                                                <option value="현대카드">현대카드</option>
+                                            </select>
+                                            <input type="text" name="cardNumber" placeholder="카드번호 ('-' 없이 입력)">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="bankInfo" style="display: none;">
+                                    <th>입금 정보</th>
+                                    <td>
+                                        <div class="card-input-group">
+                                            <select name="bankName">
+                                                <option value="국민은행">국민은행 123-456-789123 (주)LapPick</option>
+                                                <option value="신한은행">신한은행 123-456-789123 (주)LapPick</option>
+                                                <option value="우리은행">우리은행 123-456-789123 (주)LapPick</option>
+                                            </select>
+                                            <input type="text" name="depositorName" placeholder="입금자명">
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                          <div class="cart-summary">
                             <div class="summary-group-left">
                                 <div class="summary-item">
@@ -186,6 +190,29 @@
                 }
             }).open();
         }
+        
+        // 결제 수단 선택에 따른 정보 표시/숨김 스크립트
+        function togglePaymentInfo() {
+            const cardInfoRow = document.getElementById('cardInfo');
+            const bankInfoRow = document.getElementById('bankInfo');
+            const selectedCard = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
+            // 우선 모든 정보란을 숨깁니다.
+            cardInfoRow.style.display = 'none';
+            bankInfoRow.style.display = 'none';
+
+            // 선택된 결제수단에 맞는 정보란만 보여줍니다.
+            if (selectedCard === '신용카드') {
+                cardInfoRow.style.display = 'table-row';
+            } else if (selectedCard === '무통장입금') {
+                bankInfoRow.style.display = 'table-row';
+            }
+        }
+        
+        // 페이지 로드 시 초기 상태 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            togglePaymentInfo();
+        });
     </script>
 </th:block>
 </body>

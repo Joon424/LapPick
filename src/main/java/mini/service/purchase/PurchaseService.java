@@ -41,6 +41,16 @@ public class PurchaseService {
         purchase.setPurchaseMsg(command.getPurchaseMsg());
         purchase.setPurchaseTotal(command.getTotalPayment());
         
+        // 결제 정보 DTO에 저장
+        purchase.setPaymentMethod(command.getPaymentMethod());
+        if ("신용카드".equals(command.getPaymentMethod())) {
+            purchase.setCardCompany(command.getCardCompany());
+            purchase.setCardNumber(command.getCardNumber());
+        } else if ("무통장입금".equals(command.getPaymentMethod())) {
+            purchase.setBankName(command.getBankName());
+            purchase.setDepositorName(command.getDepositorName());
+        }
+        
         purchaseMapper.insertPurchase(purchase);
 
         // 3. 주문 상품 목록(PurchaseListDTO) 생성 및 DB 저장
@@ -63,11 +73,21 @@ public class PurchaseService {
     }
     
     @Transactional(readOnly = true)
-    public List<PurchaseDTO> getMyOrderList(String memberNum, String searchWord) {
+    public PurchaseListPage getMyOrderListPage(String memberNum, String searchWord, int page, int size) {
         Map<String, Object> params = new HashMap<>();
         params.put("memberNum", memberNum);
         params.put("searchWord", searchWord);
-        return purchaseMapper.selectPurchaseList(params);
+        params.put("startRow", (page - 1L) * size + 1);
+        params.put("endRow", page * 1L * size);
+        
+        List<PurchaseDTO> list = purchaseMapper.selectPurchaseList(params);
+        int total = purchaseMapper.countMyOrders(params);
+        
+        return PurchaseListPage.builder()
+                .items(list)
+                .page(page).size(size)
+                .total(total)
+                .build();
     }
     
     
@@ -102,6 +122,28 @@ public class PurchaseService {
     @Transactional(readOnly = true)
     public PurchaseDTO getOrderDetail(String purchaseNum) {
         return purchaseMapper.selectPurchaseDetail(purchaseNum);
+    }
+    
+    @Transactional
+    public void requestCancelOrder(String purchaseNum, String memberNum) {
+        // 주문 정보를 가져와 본인 주문이 맞는지, 취소 가능한 상태인지 확인
+        PurchaseDTO purchase = purchaseMapper.selectPurchaseDetail(purchaseNum);
+        
+        if (purchase != null && purchase.getMemberNum().equals(memberNum)) {
+            if ("결제완료".equals(purchase.getPurchaseStatus()) || "상품준비중".equals(purchase.getPurchaseStatus())) {
+                purchaseMapper.updatePurchaseStatus(purchaseNum, "취소요청");
+            } else {
+                // 이미 배송이 시작되었거나 취소된 주문에 대한 예외 처리 (선택)
+                throw new IllegalStateException("주문 취소가 불가능한 상태입니다.");
+            }
+        } else {
+             throw new SecurityException("주문 정보가 없거나 취소할 권한이 없습니다.");
+        }
+    }
+    
+    @Transactional(readOnly = true)
+    public List<PurchaseListDTO> getPurchasedItems(String memberNum) {
+        return purchaseMapper.selectPurchasedItemsByMemberNum(memberNum);
     }
     
 }

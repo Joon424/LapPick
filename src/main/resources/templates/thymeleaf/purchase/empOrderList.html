@@ -30,6 +30,7 @@
             .status-shipping { background-color: #17a2b8; }
             .status-delivered { background-color: #6c757d; }
             .status-canceled { background-color: #dc3545; }
+            .status-cancel-req { background-color: #b02a37; }
             .manage-btn {
               display: inline-block;
               padding: 5px 10px;
@@ -105,17 +106,18 @@
 
                     <div class="filter-bar">
                         <form th:action="@{/employee/orders}" method="get" class="filter-group">
-                            <select name="status" onchange="this.form.submit()">
+                             <select name="status" onchange="this.form.submit()">
                                 <option value="">-- 전체 상태 --</option>
                                 <option value="결제완료" th:selected="${status == '결제완료'}">결제완료</option>
                                 <option value="상품준비중" th:selected="${status == '상품준비중'}">상품준비중</option>
+                                <option value="취소요청" th:selected="${status == '취소요청'}">취소요청</option>
                                 <option value="배송중" th:selected="${status == '배송중'}">배송중</option>
                                 <option value="배송완료" th:selected="${status == '배송완료'}">배송완료</option>
                                 <option value="주문취소" th:selected="${status == '주문취소'}">주문취소</option>
                             </select>
                             <input type="text" name="searchWord" placeholder="주문번호, 회원ID, 이름 검색" th:value="${searchWord}">
                             <button type="submit" class="btnset btnset-line btnset-round">검색</button>
-                            <a th:href="@{/employee/orders}" class="btnset btnset-line btnset-round">초기화</a>
+                            <a th:href="@{/employee/orders}" class="btnset btnset-line btnset-round">전체보기</a>
                         </form>
                     </div>
 
@@ -136,15 +138,21 @@
                             </tr>
                             <tr th:each="order : ${pageData.items}">
                                 <td class="td-date" th:text="${#dates.format(order.purchaseDate, 'yyyy-MM-dd HH:mm')}"></td>
-                                <td th:text="${order.purchaseNum}"></td>
+                                <td>
+                                    <a th:href="@{/employee/orders/{num}(num=${order.purchaseNum})}" 
+                                       th:text="${order.purchaseNum}"
+                                       style="text-decoration: underline; color: #787878;"></a>
+                                </td>
                                 <td th:text="|${order.memberDTO.memberName} (${order.memberDTO.memberId})|"></td>
                                 <td th:text="${#numbers.formatInteger(order.purchaseTotal, 0, 'COMMA')} + '원'"></td>
                                 <td>
                                     <span class="status-badge" th:text="${order.purchaseStatus}"
-                                          th:classappend="${order.purchaseStatus == '결제완료'} ? 'status-paid' :
-                                                         (${order.purchaseStatus == '상품준비중'} ? 'status-preparing' :
-                                                         (${order.purchaseStatus == '배송중'} ? 'status-shipping' :
-                                                         (${order.purchaseStatus == '배송완료'} ? 'status-delivered' : 'status-canceled')))">
+                                          th:classappend="
+                                            ${order.purchaseStatus == '결제완료'} ? 'status-paid' :
+                                            (${order.purchaseStatus == '상품준비중'} ? 'status-preparing' :
+                                            (${order.purchaseStatus == '배송중'} ? 'status-shipping' :
+                                            (${order.purchaseStatus == '배송완료'} ? 'status-delivered' :
+                                            (${order.purchaseStatus == '취소요청'} ? 'status-cancel-req' : 'status-canceled'))))">
                                     </span>
                                 </td>
                                 <td class="td-manage">

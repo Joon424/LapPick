@@ -1,5 +1,7 @@
 package mini.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import mini.domain.GoodsStockDTO;
+import mini.domain.QnaDTO;
+import mini.mapper.QnaMapper;
+import mini.service.AutoNumService;
 import mini.service.item.GoodsDetailViewService;
 
 @Controller
@@ -18,6 +23,7 @@ import mini.service.item.GoodsDetailViewService;
 public class CornerController {
 
     private final GoodsDetailViewService goodsDetailViewService;
+    private final QnaMapper qnaMapper;
 
     @GetMapping("detailView/{goodsNum}")
     public String goodsInfo(
@@ -26,14 +32,14 @@ public class CornerController {
         
         // 1. 서비스에서 모든 정보가 담긴 DTO를 받음
         GoodsStockDTO dto = goodsDetailViewService.execute(goodsNum, request, response);
-        
+        List<QnaDTO> qnaList = qnaMapper.selectQnaByGoodsNum(goodsNum);
+        model.addAttribute("qnaList", qnaList);
         // 2. 컨트롤러가 직접 모델에 'goods'라는 이름으로 DTO를 추가
         model.addAttribute("goods", dto);
         
+        
+        
         return "thymeleaf/item/detailView";
     }
-    
-    // [삭제] goodsInfo 메서드가 모든 정보를 전달하므로, 
-    //        상세 설명을 별도로 조회하던 goodsDescript 메서드는 더 이상 필요 없어 삭제합니다.
 }
 	

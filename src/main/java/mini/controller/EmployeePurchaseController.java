@@ -2,12 +2,14 @@ package mini.controller;
 
 import lombok.RequiredArgsConstructor;
 import mini.domain.DeliveryDTO;
+import mini.domain.PurchaseDTO;
 import mini.domain.PurchaseListPage;
 import mini.service.purchase.PurchaseService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,5 +55,13 @@ public class EmployeePurchaseController {
                                @RequestParam("status") String status) {
         purchaseService.updateOrderStatus(purchaseNum, status);
         return "redirect:/employee/orders";
+    }
+    
+ // ▼▼▼ [추가] 직원용 주문 상세 페이지 이동 메소드 ▼▼▼
+    @GetMapping("/{purchaseNum}")
+    public String empOrderDetail(@PathVariable("purchaseNum") String purchaseNum, Model model) {
+        PurchaseDTO order = purchaseService.getOrderDetail(purchaseNum);
+        model.addAttribute("order", order);
+        return "thymeleaf/employee/empOrderDetail";
     }
 }

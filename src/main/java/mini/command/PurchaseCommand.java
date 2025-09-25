@@ -17,4 +17,13 @@ public class PurchaseCommand {
     private String[] goodsQtys;
     private String[] goodsPrices;
     private Integer totalPayment;
+    
+    // ▼▼▼ [추가] 결제 정보 필드 ▼▼▼
+    private String paymentMethod;
+    private String cardCompany;
+    private String cardNumber;
+    
+    // ▼▼▼ [추가] 무통장입금 정보 필드 ▼▼▼
+    private String bankName;
+    private String depositorName;
 }

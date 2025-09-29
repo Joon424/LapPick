@@ -4,6 +4,7 @@ import mini.command.GoodsFilterCommand;
 import mini.domain.GoodsDTO;
 import mini.domain.GoodsStockDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public interface GoodsMapper {
     void goodsUpdate(GoodsDTO dto);
     public void goodsDelete(List<String> nums);
     GoodsStockDTO selectOneWithStock(String goodsNum);
-    void visitCountUpdate(String goodsNum);
     public List<GoodsDTO> selectGoodsByNumList(List<String> nums);
+ // [추가]
+    void insertGoodsIpgo(@Param("goodsNum") String goodsNum, @Param("ipgoQty") int ipgoQty);
 }

@@ -1,17 +1,19 @@
 package mini.controller;
 
 import lombok.RequiredArgsConstructor;
+import mini.command.PageData;
 import mini.domain.MemberDTO;
 import mini.domain.PurchaseListDTO;
 import mini.domain.QnaDTO;
 import mini.mapper.MemberMapper;
-import mini.mapper.QnaMapper;
 import mini.service.purchase.PurchaseService;
+import mini.service.qna.QnaService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,46 +25,67 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QnaController {
 
-    private final QnaMapper qnaMapper;
-    private final MemberMapper memberMapper;
+    private final QnaService qnaService;
     private final PurchaseService purchaseService;
+    private final MemberMapper memberMapper;
 
-    // 나의 상품 문의 목록 페이지
+ // [수정] status 파라미터를 받아 서비스로 전달하도록 변경
     @GetMapping("/my-qna")
-    public String myQnaList(Authentication auth, Model model) {
+    public String myQnaList(Authentication auth, Model model,
+                        @RequestParam(value = "searchWord", required = false) String searchWord,
+                        @RequestParam(value = "status", required = false) String status, // [추가]
+                        @RequestParam(value = "page", defaultValue = "1") int page) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        MemberDTO member = memberMapper.selectOneById(userDetails.getUsername());
+        String memberId = userDetails.getUsername();
+        int size = 5;
 
-        // 1. 나의 문의 내역 조회
-        List<QnaDTO> myQnaList = qnaMapper.selectQnaByMemberNum(member.getMemberNum());
-        
-        // 2. 문의할 상품 목록 조회를 위해, 내가 구매했던 상품 목록 조회
-        List<PurchaseListDTO> purchaseList = purchaseService.getPurchasedItems(member.getMemberNum());
+        // [수정] 서비스 호출 시 status 전달
+        PageData<QnaDTO> pageData = qnaService.getMyQnaList(memberId, searchWord, status, page, size);
 
-        model.addAttribute("myQnaList", myQnaList);
+        MemberDTO member = memberMapper.selectOneById(memberId);
+        String memberNum = member.getMemberNum();
+        List<PurchaseListDTO> purchaseList = purchaseService.getPurchasedItems(memberNum);
+
+        model.addAttribute("pageData", pageData);
+        model.addAttribute("myQnaList", pageData.getItems());
         model.addAttribute("purchaseList", purchaseList);
+        model.addAttribute("status", status); // [추가] 뷰에서 현재 필터 상태를 알 수 있도록 전달
 
         return "thymeleaf/qna/myQnaList";
     }
     
-    // 문의 작성 페이지로 이동 (상품 상세페이지에서 넘어올 경우)
-    @GetMapping("/write")
-    public String writeQnaForm(@RequestParam(value="goodsNum", required = false) String goodsNum, Model model) {
-        model.addAttribute("selectedGoodsNum", goodsNum);
-        // 이 페이지는 my-qna 페이지와 동일한 뷰를 사용하므로, my-qna로 리다이렉트 하거나 동일 데이터를 로드해야 합니다.
-        // 여기서는 my-qna로 포워딩하는 대신, my-qna 뷰에서 처리하도록 유도하겠습니다.
-        return "redirect:/qna/my-qna" + (goodsNum != null ? "?goodsNum=" + goodsNum : "");
-    }
-    
     // 문의 등록 처리
     @PostMapping("/write")
-    public String writeQna(QnaDTO dto, Authentication auth) {
+    public String writeQna(QnaDTO dto, @RequestParam("purchaseItemKey") String purchaseItemKey, Authentication auth) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        MemberDTO member = memberMapper.selectOneById(userDetails.getUsername());
+
+        // [수정] 마지막 하이픈(-)을 기준으로 purchaseNum과 goodsNum을 안전하게 분리
+        int lastHyphenIndex = purchaseItemKey.lastIndexOf('-');
+        if (lastHyphenIndex == -1) {
+            // 비정상적인 키 값이 들어왔을 경우의 예외 처리
+            // 여기서는 간단하게 리다이렉트 처리합니다.
+            return "redirect:/qna/my-qna?error=invalidKey";
+        }
         
-        dto.setMemberNum(member.getMemberNum());
-        qnaMapper.insertQna(dto);
+        String purchaseNum = purchaseItemKey.substring(0, lastHyphenIndex);
+        String goodsNum = purchaseItemKey.substring(lastHyphenIndex + 1);
+
+        qnaService.writeQna(dto, purchaseNum, goodsNum, userDetails.getUsername());
         
         return "redirect:/qna/my-qna";
     }
+    
+    
+    /**
+     * [추가] 상품 상세 페이지의 문의하기 팝업에서 오는 요청을 처리합니다.
+     */
+    @PostMapping("/write/product")
+    public String writeQnaFromProduct(QnaDTO dto, @RequestParam("goodsNum") String goodsNum, Authentication auth) {
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        qnaService.writeQnaFromProductPage(dto, goodsNum, userDetails.getUsername());
+        
+        // 문의 작성 후, 원래 있던 상품 상세 페이지로 돌아갑니다.
+        return "redirect:/corner/detailView/" + goodsNum;
+    }
+    
 }

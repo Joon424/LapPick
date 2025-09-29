@@ -2,6 +2,8 @@ package mini.controller;
 
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,14 +13,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import mini.command.GoodsCommand;
 import mini.command.GoodsFilterCommand;
 import mini.domain.GoodsDTO;
 import mini.domain.GoodsListPage;
+import mini.domain.GoodsStockDTO;
+import mini.domain.MemberDTO;
+import mini.domain.QnaDTO;
+import mini.mapper.MemberMapper;
 import mini.service.AutoNumService;
 import mini.service.goods.GoodsService;
+import mini.service.qna.QnaService;
 
 @Controller
 @RequestMapping("/goods")
@@ -28,6 +37,8 @@ public class GoodsController {
 
     private final GoodsService goodsService;
     private final AutoNumService autoNumService;
+    private final QnaService qnaService;
+    private final MemberMapper memberMapper;
 
     /**
      * [수정] 상품 목록 (직원용) - 디버깅 로그 추가
@@ -65,18 +76,6 @@ public class GoodsController {
 
         return "thymeleaf/goods/goodsFullList";
     }
-    
-    /**
-     * 상품 상세 정보 (사용자용)
-     */
-    @GetMapping("/{goodsNum}")
-    public String goodsDetail(@PathVariable("goodsNum") String goodsNum, Model model) {
-        GoodsDTO dto = goodsService.getGoodsDetail(goodsNum);
-        model.addAttribute("goodsCommand", dto);
-        model.addAttribute("newLine", "\n");
-        // [수정] 반환하는 html 파일 이름을 'goodsInfo'로 변경합니다.
-        return "thymeleaf/goods/goodsInfo";
-    }
 
     /**
      * 상품 등록 폼 (직원용)
@@ -110,18 +109,30 @@ public class GoodsController {
     }
 
     /**
-     * 상품 수정 폼 (직원용)
+     * [수정] 상품 수정 폼 (재고 정보 포함)
      */
     @GetMapping("/{goodsNum}/edit")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String editForm(@PathVariable("goodsNum") String goodsNum, Model model, HttpSession session) {
         session.removeAttribute("fileList");
-        GoodsDTO dto = goodsService.getGoodsDetail(goodsNum);
+        GoodsStockDTO dto = goodsService.getGoodsDetailWithStock(goodsNum); // [수정]
         model.addAttribute("goodsCommand", dto);
-        // [수정] 반환하는 html 파일 이름을 'goodsEdit'로 변경합니다.
         return "thymeleaf/goods/goodsEdit";
     }
 
+    
+    /**
+     * [추가] 상품 상세 정보 (직원용)
+     * URL 경로를 추가하고 재고를 포함한 정보를 조회하도록 하여 404 오류 해결
+     */
+    @GetMapping("/{goodsNum}")
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String goodsDetail(@PathVariable("goodsNum") String goodsNum, Model model) {
+        GoodsStockDTO dto = goodsService.getGoodsDetailWithStock(goodsNum);
+        model.addAttribute("goodsCommand", dto);
+        return "thymeleaf/goods/goodsInfo";
+    }
+    
     /**
      * 상품 수정 처리 (직원용)
      */
@@ -149,6 +160,23 @@ public class GoodsController {
     public String deleteGoods(@RequestParam("nums") String[] goodsNums) {
         goodsService.deleteGoods(goodsNums);
         return "redirect:/goods/list"; // [수정] 직원용 목록 페이지로 리다이렉트
+    }
+    
+    /**
+     * [추가] 상품 입고 처리 (직원용)
+     */
+    @PostMapping("/stock-in")
+    @PreAuthorize("hasAuthority('ROLE_EMP')")
+    public String stockIn(@RequestParam("goodsNum") String goodsNum,
+                          @RequestParam("quantity") int quantity,
+                          RedirectAttributes ra) {
+        try {
+            goodsService.addStock(goodsNum, quantity);
+            ra.addFlashAttribute("message", "'" + goodsNum + "' 상품이 " + quantity + "개 입고 처리되었습니다.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/goods/list";
     }
 }
 

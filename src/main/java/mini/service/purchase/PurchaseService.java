@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -145,5 +146,17 @@ public class PurchaseService {
     public List<PurchaseListDTO> getPurchasedItems(String memberNum) {
         return purchaseMapper.selectPurchasedItemsByMemberNum(memberNum);
     }
+    
+    @Transactional(readOnly = true)
+    public List<PurchaseListDTO> getPurchasedItemsOfProduct(String memberNum, String goodsNum) {
+        // 일단 사용자의 전체 구매 내역을 가져옵니다.
+        List<PurchaseListDTO> allPurchases = purchaseMapper.selectPurchasedItemsByMemberNum(memberNum);
+        
+        // 그 중에서 현재 보고 있는 상품(goodsNum)에 해당하는 구매 내역만 필터링합니다.
+        return allPurchases.stream()
+                .filter(item -> item.getGoodsNum().equals(goodsNum))
+                .collect(Collectors.toList());
+    }
+
     
 }

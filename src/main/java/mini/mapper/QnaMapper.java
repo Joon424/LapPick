@@ -9,5 +9,9 @@ import java.util.Map;
 public interface QnaMapper {
     void insertQna(QnaDTO dto);
     List<QnaDTO> selectQnaByGoodsNum(String goodsNum);
-    List<QnaDTO> selectQnaByMemberNum(String memberNum);
+    List<QnaDTO> selectQnaByMemberNum(Map<String, Object> params); // 파라미터 타입을 Map으로 변경
+    int countMyQna(Map<String, Object> params); // [추가]
+    List<QnaDTO> selectAllQna(Map<String, Object> params);
+    int countAllQna(Map<String, Object> params);
+    void updateAnswer(QnaDTO dto);
 }

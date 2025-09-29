@@ -21,6 +21,7 @@ import mini.command.GoodsFilterCommand;
 import mini.domain.FileDTO;
 import mini.domain.GoodsDTO;
 import mini.domain.GoodsListPage;
+import mini.domain.GoodsStockDTO;
 import mini.mapper.EmployeeMapper;
 import mini.mapper.GoodsMapper;
 
@@ -110,7 +111,13 @@ public class GoodsService {
         
         // 최종적으로 완성된 DTO를 Mapper에 전달하여 DB에 삽입합니다.
         goodsMapper.goodsInsert(dto);
+        
+        // 2. [추가] 최초 입고 수량이 있으면 GOODS_IPGO 테이블에도 삽입
+        if (command.getInitialStock() != null && command.getInitialStock() > 0) {
+            goodsMapper.insertGoodsIpgo(command.getGoodsNum(), command.getInitialStock());
+        }
     }
+    
 
     // [신규] 여러 파일을 업로드하고 파일명 문자열을 반환하는 헬퍼 메서드
     private String uploadMultipleFiles(MultipartFile[] files) {
@@ -276,5 +283,22 @@ public class GoodsService {
             e.printStackTrace();
             return null;
         }
+    }
+    
+    @Transactional
+    public void addStock(String goodsNum, int quantity) {
+        if (quantity <= 0) {
+            // 입고 수량은 0보다 커야 하므로 예외 처리
+            throw new IllegalArgumentException("입고 수량은 0보다 커야 합니다.");
+        }
+        goodsMapper.insertGoodsIpgo(goodsNum, quantity);
+    }
+    
+    /**
+     * [추가] 재고 수량을 포함한 상품 상세 정보 조회
+     */
+    @Transactional(readOnly = true)
+    public GoodsStockDTO getGoodsDetailWithStock(String goodsNum) {
+        return goodsMapper.selectOneWithStock(goodsNum);
     }
 }

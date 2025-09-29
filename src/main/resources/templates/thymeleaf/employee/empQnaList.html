@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>직원_상품문의관리</title>
+    <th:block layout:fragment="css">
+        <style>
+            .item-table { table-layout: fixed; width: 100%; border-collapse: collapse; }
+            .item-table th, .item-table td { vertical-align: middle; padding: 12px 8px; border-bottom: 1px solid #eee; }
+            .item-table thead tr { background: #f9fafb; }
+            .item-table th,
+            .item-table .qna-title-row > td {
+                text-align: center;
+            }
+            .status-badge { display: inline-block; padding: 4px 10px; font-size: 12px; border-radius: 12px; color: #fff; }
+            .status-badge.waiting { background-color: #dc3545; }
+            .status-badge.completed { background-color: #007bff; }
+            .qna-title-row { cursor: pointer; }
+            .qna-title-row:hover { background-color: #f5f5f5; }
+            .qna-content-row { display: none; }
+            .qna-content-cell {
+    /* [수정] !important를 추가하여 다른 스타일을 덮어쓰고 강제로 적용합니다. */
+    padding: 20px 20px !important; 
+    text-align: left; background-color: #f8f9fa;
+    line-height: 1.6; border-left: 3px solid #dee2e6;
+}
+            .answer-form {
+                margin-top: 25px;
+            }
+            .answer-form textarea { width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; }
+            .answer-form .btn-bar { text-align: right; margin-top: 10px; }
+            .pagination-container { display:flex; gap:6px; justify-content:center; align-items:center; margin-top:20px; }
+            .page-btn { display: inline-block; min-width: 32px; padding: 6px 10px; font-size: 13px; font-weight: 500; text-align: center; text-decoration: none; color: #333; background-color: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+            .page-btn:hover { background-color: #f5f5f5; }
+            .page-btn.active { background-color: #333; color: #fff; border-color: #333; font-weight: bold; }
+
+            .qna-box, .answer-box { display: flex; gap: 20px; align-items: flex-start; }
+            .answer-box { margin-top: 25px; padding-top: 25px; border-top: 1px dashed #ced4da; }
+            .qa-icon { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: #fff; }
+            .qa-icon.question { background-color: #495057; }
+            .qa-icon.answer { background-color: #0056b3; }
+            .qa-main { flex-grow: 1; }
+            .qa-meta { font-size: 14px; color: #6c757d; margin-bottom: 12px; }
+            .qa-meta .author { font-weight: 600; color: #343a40; }
+            .qa-text { font-size: 16px; white-space: pre-wrap; margin: 0; color: #212529; }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="basic-N23" data-bid="empQnaList">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="textset" style="margin-bottom:14px;">
+                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+                        <h2 class="textset-tit">상품 문의 관리</h2>
+                        <p class="textset-desc">고객의 상품 문의를 확인하고 답변을 등록합니다.</p>
+                        <div class="alert" th:if="${message}" th:text="${message}" style="background:#e0f7fa;color:#00796b;border:1px solid #b2ebf2;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 16px;">
+                        <form th:action="@{/employee/qna}" method="get" style="display:flex; gap:8px; align-items:center;">
+                            <select name="status" onchange="this.form.submit()" style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                <option value="">전체 상태</option>
+                                <option value="답변대기" th:selected="${status == '답변대기'}">답변대기</option>
+                                <option value="답변완료" th:selected="${status == '답변완료'}">답변완료</option>
+                            </select>
+                            <input type="text" name="searchWord" th:value="${pageData?.searchWord}" placeholder="제목, 상품명, 작성자ID 검색" style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px; min-width:240px;">
+                            <button type="submit" class="btnset btnset-line btnset-round">검색</button>
+                            <a class="btnset btnset-line btnset-round" th:href="@{/employee/qna}">전체보기</a>
+                        </form>
+                    </div>
+
+                    <table class="item-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">상태</th>
+                                <th style="width: 20%;">상품명</th>
+                                <th style="width: 35%;">제목</th>
+                                <th style="width: 15%;">작성자 ID</th>
+                                <th style="width: 15%;">작성일</th>
+                            </tr>
+                        </thead>
+                        <tbody th:if="${#lists.isEmpty(qnaList)}">
+                            <tr><td colspan="5" style="padding:40px 0; text-align: center;">등록된 문의가 없습니다.</td></tr>
+                        </tbody>
+                        <tbody th:unless="${#lists.isEmpty(qnaList)}">
+                            <th:block th:each="qna : ${qnaList}">
+                                <tr class="qna-title-row" th:data-qna-num="${qna.qnaNum}">
+                                    <td>
+                                        <span th:text="${qna.qnaStatus}" class="status-badge"
+                                              th:classappend="${qna.qnaStatus == '답변대기'} ? 'waiting' : 'completed'"></span>
+                                    </td>
+                                    <td th:text="${qna.goodsDTO.goodsName}"></td>
+                                    <td th:text="${qna.qnaTitle}"></td>
+                                    <td th:text="${qna.memberDTO.memberId}"></td>
+                                    <td th:text="${#dates.format(qna.qnaDate, 'yyyy-MM-dd')}"></td>
+                                </tr>
+                                <tr class="qna-content-row" th:id="'qna-content-' + ${qna.qnaNum}">
+                                   <td colspan="5" class="qna-content-cell">
+                                        <div class="qna-box">
+                                            <div class="qa-icon question">Q</div>
+                                            <div class="qa-main">
+                                                <div class="qa-meta">
+                                                    <span class="author" th:text="${qna.memberDTO.memberId}"></span>
+                                                    <span class="date" th:text="${#dates.format(qna.qnaDate, 'yyyy.MM.dd HH:mm')}"></span>
+                                                </div>
+                                                <p class="qa-text" th:text="${qna.qnaContent}"></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="answer-box" th:if="${qna.answerContent != null}">
+                                            <div class="qa-icon answer">A</div>
+                                            <div class="qa-main">
+                                                <div class="qa-meta">
+                                                    <span class="author">LapPick 답변</span>
+                                                    <span class="date" th:text="${#dates.format(qna.answerDate, 'yyyy.MM.dd HH:mm')}"></span>
+                                                </div>
+                                                <p class="qa-text" th:text="${qna.answerContent}"></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <form th:if="${qna.answerContent == null}" class="answer-form" th:action="@{/employee/qna/answer}" method="post">
+                                            <input type="hidden" name="qnaNum" th:value="${qna.qnaNum}" />
+                                            <textarea name="answerContent" placeholder="답변을 입력하세요." required></textarea>
+                                            <div class="btn-bar">
+                                                <button type="submit" class="btnset btnset-sm">답변 등록</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </th:block>
+                        </tbody>
+                    </table>
+
+                    <div class="pagination-container" th:if="${pageData != null and pageData.total > 0}">
+                        <a class="page-btn" th:href="@{/employee/qna(page=${pageData.page - 1}, searchWord=${pageData.searchWord}, status=${status})}" th:if="${pageData.page > 1}">이전</a>
+                        <a class="page-btn" th:each="i : ${#numbers.sequence(pageData.startPage, pageData.endPage)}" th:text="${i}"
+                           th:classappend="${pageData.page == i} ? 'active' : ''"
+                           th:href="@{/employee/qna(page=${i}, searchWord=${pageData.searchWord}, status=${status})}"></a>
+                        <a class="page-btn" th:href="@{/employee/qna(page=${pageData.page + 1}, searchWord=${pageData.searchWord}, status=${status})}" th:if="${pageData.page < pageData.totalPages}">다음</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block layout:fragment="script">
+      <script>
+    $(function() {
+        $('.qna-title-row').on('click', function() {
+            // 1. 내가 클릭한 문의의 내용 부분
+            const targetContent = $('#qna-content-' + $(this).data('qna-num'));
+            
+            // 2. 현재 화면에 열려있는 문의의 내용 부분
+            const openContent = $('.qna-content-row:visible');
+
+            // 3. 현재 열려있는 내용이 있는지 확인
+            if (openContent.length > 0) {
+                // 3-1. 만약 열려있는 내용이 내가 클릭한 내용과 같다면 -> 닫기만 함
+                if (openContent.is(targetContent)) {
+                    targetContent.slideUp(120);
+                } else {
+                // 3-2. 만약 열려있는 내용이 다른 내용이라면 -> 열려있던 것을 먼저 닫고, 그 다음에 새것을 엶
+                    openContent.slideUp(120, function() {
+                        targetContent.slideDown(120);
+                    });
+                }
+            } else {
+                // 4. 아무것도 열려있지 않은 상태라면 -> 그냥 클릭한 내용을 엶
+                targetContent.slideDown(120);
+            }
+        });
+    });
+    </script>
+</th:block>
+</body>
+</html>

@@ -103,13 +103,19 @@
         )
     </insert>
 
-    <insert id="insertPurchaseList" parameterType="mini.domain.PurchaseListDTO">
-        INSERT INTO PURCHASE_LIST (
-            PURCHASE_NUM, GOODS_NUM, PURCHASE_QTY, PURCHASE_PRICE
-        ) VALUES (
-            #{purchaseNum}, #{goodsNum}, #{purchaseQty}, #{purchasePrice}
-        )
-    </insert>
+   <insert id="insertPurchaseList" parameterType="mini.domain.PurchaseListDTO">
+    INSERT INTO PURCHASE_LIST (
+        PURCHASE_LIST_NUM, PURCHASE_NUM,
+        GOODS_NUM,
+        PURCHASE_QTY,
+        PURCHASE_PRICE
+    ) VALUES (
+        PURCHASE_LIST_SEQ.NEXTVAL, #{purchaseNum},
+        #{goodsNum},
+        #{purchaseQty},
+        #{purchasePrice}
+    )
+</insert>
 
 <resultMap id="adminPurchaseResultMap" type="mini.domain.PurchaseDTO" extends="purchaseResultMap">
         <association property="memberDTO" javaType="mini.domain.MemberDTO">
@@ -189,15 +195,27 @@
         </if>
     </select>
     
-    <select id="selectPurchasedItemsByMemberNum" parameterType="string" resultMap="purchaseListResultMap">
-    SELECT DISTINCT
-        PL.GOODS_NUM,
-        G.GOODS_NAME
-    FROM PURCHASE_LIST PL
-    JOIN PURCHASE P ON PL.PURCHASE_NUM = P.PURCHASE_NUM
-    JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
-    WHERE P.MEMBER_NUM = #{memberNum}
-    ORDER BY G.GOODS_NAME
-</select>
-
+        <resultMap id="qnaPurchaseItemResultMap" type="mini.domain.PurchaseListDTO">
+        <id property="purchaseListNum" column="PURCHASE_LIST_NUM"/>
+        <result property="purchaseNum" column="PURCHASE_NUM"/>
+        <result property="goodsNum" column="GOODS_NUM"/>
+        <result property="purchaseDate" column="PURCHASE_DATE"/>
+        <association property="goodsDTO" javaType="mini.domain.GoodsDTO">
+            <result property="goodsName" column="GOODS_NAME"/>
+        </association>
+    </resultMap>
+    
+    
+    <select id="selectPurchasedItemsByMemberNum" parameterType="string" resultMap="qnaPurchaseItemResultMap">
+        SELECT
+            PL.PURCHASE_LIST_NUM, PL.PURCHASE_NUM,
+            PL.GOODS_NUM,
+            P.PURCHASE_DATE,
+            G.GOODS_NAME
+        FROM PURCHASE_LIST PL
+            JOIN PURCHASE P ON PL.PURCHASE_NUM = P.PURCHASE_NUM
+            JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+        WHERE P.MEMBER_NUM = #{memberNum}
+        ORDER BY P.PURCHASE_DATE DESC, G.GOODS_NAME ASC
+    </select>
 </mapper>

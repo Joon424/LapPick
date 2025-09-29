@@ -1,14 +1,20 @@
 package mini.domain;
 
+import java.util.Date;
+
 import lombok.Data;
 
 @Data
 public class PurchaseListDTO {
-    String purchaseNum;
-    String goodsNum;
-    Integer purchaseQty;
-    Integer purchasePrice;
+    // ⚠️ 중요: PURCHASE_LIST 테이블의 PK. 없다면 추가를 강력히 권장합니다.
+    private Integer purchaseListNum;
+    
+    private String purchaseNum;
+    private String goodsNum;
+    private Integer purchaseQty;
+    private Integer purchasePrice;
 
-    // JOIN해서 가져올 상품 정보
-    GoodsDTO goodsDTO;
+    // JOIN해서 가져올 정보
+    private GoodsDTO goodsDTO;
+    private Date purchaseDate; // [추가] 구매일 필드
 }

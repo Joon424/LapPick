@@ -1,7 +1,9 @@
 package mini.controller;
 
+import java.security.Principal;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import mini.command.EmployeeCommand;
 import mini.domain.EmployeeDTO;
@@ -128,6 +131,43 @@ public class EmployeeController {
     public String deleteEmployees(@RequestParam("empDels") String[] empNums) {
         employeeService.deleteEmployees(empNums);
         return "redirect:/employee";
+    }
+    
+ // [추가] 1. '내 정보 보기' 페이지를 보여주는 메소드
+    @GetMapping("/my-page")
+    public String myPage(Model model, Principal principal) {
+        String empId = principal.getName();
+        EmployeeDTO dto = employeeService.getEmployeeDetailById(empId); // ID로 상세 정보 조회
+        model.addAttribute("employeeCommand", dto);
+        return "thymeleaf/employee/empMyPage";
+    }
+
+    // [추가] 2. 비밀번호 변경 요청을 처리하는 메소드
+    @PostMapping("/my-page/change-password")
+    public String changePassword(@RequestParam("oldPw") String oldPw,
+                                 @RequestParam("newPw") String newPw,
+                                 @RequestParam("newPwCon") String newPwCon,
+                                 Principal principal,
+                                 RedirectAttributes ra,
+                                 HttpSession session) {
+        if (!newPw.equals(newPwCon)) {
+            ra.addFlashAttribute("error", "새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            return "redirect:/employee/my-page";
+        }
+
+        try {
+            employeeService.changePassword(principal.getName(), oldPw, newPw);
+            ra.addFlashAttribute("message", "비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+            
+            // Spring Security 인증 정보 삭제 및 세션 무효화 (로그아웃 처리)
+            SecurityContextHolder.clearContext();
+            session.invalidate();
+            
+            return "redirect:/login/item.login";
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/employee/my-page";
+        }
     }
 }
 

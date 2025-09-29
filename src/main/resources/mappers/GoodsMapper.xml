@@ -88,13 +88,7 @@
         ) S
         ON G.GOODS_NUM = S.GOODS_NUM
         WHERE G.GOODS_NUM = #{goodsNum}
-    </select>
-    
-    <update id="visitCountUpdate" parameterType="string">
-        UPDATE GOODS
-        SET VISIT_COUNT = NVL(VISIT_COUNT, 0) + 1
-        WHERE GOODS_NUM = #{goodsNum}
-    </update>
+    </select>   
     
     <insert id="goodsInsert" parameterType="mini.domain.GoodsDTO">
         INSERT INTO GOODS (<include refid="goodsColumns" />) VALUES (#{goodsNum}, #{goodsName}, #{goodsPrice}, #{goodsContents}, #{goodsBrand}, #{goodsPurpose}, #{goodsScreenSize}, #{goodsWeight}, #{goodsKeyword1}, #{goodsKeyword2}, #{goodsKeyword3}, #{goodsShippingInfo}, #{goodsSellerInfo}, #{empNum}, SYSDATE, #{goodsMainImage, jdbcType=VARCHAR}, #{goodsMainStoreImage, jdbcType=VARCHAR}, #{goodsDetailImage, jdbcType=VARCHAR}, #{goodsDetailStoreImage, jdbcType=VARCHAR}, #{goodsDetail, jdbcType=VARCHAR}, #{goodsDetailStore, jdbcType=VARCHAR}, #{updateEmpNum, jdbcType=VARCHAR}, #{updateDate, jdbcType=TIMESTAMP})
@@ -123,6 +117,10 @@
         #{num}
     </foreach>
 </select>
-    
+  
+<insert id="insertGoodsIpgo">
+    INSERT INTO GOODS_IPGO (GOODS_NUM, IPGO_QTY, IPGO_DATE)
+    VALUES (#{goodsNum}, #{ipgoQty}, SYSDATE)
+</insert> 
     
 </mapper>

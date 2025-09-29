@@ -44,6 +44,9 @@ public class GoodsCommand {
 	String goodsKeyword3;
 	String goodsShippingInfo;
 	String goodsSellerInfo;
+	
+	// [추가]
+	private Integer initialStock;
 }
 
 

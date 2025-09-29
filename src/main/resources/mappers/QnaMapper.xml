@@ -39,11 +39,88 @@
         ORDER BY Q.QNA_DATE DESC
     </select>
 
-    <select id="selectQnaByMemberNum" parameterType="string" resultMap="qnaResultMap">
-        SELECT Q.*, G.GOODS_NAME
-        FROM QNA Q
-        JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
-        WHERE Q.MEMBER_NUM = #{memberNum}
-        ORDER BY Q.QNA_DATE DESC
-    </select>
+<select id="selectQnaByMemberNum" parameterType="map" resultMap="qnaResultMap">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, T.*
+        FROM (
+            SELECT 
+                Q.*, 
+                G.GOODS_NAME,
+                M.MEMBER_ID FROM QNA Q
+            JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+            JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM WHERE Q.MEMBER_NUM = #{memberNum}
+            <if test="status != null and status != ''">
+                AND Q.QNA_STATUS = #{status}
+            </if>
+            <if test="searchWord != null and searchWord != ''">
+                AND Q.QNA_TITLE LIKE '%' || #{searchWord} || '%'
+            </if>
+            ORDER BY Q.QNA_DATE DESC
+        ) T
+    )
+    WHERE RN BETWEEN #{startRow} AND #{endRow}
+</select>
+
+<select id="countMyQna" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM QNA
+    WHERE MEMBER_NUM = #{memberNum}
+    <if test="status != null and status != ''">
+        AND QNA_STATUS = #{status}
+    </if>
+    <if test="searchWord != null and searchWord != ''">
+        AND QNA_TITLE LIKE '%' || #{searchWord} || '%'
+    </if>
+</select>
+
+<select id="selectAllQna" parameterType="map" resultMap="qnaResultMap">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, T.*
+        FROM (
+            SELECT Q.*, G.GOODS_NAME, M.MEMBER_ID
+            FROM QNA Q
+            JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+            JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM
+            <where>
+                <if test="status != null and status != ''">
+                    AND Q.QNA_STATUS = #{status}
+                </if>
+                <if test="searchWord != null and searchWord != ''">
+                    AND (Q.QNA_TITLE LIKE '%' || #{searchWord} || '%'
+                    OR G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
+                    OR M.MEMBER_ID LIKE '%' || #{searchWord} || '%')
+                </if>
+            </where>
+            ORDER BY Q.QNA_STATUS ASC, Q.QNA_DATE DESC
+        ) T
+    )
+    WHERE RN BETWEEN #{startRow} AND #{endRow}
+</select>
+
+<select id="countAllQna" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM QNA Q
+    JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+    JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM
+    <where>
+        <if test="status != null and status != ''">
+            AND Q.QNA_STATUS = #{status}
+        </if>
+        <if test="searchWord != null and searchWord != ''">
+            AND (Q.QNA_TITLE LIKE '%' || #{searchWord} || '%'
+            OR G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
+            OR M.MEMBER_ID LIKE '%' || #{searchWord} || '%')
+        </if>
+    </where>
+</select>
+
+<update id="updateAnswer" parameterType="mini.domain.QnaDTO">
+    UPDATE QNA
+    SET
+        ANSWER_CONTENT = #{answerContent},
+        ANSWER_DATE = SYSDATE,
+        QNA_STATUS = '답변완료'
+    WHERE QNA_NUM = #{qnaNum}
+</update>
+
 </mapper>

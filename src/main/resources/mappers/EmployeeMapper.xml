@@ -91,6 +91,21 @@ where EMP_NUM = #{empNum}
 select emp_num from employees
 where emp_id = #{empId}
 </select>
+
+<select id="selectEmployeeDetailById" parameterType="string" resultType="mini.domain.EmployeeDTO">
+    SELECT
+        EMP_NUM, EMP_ID, EMP_PW, EMP_NAME, EMP_JUMIN, EMP_PHONE,
+        EMP_EMAIL, EMP_ADDR, EMP_ADDR_DETAIL, EMP_POST, EMP_HIRE_DATE
+    FROM EMPLOYEES
+    WHERE EMP_ID = #{empId}
+</select>
+
+<update id="updatePassword">
+    UPDATE EMPLOYEES
+    SET EMP_PW = #{empPw}
+    WHERE EMP_ID = #{empId}
+</update>
+
 </mapper>
 
 	

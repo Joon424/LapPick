@@ -41,6 +41,7 @@
               <tr><th>상품번호</th><td th:text="*{goodsNum}"></td></tr>
               <tr><th>상품명</th><td><input type="text" th:field="*{goodsName}" required></td></tr>
               <tr><th>상품가격</th><td><input type="number" th:field="*{goodsPrice}" required></td></tr>
+              <tr><th>현재 재고</th><td><span th:text="|${goodsCommand.stockQty != null ? goodsCommand.stockQty : 0}개|"></span><span class="hint" style="margin-left:10px;">(재고 변경은 상품 목록의 '입고' 기능을 이용해주세요.)</span></td></tr>
               <tr>
                 <th>브랜드</th>
                 <td>

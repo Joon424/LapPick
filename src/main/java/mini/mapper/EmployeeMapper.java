@@ -19,4 +19,7 @@ public interface EmployeeMapper {
 	public Integer employeeUpdate(EmployeeDTO dto);
 	public Integer employeeDelete(String empNum);
 	public String getEmpNum(String empId);
+	// [추가]
+	void updatePassword(@Param("empId") String empId, @Param("empPw") String empPw);
+	EmployeeDTO selectEmployeeDetailById(String empId);
 }

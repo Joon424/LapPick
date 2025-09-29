@@ -31,6 +31,7 @@
             <tr><th>상품번호</th><td th:text="${goodsCommand.goodsNum}"></td></tr>
             <tr><th>상품명</th><td th:text="${goodsCommand.goodsName}"></td></tr>
             <tr><th>가격</th><td th:text="${#numbers.formatInteger(goodsCommand.goodsPrice, 0, 'COMMA')} + '원'"></td></tr>
+            <tr><th>현재 재고</th><td th:text="${goodsCommand.stockQty} + '개'"></td></tr>
             <tr><th>브랜드</th><td th:text="${goodsCommand.goodsBrand}"></td></tr>
             <tr><th>용도</th><td th:text="${goodsCommand.goodsPurpose}"></td></tr>
             <tr><th>화면 크기</th><td th:text="${goodsCommand.goodsScreenSize} + '인치'"></td></tr>

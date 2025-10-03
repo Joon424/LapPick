@@ -2,6 +2,7 @@ package mini.controller;
 
 import java.security.Principal; // [추가]
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import mini.domain.QnaDTO;
 import mini.mapper.MemberMapper; // [추가]
 import mini.mapper.QnaMapper;
 import mini.service.item.GoodsDetailViewService;
+import mini.service.review.ReviewService;
 
 @Controller
 @RequestMapping("corner")
@@ -28,20 +30,21 @@ public class CornerController {
 
     private final GoodsDetailViewService goodsDetailViewService;
     private final QnaMapper qnaMapper;
-    private final MemberMapper memberMapper; // [추가] MemberMapper 의존성 주입
+    private final MemberMapper memberMapper;
+    private final ReviewService reviewService;
 
- // [교체] goodsInfo 메소드
     @GetMapping("detailView/{goodsNum}")
     public String goodsInfo(
             @PathVariable("goodsNum") String goodsNum, Model model,
             HttpServletRequest request, HttpServletResponse response,
             Principal principal) {
         
+        // --- 기존 로직 (동일) ---
         GoodsStockDTO dto = goodsDetailViewService.execute(goodsNum, request, response);
         List<QnaDTO> qnaList = qnaMapper.selectQnaByGoodsNum(goodsNum);
         
         String loginMemberNum = null;
-        boolean isEmployee = false; // 직원 여부 플래그
+        boolean isEmployee = false;
         
         if (principal != null) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -49,15 +52,20 @@ public class CornerController {
             if (member != null) {
                 loginMemberNum = member.getMemberNum();
             }
-            // [추가] 현재 사용자가 'ROLE_EMP' 권한을 가지고 있는지 확인
             isEmployee = auth.getAuthorities().stream()
                              .anyMatch(a -> a.getAuthority().equals("ROLE_EMP"));
         }
         
+        // --- [추가] 리뷰 정보 조회 로직 ---
+        Map<String, Object> reviewData = reviewService.getReviewsForProduct(goodsNum);
+        
+        // --- 모델에 데이터 추가 ---
         model.addAttribute("loginMemberNum", loginMemberNum);
-        model.addAttribute("isEmployee", isEmployee); // [추가]
+        model.addAttribute("isEmployee", isEmployee);
         model.addAttribute("qnaList", qnaList);
         model.addAttribute("goods", dto);
+        model.addAttribute("reviewList", reviewData.get("list")); // [추가]
+        model.addAttribute("reviewSummary", reviewData.get("summary")); // [추가]
         
         return "thymeleaf/item/detailView";
     }

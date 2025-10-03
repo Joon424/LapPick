@@ -3,31 +3,34 @@
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mini.mapper.GoodsMapper">
 
-    <resultMap id="goodsResultMap" type="mini.domain.GoodsDTO">
-        <id property="goodsNum" column="GOODS_NUM" />
-        <result property="goodsName" column="GOODS_NAME" />
-        <result property="goodsPrice" column="GOODS_PRICE" />
-        <result property="goodsContents" column="GOODS_CONTENTS" />
-        <result property="goodsBrand" column="GOODS_BRAND" />
-        <result property="goodsPurpose" column="GOODS_PURPOSE" />
-        <result property="goodsScreenSize" column="GOODS_SCREEN_SIZE" />
-        <result property="goodsWeight" column="GOODS_WEIGHT" />
-        <result property="goodsKeyword1" column="GOODS_KEYWORD1" />
-        <result property="goodsKeyword2" column="GOODS_KEYWORD2" />
-        <result property="goodsKeyword3" column="GOODS_KEYWORD3" />
-        <result property="goodsShippingInfo" column="GOODS_SHIPPING_INFO" />
-        <result property="goodsSellerInfo" column="GOODS_SELLER_INFO" />
-        <result property="empNum" column="EMP_NUM" />
-        <result property="goodsDate" column="GOODS_DATE" />
-        <result property="goodsMainImage" column="GOODS_MAIN_IMAGE" />
-        <result property="goodsMainStoreImage" column="GOODS_MAIN_STORE_IMAGE" />
-        <result property="goodsDetailImage" column="GOODS_DETAIL_IMAGE" />
-        <result property="goodsDetailStoreImage" column="GOODS_DETAIL_STORE_IMAGE" />
-        <result property="goodsDetail" column="GOODS_DETAIL" />
-        <result property="goodsDetailStore" column="GOODS_DETAIL_STORE" />
-        <result property="updateEmpNum" column="UPDATE_EMP_NUM" />
-        <result property="updateDate" column="UPDATE_DATE" />
-    </resultMap>
+<resultMap id="goodsResultMap" type="mini.domain.GoodsDTO">
+    <id property="goodsNum" column="GOODS_NUM" />
+    <result property="goodsName" column="GOODS_NAME" />
+    <result property="goodsPrice" column="GOODS_PRICE" />
+    <result property="goodsContents" column="GOODS_CONTENTS" />
+    <result property="goodsBrand" column="GOODS_BRAND" />
+    <result property="goodsPurpose" column="GOODS_PURPOSE" />
+    <result property="goodsScreenSize" column="GOODS_SCREEN_SIZE" />
+    <result property="goodsWeight" column="GOODS_WEIGHT" />
+    <result property="goodsKeyword1" column="GOODS_KEYWORD1" />
+    <result property="goodsKeyword2" column="GOODS_KEYWORD2" />
+    <result property="goodsKeyword3" column="GOODS_KEYWORD3" />
+    <result property="goodsShippingInfo" column="GOODS_SHIPPING_INFO" />
+    <result property="goodsSellerInfo" column="GOODS_SELLER_INFO" />
+    <result property="empNum" column="EMP_NUM" />
+    <result property="goodsDate" column="GOODS_DATE" />
+    <result property="goodsMainImage" column="GOODS_MAIN_IMAGE" />
+    <result property="goodsMainStoreImage" column="GOODS_MAIN_STORE_IMAGE" />
+    <result property="goodsDetailImage" column="GOODS_DETAIL_IMAGE" />
+    <result property="goodsDetailStoreImage" column="GOODS_DETAIL_STORE_IMAGE" />
+    <result property="goodsDetail" column="GOODS_DETAIL" />
+    <result property="goodsDetailStore" column="GOODS_DETAIL_STORE" />
+    <result property="updateEmpNum" column="UPDATE_EMP_NUM" />
+    <result property="updateDate" column="UPDATE_DATE" />
+    <result property="stockQty" column="STOCK_QTY" />
+    <result property="reviewCount" column="REVIEW_COUNT" />
+    <result property="avgRating" column="AVG_RATING" />
+</resultMap>
     
     <resultMap id="goodsStockResultMap" type="mini.domain.GoodsStockDTO" extends="goodsResultMap">
         <result property="stockQty" column="STOCK_QTY" />
@@ -63,7 +66,25 @@
     </sql>
 
     <select id="allSelect" parameterType="mini.command.GoodsFilterCommand" resultMap="goodsResultMap">
-        SELECT * FROM ( SELECT ROWNUM AS RN, <include refid="goodsColumns" /> FROM ( SELECT <include refid="goodsColumns" /> FROM GOODS <include refid="filterConditions"/> ORDER BY GOODS_NUM DESC ) ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.* FROM (
+                SELECT
+                    G.*,
+                    COALESCE(S.STOCK_QTY, 0) AS STOCK_QTY,
+                    COALESCE(R.REVIEW_COUNT, 0) AS REVIEW_COUNT,
+                    COALESCE(R.AVG_RATING, 0) AS AVG_RATING
+                FROM
+                    GOODS G
+                LEFT JOIN
+                    (SELECT GOODS_NUM, SUM(IPGO_QTY) AS STOCK_QTY FROM GOODS_IPGO GROUP BY GOODS_NUM) S
+                    ON G.GOODS_NUM = S.GOODS_NUM
+                LEFT JOIN
+                    (SELECT GOODS_NUM, COUNT(*) AS REVIEW_COUNT, AVG(REVIEW_RATING) AS AVG_RATING FROM REVIEWS GROUP BY GOODS_NUM) R
+                    ON G.GOODS_NUM = R.GOODS_NUM
+                <include refid="filterConditions"/>
+                ORDER BY G.GOODS_NUM DESC
+            ) T
+        ) WHERE RN BETWEEN #{startRow} AND #{endRow}
     </select>
     
     <select id="goodsCount" parameterType="mini.command.GoodsFilterCommand" resultType="int">
@@ -74,21 +95,13 @@
         SELECT <include refid="goodsColumns" /> FROM GOODS WHERE GOODS_NUM = #{goodsNum}
     </select>
     
-    <select id="selectOneWithStock" parameterType="string" resultMap="goodsStockResultMap">
+<select id="selectOneWithStock" parameterType="string" resultMap="goodsStockResultMap">
         SELECT 
-            G.*, COALESCE(S.STOCK, 0) AS STOCK_QTY
+            G.*, 
+            (SELECT COALESCE(SUM(IPGO_QTY), 0) FROM GOODS_IPGO WHERE GOODS_NUM = G.GOODS_NUM) AS STOCK_QTY
         FROM GOODS G
-        LEFT OUTER JOIN (
-            SELECT 
-                IP.GOODS_NUM, 
-                COALESCE(IQTY, 0) - COALESCE(PQTY, 0) AS STOCK
-            FROM (SELECT GOODS_NUM, SUM(IPGO_QTY) AS IQTY FROM GOODS_IPGO GROUP BY GOODS_NUM) IP
-            LEFT OUTER JOIN (SELECT GOODS_NUM, SUM(PURCHASE_QTY) AS PQTY FROM PURCHASE_LIST GROUP BY GOODS_NUM) PL
-            ON IP.GOODS_NUM = PL.GOODS_NUM
-        ) S
-        ON G.GOODS_NUM = S.GOODS_NUM
         WHERE G.GOODS_NUM = #{goodsNum}
-    </select>   
+    </select>
     
     <insert id="goodsInsert" parameterType="mini.domain.GoodsDTO">
         INSERT INTO GOODS (<include refid="goodsColumns" />) VALUES (#{goodsNum}, #{goodsName}, #{goodsPrice}, #{goodsContents}, #{goodsBrand}, #{goodsPurpose}, #{goodsScreenSize}, #{goodsWeight}, #{goodsKeyword1}, #{goodsKeyword2}, #{goodsKeyword3}, #{goodsShippingInfo}, #{goodsSellerInfo}, #{empNum}, SYSDATE, #{goodsMainImage, jdbcType=VARCHAR}, #{goodsMainStoreImage, jdbcType=VARCHAR}, #{goodsDetailImage, jdbcType=VARCHAR}, #{goodsDetailStoreImage, jdbcType=VARCHAR}, #{goodsDetail, jdbcType=VARCHAR}, #{goodsDetailStore, jdbcType=VARCHAR}, #{updateEmpNum, jdbcType=VARCHAR}, #{updateDate, jdbcType=TIMESTAMP})
@@ -119,8 +132,48 @@
 </select>
   
 <insert id="insertGoodsIpgo">
-    INSERT INTO GOODS_IPGO (GOODS_NUM, IPGO_QTY, IPGO_DATE)
-    VALUES (#{goodsNum}, #{ipgoQty}, SYSDATE)
-</insert> 
+  INSERT INTO GOODS_IPGO (
+      IPGO_NUM, 
+      GOODS_NUM, 
+      IPGO_QTY, 
+      IPGO_DATE,
+      IPGO_MEMO
+  ) VALUES (
+      goods_ipgo_seq.NEXTVAL, 
+      #{goodsNum}, 
+      #{ipgoQty}, 
+      SYSDATE,
+      #{memo}
+  )
+</insert>
     
+<resultMap id="goodsIpgoResultMap" type="mini.domain.GoodsIpgoDTO">
+        <id property="ipgoNum" column="IPGO_NUM" />
+        <result property="goodsNum" column="GOODS_NUM" />
+        <result property="ipgoQty" column="IPGO_QTY" />
+        <result property="ipgoDate" column="IPGO_DATE" />
+        <result property="ipgoMemo" column="IPGO_MEMO" />
+    </resultMap>
+
+    <select id="countIpgoHistory" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM GOODS_IPGO
+        WHERE GOODS_NUM = #{goodsNum}
+    </select>
+    
+<select id="selectIpgoHistoryPaged" parameterType="map" resultMap="goodsIpgoResultMap">
+        SELECT
+            IPGO_NUM, GOODS_NUM, IPGO_QTY, IPGO_DATE, IPGO_MEMO
+        FROM (
+            SELECT
+                T.*, ROWNUM AS RN
+            FROM (
+                SELECT IPGO_NUM, GOODS_NUM, IPGO_QTY, IPGO_DATE, IPGO_MEMO
+                FROM GOODS_IPGO
+                WHERE GOODS_NUM = #{goodsNum}
+                ORDER BY IPGO_DATE DESC
+            ) T
+        )
+        WHERE RN BETWEEN #{startRow} AND #{endRow}
+    </select>
 </mapper>

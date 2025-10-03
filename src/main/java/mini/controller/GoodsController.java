@@ -20,10 +20,12 @@ import lombok.RequiredArgsConstructor;
 import mini.command.GoodsCommand;
 import mini.command.GoodsFilterCommand;
 import mini.domain.GoodsDTO;
+import mini.domain.GoodsIpgoDTO;
 import mini.domain.GoodsListPage;
 import mini.domain.GoodsStockDTO;
 import mini.domain.MemberDTO;
 import mini.domain.QnaDTO;
+import mini.domain.StockHistoryPageDTO;
 import mini.mapper.MemberMapper;
 import mini.service.AutoNumService;
 import mini.service.goods.GoodsService;
@@ -34,40 +36,30 @@ import mini.service.qna.QnaService;
 @RequiredArgsConstructor
 public class GoodsController {
 
-
     private final GoodsService goodsService;
     private final AutoNumService autoNumService;
     private final QnaService qnaService;
     private final MemberMapper memberMapper;
 
-    /**
-     * [수정] 상품 목록 (직원용) - 디버깅 로그 추가
-     */
     @GetMapping("/list")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String goodsListForAdmin(GoodsFilterCommand filter, Model model) {
-        // [수정] 페이지당 표시 개수를 10개에서 5개로 변경합니다.
         GoodsListPage pageData = goodsService.getGoodsListPage(filter, 5); 
         
         model.addAttribute("pageData", pageData);
         model.addAttribute("goodsList", pageData.getItems());
         model.addAttribute("filter", filter);
-        return "thymeleaf/goods/goodsList"; // 직원용 상품 목록 페이지
+        return "thymeleaf/goods/goodsList";
     }
 
-    /**
-     * 상품 전체 목록 (사용자용)
-     */
     @GetMapping("/goodsFullList")
     public String goodsFullList(GoodsFilterCommand filter, Model model) {
-        // 4. 페이지 당 상품 개수 9개로 고정
         GoodsListPage pageData = goodsService.getGoodsListPage(filter, 9); 
         model.addAttribute("pageData", pageData);
         model.addAttribute("goodsList", pageData.getItems());
         model.addAttribute("filter", filter);
         
-        // 페이지네이션을 위한 시작/끝 페이지 계산
-        int paginationRange = 5; // 한 번에 보여줄 페이지 번호 개수
+        int paginationRange = 5;
         int startPage = (int) (Math.floor((pageData.getPage() - 1) / paginationRange) * paginationRange + 1);
         int endPage = Math.min(startPage + paginationRange - 1, pageData.getTotalPages());
 
@@ -77,13 +69,9 @@ public class GoodsController {
         return "thymeleaf/goods/goodsFullList";
     }
 
-    /**
-     * 상품 등록 폼 (직원용)
-     */
     @GetMapping("/add")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String addForm(Model model) {
-        // [수정] AutoNumService를 호출할 때 접두사를 'goods_'로 명확히 지정합니다.
     	String autoNum = autoNumService.execute("goods", "goods_num", "goods_");
         
         GoodsCommand goodsCommand = new GoodsCommand();
@@ -92,98 +80,82 @@ public class GoodsController {
         return "thymeleaf/goods/goodsWrite";
     }
 
-
-    /**
-     * 상품 등록 처리 (직원용)
-     */
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String addGoods(@Validated GoodsCommand command, BindingResult result, Model model) {
         if (result.hasErrors()) {
             model.addAttribute("goodsCommand", command);
-            // [수정] 등록 실패 시 돌아갈 html 파일 이름도 'goodsWrite'로 변경합니다.
             return "thymeleaf/goods/goodsWrite";
         }
         goodsService.createGoods(command);
         return "redirect:/goods/list";
     }
 
-    /**
-     * [수정] 상품 수정 폼 (재고 정보 포함)
-     */
     @GetMapping("/{goodsNum}/edit")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String editForm(@PathVariable("goodsNum") String goodsNum, Model model, HttpSession session) {
         session.removeAttribute("fileList");
-        GoodsStockDTO dto = goodsService.getGoodsDetailWithStock(goodsNum); // [수정]
+        GoodsStockDTO dto = goodsService.getGoodsDetailWithStock(goodsNum);
         model.addAttribute("goodsCommand", dto);
         return "thymeleaf/goods/goodsEdit";
     }
-
     
-    /**
-     * [추가] 상품 상세 정보 (직원용)
-     * URL 경로를 추가하고 재고를 포함한 정보를 조회하도록 하여 404 오류 해결
-     */
     @GetMapping("/{goodsNum}")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
-    public String goodsDetail(@PathVariable("goodsNum") String goodsNum, Model model) {
+    public String goodsDetail(@PathVariable("goodsNum") String goodsNum,
+                              @RequestParam(value = "historyPage", defaultValue = "1") int historyPage,
+                              // [추가] 재고 이력 창의 표시 여부를 받는 파라미터
+                              @RequestParam(value = "showHistory", required = false, defaultValue = "false") boolean showHistory,
+                              Model model) {
         GoodsStockDTO dto = goodsService.getGoodsDetailWithStock(goodsNum);
         model.addAttribute("goodsCommand", dto);
+        
+        StockHistoryPageDTO historyPageData = goodsService.getStockHistoryPage(goodsNum, historyPage, 5);
+        model.addAttribute("historyPageData", historyPageData);
+        
+        // [추가] 표시 여부 상태를 모델에 담아 전달
+        model.addAttribute("showHistory", showHistory); 
+        
         return "thymeleaf/goods/goodsInfo";
     }
     
-    /**
-     * 상품 수정 처리 (직원용)
-     */
     @PostMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String updateGoods(@Validated GoodsCommand command, BindingResult result,
                               @RequestParam(value="imagesToDelete", required = false) List<String> imagesToDelete,
-                              // ▼▼▼▼▼ [추가] 상세 설명 이미지 중 삭제할 목록을 받는 파라미터 ▼▼▼▼▼
                               @RequestParam(value="detailDescImagesToDelete", required = false) List<String> detailDescImagesToDelete,
                               Model model) {
         if (result.hasErrors()) {
             model.addAttribute("goodsCommand", command);
             return "thymeleaf/goods/goodsEdit";
         }
-        // [수정] 서비스 호출 시 새로운 파라미터를 함께 전달합니다.
         goodsService.updateGoods(command, imagesToDelete, detailDescImagesToDelete);
         return "redirect:/goods/" + command.getGoodsNum();
     }
 
-    /**
-     * 상품 삭제 (개별/다중) (직원용)
-     */
     @PostMapping("/delete")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
     public String deleteGoods(@RequestParam("nums") String[] goodsNums) {
         goodsService.deleteGoods(goodsNums);
-        return "redirect:/goods/list"; // [수정] 직원용 목록 페이지로 리다이렉트
+        return "redirect:/goods/list";
     }
     
-    /**
-     * [추가] 상품 입고 처리 (직원용)
-     */
-    @PostMapping("/stock-in")
+    @PostMapping("/stock-change")
     @PreAuthorize("hasAuthority('ROLE_EMP')")
-    public String stockIn(@RequestParam("goodsNum") String goodsNum,
-                          @RequestParam("quantity") int quantity,
-                          RedirectAttributes ra) {
+    public String stockChange(@RequestParam("goodsNum") String goodsNum,
+                              @RequestParam("quantity") int quantity,
+                              // [수정] memo 파라미터를 선택적으로 받도록 required=false 추가
+                              @RequestParam(value = "memo", required = false) String memo,
+                              RedirectAttributes ra) {
         try {
-            goodsService.addStock(goodsNum, quantity);
-            ra.addFlashAttribute("message", "'" + goodsNum + "' 상품이 " + quantity + "개 입고 처리되었습니다.");
+            goodsService.changeStock(goodsNum, quantity, memo);
+            String message = (quantity > 0) ? 
+                "'" + goodsNum + "' 상품이 " + quantity + "개 입고 처리되었습니다." :
+                "'" + goodsNum + "' 상품이 " + (-quantity) + "개 출고/차감 처리되었습니다.";
+            ra.addFlashAttribute("message", message);
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/goods/list";
     }
 }
-
-
-
-
-
-
-
-

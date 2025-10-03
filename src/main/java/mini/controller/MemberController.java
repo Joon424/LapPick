@@ -4,7 +4,10 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import mini.command.MemberCommand;
 import mini.domain.MemberDTO;
+import mini.domain.ReviewPageDTO;
+import mini.mapper.MemberMapper;
 import mini.service.member.MemberService;
+import mini.service.review.ReviewService;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,6 +25,8 @@ public class MemberController {
 
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
+    private final ReviewService reviewService; // [추가]
+    private final MemberMapper memberMapper; // [추가]
 
     // 현재 로그인된 사용자 ID를 가져오는 헬퍼 메서드
     private String getCurrentUserId() {
@@ -117,5 +122,21 @@ public class MemberController {
             ra.addFlashAttribute("message", e.getMessage());
             return "redirect:/member/my-page";
         }
+    }
+    
+    /**
+     * [추가] 내가 작성한 리뷰 목록 페이지
+     */
+    @PreAuthorize("hasAuthority('ROLE_MEM')")
+    @GetMapping("/my-reviews")
+    public String myReviews(Model model, @RequestParam(value="page", defaultValue="1") int page) {
+        String memberId = getCurrentUserId();
+        String memberNum = memberMapper.memberNumSelect(memberId);
+        
+        // 한 페이지에 5개씩 표시
+        ReviewPageDTO pageData = reviewService.getMyReviewsPage(memberNum, page, 5);
+        
+        model.addAttribute("pageData", pageData);
+        return "thymeleaf/member/myReviewList"; // 새로 만들 HTML 파일
     }
 }

@@ -35,4 +35,11 @@ public class GoodsDTO {
     String goodsSellerInfo;
     String updateEmpNum;
     Date updateDate;
+    
+    // [추가] 현재 재고 수량을 담을 필드
+    private Integer stockQty;
+    
+ // [추가] 리뷰 요약 정보를 담을 필드
+    private Integer reviewCount;
+    private Double avgRating;
 }

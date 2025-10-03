@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title th:text="${reviewNum != null} ? '리뷰 수정' : '리뷰 작성'"></title>
+    <th:block layout:fragment="css">
+      <style>
+            .review-write-container { max-width: 800px; margin: 40px auto; }
+            .product-info { display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 30px; }
+            .product-info img { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; }
+            .product-info .name { font-size: 1.2rem; font-weight: 600; margin-bottom: 5px; }
+            .product-info .desc { color: #666; font-size: 0.9rem; }
+            .form-group { margin-bottom: 20px; }
+            .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+            .rating-stars { display: inline-block; }
+            .rating-stars input[type="radio"] { display: none; }
+            .rating-stars label { font-size: 2.5rem; color: #e4e5e9; cursor: pointer; float: right; transition: color 0.2s; }
+            .rating-stars input[type="radio"]:checked ~ label,
+            .rating-stars label:hover,
+            .rating-stars label:hover ~ label { color: #f59e0b; }
+            textarea, input[type="file"] { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; }
+            textarea { resize: vertical; min-height: 200px; }
+            .btn-bar { display:flex; justify-content:flex-end; gap:10px; margin-top:30px; }
+            .error-message { color: red; font-size: 14px; margin-top: 5px; }
+            
+            .preview-container, .existing-images-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+            .preview-item, .existing-image-item { position: relative; width: 100px; height: 100px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
+            .preview-img, .existing-img { width: 100%; height: 100%; object-fit: cover; }
+            .preview-delete-btn, .delete-label {
+                position: absolute; top: 5px; right: 5px;
+                width: 20px; height: 20px;
+                background-color: rgba(0,0,0,0.6); color: white;
+                border: none; border-radius: 50%;
+                cursor: pointer; display: flex; align-items: center; justify-content: center;
+                font-size: 14px; line-height: 20px; padding: 0;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="review-write-container">
+            <div class="textset" style="margin-bottom: 40px; text-align: center;">
+                <h2 class="textset-tit" th:text="${reviewNum != null} ? '리뷰 수정' : '리뷰 작성'"></h2>
+                <p class="textset-desc">상품은 만족하셨나요? 소중한 후기를 남겨주세요.</p>
+            </div>
+            
+            <div class="product-info">
+                <img th:src="@{|/upload/${goods.goodsMainStoreImage}|}" alt="상품 이미지">
+                <div>
+                    <p class="name" th:text="${goods.goodsName}"></p>
+                    <p class="desc" th:text="${goods.goodsContents}"></p>
+                </div>
+            </div>
+
+            <form th:action="${reviewNum != null} ? @{/review/update} : @{/review/write}" th:object="${reviewCommand}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{purchaseNum}" />
+                <input type="hidden" th:field="*{goodsNum}" />
+                <input type="hidden" name="reviewNum" th:value="${reviewNum}" th:if="${reviewNum != null}">
+
+                <div class="form-group">
+                    <label>별점</label>
+                    <div class="rating-stars">
+                        <input type="radio" id="star5" th:field="*{reviewRating}" value="5" /><label for="star5">★</label>
+                        <input type="radio" id="star4" th:field="*{reviewRating}" value="4" /><label for="star4">★</label>
+                        <input type="radio" id="star3" th:field="*{reviewRating}" value="3" /><label for="star3">★</label>
+                        <input type="radio" id="star2" th:field="*{reviewRating}" value="2" /><label for="star2">★</label>
+                        <input type="radio" id="star1" th:field="*{reviewRating}" value="1" /><label for="star1">★</label>
+                    </div>
+                    <div th:if="${#fields.hasErrors('reviewRating')}" th:errors="*{reviewRating}" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reviewContent">리뷰 내용</label>
+                    <textarea id="reviewContent" th:field="*{reviewContent}" placeholder="상품에 대한 솔직한 후기를 10자 이상 남겨주세요."></textarea>
+                    <div th:if="${#fields.hasErrors('reviewContent')}" th:errors="*{reviewContent}" class="error-message"></div>
+                </div>
+
+                <div class="form-group" th:if="${existingImages != null}">
+                    <label>현재 등록된 사진 (삭제하려면 체크)</label>
+                    <div class="existing-images-container">
+                        <div th:each="img : ${existingImages}" class="existing-image-item">
+                            <img th:src="@{/upload/{name}(name=${img})}" class="existing-img">
+                            <label class="delete-label"><input type="checkbox" name="imagesToDelete" th:value="${img}" style="width:auto;"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reviewImages">사진 추가 (선택)</label>
+                    <input type="file" id="reviewImages" th:field="*{reviewImages}" accept="image/*" multiple>
+                    <div id="image-preview-container" class="preview-container"></div>
+                </div>
+
+                <div class="btn-bar">
+                    <a th:href="@{/member/my-reviews}" class="btnset btnset-line">취소</a>
+                    <button type="submit" class="btnset" th:text="${reviewNum != null} ? '수정하기' : '등록하기'"></button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+<th:block layout:fragment="script">
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('reviewImages');
+    const previewContainer = document.getElementById('image-preview-container');
+    let fileBuffer = []; // 실제 파일 객체를 저장할 배열
+
+    fileInput.addEventListener('change', function(event) {
+        const newFiles = Array.from(event.target.files); // 새로 선택된 파일들
+        
+        // 새로 선택된 파일들을 버퍼에 추가
+        fileBuffer.push(...newFiles);
+        
+        updateFileInput();
+        updatePreview();
+    });
+
+    function updatePreview() {
+        previewContainer.innerHTML = ''; // 미리보기 컨테이너 초기화
+
+        fileBuffer.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                // 미리보기 아이템 래퍼
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+
+                // 이미지 태그
+                const img = document.createElement('img');
+                img.className = 'preview-img';
+                img.src = e.target.result;
+                
+                // 삭제 버튼
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'preview-delete-btn';
+                deleteBtn.innerHTML = '&times;'; // 'x' 아이콘
+                deleteBtn.dataset.index = index; // 파일의 인덱스를 저장
+
+                deleteBtn.addEventListener('click', function(event) {
+                    event.preventDefault(); // 폼 전송 방지
+                    const idxToRemove = parseInt(this.dataset.index, 10);
+                    fileBuffer.splice(idxToRemove, 1); // 버퍼에서 파일 제거
+                    
+                    updateFileInput();
+                    updatePreview(); // 미리보기 다시 그리기
+                });
+
+                previewItem.appendChild(img);
+                previewItem.appendChild(deleteBtn);
+                previewContainer.appendChild(previewItem);
+            };
+
+            reader.readAsDataURL(file); // 파일을 읽어 데이터 URL로 변환
+        });
+    }
+    
+    function updateFileInput() {
+        const dataTransfer = new DataTransfer();
+        fileBuffer.forEach(file => dataTransfer.items.add(file));
+        fileInput.files = dataTransfer.files;
+    }
+});
+</script>
+</th:block>
+</body>
+</html>

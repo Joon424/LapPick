@@ -2,6 +2,7 @@ package mini.mapper;
 
 import mini.command.GoodsFilterCommand;
 import mini.domain.GoodsDTO;
+import mini.domain.GoodsIpgoDTO;
 import mini.domain.GoodsStockDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,6 +24,10 @@ public interface GoodsMapper {
     public void goodsDelete(List<String> nums);
     GoodsStockDTO selectOneWithStock(String goodsNum);
     public List<GoodsDTO> selectGoodsByNumList(List<String> nums);
- // [추가]
-    void insertGoodsIpgo(@Param("goodsNum") String goodsNum, @Param("ipgoQty") int ipgoQty);
+    // [수정] 재고 변경 사유(memo)를 함께 저장하도록 파라미터 추가
+    void insertGoodsIpgo(@Param("goodsNum") String goodsNum, @Param("ipgoQty") int ipgoQty, @Param("memo") String memo);
+ // [추가] 재고 변경 이력 개수 카운트
+    int countIpgoHistory(String goodsNum);
+    // [추가] 재고 변경 이력을 페이징하여 조회
+    List<GoodsIpgoDTO> selectIpgoHistoryPaged(java.util.Map<String, Object> params);
 }

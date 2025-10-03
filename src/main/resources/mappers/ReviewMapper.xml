@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mini.mapper.ReviewMapper">
+
+    <insert id="insertReview" parameterType="mini.domain.ReviewDTO">
+        INSERT INTO REVIEWS (
+            REVIEW_NUM,
+            GOODS_NUM,
+            MEMBER_NUM,
+            PURCHASE_NUM,
+            REVIEW_RATING,
+            REVIEW_CONTENT,
+            REVIEW_IMAGE,
+            REVIEW_DATE
+        ) VALUES (
+            reviews_seq.NEXTVAL,
+            #{goodsNum},
+            #{memberNum},
+            #{purchaseNum},
+            #{reviewRating},
+            #{reviewContent},
+            #{reviewImage, jdbcType=VARCHAR},
+            SYSTIMESTAMP
+        )
+    </insert>
+
+<resultMap id="reviewResultMap" type="mini.domain.ReviewDTO">
+        <id property="reviewNum" column="REVIEW_NUM"/>
+        <result property="goodsNum" column="GOODS_NUM"/>
+        <result property="memberNum" column="MEMBER_NUM"/>
+        <result property="purchaseNum" column="PURCHASE_NUM"/>
+        <result property="reviewRating" column="REVIEW_RATING"/>
+        <result property="reviewContent" column="REVIEW_CONTENT"/>
+        <result property="reviewImage" column="REVIEW_IMAGE"/>
+        <result property="reviewDate" column="REVIEW_DATE"/>
+        <result property="memberId" column="MEMBER_ID"/>
+        <result property="goodsName" column="GOODS_NAME"/>
+    </resultMap>
+
+  <select id="selectReviewsByGoodsNum" parameterType="string" resultMap="reviewResultMap">
+        SELECT 
+            R.REVIEW_NUM, R.GOODS_NUM, R.MEMBER_NUM, R.PURCHASE_NUM,
+            R.REVIEW_RATING, R.REVIEW_CONTENT, R.REVIEW_IMAGE, R.REVIEW_DATE,
+            M.MEMBER_ID,
+            G.GOODS_NAME
+        FROM REVIEWS R
+        JOIN MEMBERS M ON R.MEMBER_NUM = M.MEMBER_NUM
+        JOIN GOODS G ON R.GOODS_NUM = G.GOODS_NUM
+        WHERE R.GOODS_NUM = #{goodsNum}
+        ORDER BY R.REVIEW_DATE DESC
+    </select>
+    
+    <select id="getReviewSummary" parameterType="string" resultType="mini.domain.ReviewSummaryDTO">
+        SELECT
+            COUNT(*) AS reviewCount,
+            COALESCE(AVG(REVIEW_RATING), 0) AS avgRating
+        FROM REVIEWS
+        WHERE GOODS_NUM = #{goodsNum}
+    </select>
+    
+    <select id="countReviewsByMemberNum" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM REVIEWS
+        WHERE MEMBER_NUM = #{memberNum}
+    </select>
+
+    <select id="selectReviewsByMemberNum" parameterType="map" resultMap="reviewResultMap">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.* FROM (
+                SELECT 
+                    R.REVIEW_NUM, R.GOODS_NUM, R.MEMBER_NUM, R.PURCHASE_NUM,
+                    R.REVIEW_RATING, R.REVIEW_CONTENT, R.REVIEW_IMAGE, R.REVIEW_DATE,
+                    G.GOODS_NAME
+                FROM REVIEWS R
+                JOIN GOODS G ON R.GOODS_NUM = G.GOODS_NUM
+                WHERE R.MEMBER_NUM = #{memberNum}
+                ORDER BY R.REVIEW_DATE DESC
+            ) T
+        ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+    </select>
+    
+    <select id="selectReview" parameterType="long" resultType="mini.domain.ReviewDTO">
+        SELECT
+            REVIEW_NUM, GOODS_NUM, MEMBER_NUM, PURCHASE_NUM, REVIEW_IMAGE
+        FROM REVIEWS
+        WHERE REVIEW_NUM = #{reviewNum}
+    </select>
+
+    <delete id="deleteReview" parameterType="long">
+        DELETE FROM REVIEWS
+        WHERE REVIEW_NUM = #{reviewNum}
+    </delete>
+	
+	  <update id="updateReview" parameterType="mini.domain.ReviewDTO">
+        UPDATE REVIEWS
+        SET 
+            REVIEW_RATING = #{reviewRating},
+            REVIEW_CONTENT = #{reviewContent},
+            REVIEW_IMAGE = #{reviewImage, jdbcType=VARCHAR},
+            REVIEW_DATE = SYSTIMESTAMP
+        WHERE REVIEW_NUM = #{reviewNum}
+    </update>
+    
+</mapper>

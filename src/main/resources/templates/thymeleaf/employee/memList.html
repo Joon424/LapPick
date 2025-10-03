@@ -56,18 +56,18 @@
             </div>
           </div>
 
-          <form id="bulkDeleteForm" th:action="@{/employee/members/delete}" method="post">
-          <table border="1" width="100%" style="border-collapse:collapse;">
+    <form id="bulkDeleteForm" th:action="@{/employee/members/delete}" method="post">
+            <table border="1" width="100%" style="border-collapse:collapse; border-color:#eee;">
               <thead>
                 <tr style="background:#f9fafb;">
-                  <th width="48"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
-                  <th width="60">번호</th>
-                  <th>이름</th>
-                  <th>아이디</th>
-                  <th>이메일</th>
-                  <th>휴대폰</th>
-                  <th width="140">가입일</th>
-                  <th width="200" style="text-align: center;">관리</th>
+                  <th width="48" style="text-align:center;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
+                  <th width="60" style="text-align:center; padding-left: 0px;">번호</th>
+                  <th width="110" style="text-align: left; padding-left: 25px;">이름</th>
+                  <th width="110" style="padding-left: 0px;">아이디</th>
+                  <th width="220" style="padding-left: 0px;">이메일</th>
+                  <th width="150" style="padding-left: 90px;">휴대폰</th>
+                  <th width="140" style="padding-left: 80px;">가입일</th>
+                  <th width="200" style="text-align: center; padding-left: 25px">관리</th>
                 </tr>
               </thead>
                 <tbody>
@@ -76,14 +76,14 @@
                 </tr>
                 <tr th:each="m, stat : ${members}">
                   <td style="text-align:center;"><input type="checkbox" name="memberNums" th:value="${m.memberNum}"></td>
-                  <td style="text-align:center;" th:text="${(pageData.page - 1) * pageData.size + stat.index + 1}">1</td>
-                  <td th:text="${m.memberName}">홍길동</td>
-                  <td th:text="${m.memberId}">hong</td>
-                  <td th:text="${m.memberEmail}">hong@example.com</td>
-                  <td th:text="${m.memberPhone1}">010-0000-0000</td>
-                  <td th:text="${#dates.format(m.memberRegist, 'yyyy-MM-dd')}">2024-01-01</td>
+                  <td style="text-align:center; padding-left: 0px;" th:text="${(pageData.page - 1) * pageData.size + stat.index + 1}">1</td>
+                  <td style="text-align: left; padding-left: 25px;" th:text="${m.memberName}">홍길동</td>
+                  <td style="padding-left: 0px;" th:text="${m.memberId}">hong</td>
+                  <td style="padding-left: 0px;" th:text="${m.memberEmail}">hong@example.com</td>
+                  <td style="padding-left: 90px;" th:text="${m.memberPhone1}">010-0000-0000</td>
+                  <td style="padding-left: 80px;" th:text="${#dates.format(m.memberRegist, 'yyyy-MM-dd')}">2024-01-01</td>
                   <td>
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 4px; padding-left: 20px">
                       <a class="manage-btn" th:href="@{/employee/members/{num}(num=${m.memberNum})}">상세</a>
                       <a class="manage-btn" th:href="@{/employee/members/{num}/edit(num=${m.memberNum})}">수정</a>
                       <a class="manage-btn" th:href="@{/employee/members/delete/{num}(num=${m.memberNum})}" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>

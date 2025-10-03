@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>내가 작성한 리뷰</title>
+    <th:block layout:fragment="css">
+        <style>
+            /* 여기에 myReviewList.html 전용 스타일을 추가할 수 있습니다. */
+            .review-list-item {
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                padding: 20px;
+            }
+            .review-item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f2f2f2;
+            }
+            .review-product-info { display: flex; align-items: center; gap: 15px; }
+            .review-product-info img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+            .review-product-info .name { font-weight: 600; }
+            .review-meta { font-size: 14px; color: #6c757d; }
+
+            .review-item-body { padding-top: 20px; }
+            .star-rating { color: #f59e0b; }
+            .star-rating .empty { color: #e4e5e9; }
+            .review-content { margin: 10px 0; line-height: 1.7; white-space: pre-wrap; }
+            .review-images { display: flex; gap: 10px; margin-top: 10px; }
+            .review-images img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+            
+            .review-actions { text-align: right; margin-top: 15px; }
+           /* [수정] 다른 스타일에 덮어씌워지지 않도록 선택자를 더 명확하게 지정합니다. */
+            .review-actions .manage-btn { 
+                font-size: 14px; 
+                padding: 5px 10px; 
+            }
+            
+            .empty-list { text-align: center; padding: 80px 0; color: #777; }
+            .pagination-container .page-btn {
+              display: inline-block; min-width: 32px; padding: 6px 10px;
+              font-size: 13px; font-weight: 500; text-align: center; text-decoration: none;
+              color: #333; background-color: #fff; border: 1px solid #ddd;
+              border-radius: 4px; cursor: pointer;
+            }
+            .pagination-container .page-btn:hover { background-color: #f5f5f5; }
+            .pagination-container .page-btn.active {
+              background-color: #333; color: #fff; border-color: #333; font-weight: bold;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="basic-N23">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="textset" style="margin-bottom: 40px;">
+                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+                        <h2 class="textset-tit">내가 작성한 리뷰</h2>
+                        <div th:if="${message}" th:text="${message}" class="alert" style="background:#e0f7fa;color:#00796b;border:1px solid #b2ebf2;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+                        <div th:if="${error}" th:text="${error}" class="alert" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+                        <p class="textset-desc">회원님께서 작성하신 소중한 리뷰 목록입니다.</p>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(pageData.items)}" class="empty-list">
+                        <p>작성한 리뷰가 없습니다.</p>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(pageData.items)}">
+                        <div th:each="review : ${pageData.items}" class="review-list-item">
+                            <div class="review-item-header">
+                                <div class="review-product-info">
+                                    <div>
+                                        <p class="name" th:text="${review.goodsName}"></p>
+                                    </div>
+                                </div>
+                                <div class="review-meta">
+                                    <span th:text="${#dates.format(review.reviewDate, 'yyyy.MM.dd')}"></span>
+                                </div>
+                            </div>
+                            <div class="review-item-body">
+                                <div class="star-rating">
+                                    <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <span th:if="${i <= review.reviewRating}">★</span>
+                                        <span th:if="${i > review.reviewRating}" class="empty">★</span>
+                                    </th:block>
+                                </div>
+                                <p class="review-content" th:text="${review.reviewContent}"></p>
+                                <div class="review-images" th:if="${review.reviewImage != null and !review.reviewImage.isEmpty()}">
+                                    <img th:each="img : ${#strings.listSplit(review.reviewImage, '/')}"
+                                         th:if="${!img.isEmpty()}"
+                                         th:src="@{/upload/{imgName}(imgName=${img})}"
+                                         alt="리뷰 이미지" />
+                                </div>
+                                <div class="review-actions">
+                                    <a th:href="@{/review/edit/{num}(num=${review.reviewNum})}" class="btnset btnset-line btnset-sm manage-btn">수정</a>
+                                    <form th:action="@{/review/delete/{num}(num=${review.reviewNum})}" method="post" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                        <button type="submit" class="btnset btnset-line btnset-sm manage-btn">삭제</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:40px;"
+                         th:if="${pageData != null and pageData.total > 0}">
+                      <a class="page-btn" th:href="@{/member/my-reviews(page=${pageData.startPage - 1})}" th:if="${pageData.hasPrev}">이전</a>
+                      <a class="page-btn" th:each="p : ${#numbers.sequence(pageData.startPage, pageData.endPage)}" th:text="${p}"
+                         th:classappend="${pageData.page == p} ? 'active' : ''"
+                         th:href="@{/member/my-reviews(page=${p})}"></a>
+                      <a class="page-btn" th:href="@{/member/my-reviews(page=${pageData.endPage + 1})}" th:if="${pageData.hasNext}">다음</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

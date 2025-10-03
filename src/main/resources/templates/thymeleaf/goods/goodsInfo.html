@@ -11,6 +11,35 @@
       th, td { border:1px solid #e5e7eb; padding:12px 15px; vertical-align: top; }
       th { width:160px; background:#fafafa; text-align:left; font-weight: 600; }
       .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; }
+      
+      .qty-plus { color: blue; font-weight: bold; }
+      .qty-minus { color: red; font-weight: bold; }
+	  .history-table { 
+      	margin-top: 40px; 
+      }
+      /* [수정] 페이지네이션 컨테이너 너비를 테이블과 맞춤 */
+      .history-table .pagination-container {
+      	width: 800px;
+      }
+      
+      /* [수정] JS로 제어하므로 기본 숨김 스타일은 유지 */
+      #historySection { 
+      	display: none; 
+      }
+      
+      .history-table h3 { margin-bottom: 10px; font-size: 1.5rem; }
+      
+      /* [추가] goodsList.html과 동일한 페이지네이션 스타일 */
+      .pagination-container .page-btn {
+        display: inline-block; min-width: 32px; padding: 6px 10px;
+        font-size: 13px; font-weight: 500; text-align: center; text-decoration: none;
+        color: #333; background-color: #fff; border: 1px solid #ddd;
+        border-radius: 4px; cursor: pointer;
+      }
+      .pagination-container .page-btn:hover { background-color: #f5f5f5; }
+      .pagination-container .page-btn.active {
+        background-color: #333; color: #fff; border-color: #333; font-weight: bold;
+      }
     </style>
   </th:block>
 </head>
@@ -37,14 +66,12 @@
             <tr><th>화면 크기</th><td th:text="${goodsCommand.goodsScreenSize} + '인치'"></td></tr>
             <tr><th>무게</th><td th:text="${goodsCommand.goodsWeight} + 'kg'"></td></tr>
             <tr><th>상품설명</th><td style="white-space: pre-wrap;" th:text="${goodsCommand.goodsContents}"></td></tr>
-
             <tr>
               <th>키워드</th>
               <td th:text="|#${goodsCommand.goodsKeyword1} #${goodsCommand.goodsKeyword2} #${goodsCommand.goodsKeyword3}|"></td>
             </tr>
             <tr><th>배송 정보</th><td th:text="${goodsCommand.goodsShippingInfo}"></td></tr>
             <tr><th>판매자 정보</th><td th:text="${goodsCommand.goodsSellerInfo}"></td></tr>
-
             <tr th:if="${goodsCommand.goodsMainStoreImage != null}">
               <th>대표이미지 (썸네일)</th>
               <td><img th:src="@{/upload/{img}(img=${goodsCommand.goodsMainStoreImage})}" alt="대표이미지" style="max-width: 300px; height: auto;"></td>
@@ -62,7 +89,6 @@
                 </p>
               </td>
             </tr>
-
             <tr>
               <th>상세 설명 이미지</th>
               <td>
@@ -76,21 +102,80 @@
                 </p>
               </td>
             </tr>
-
             <tr>
               <th>등록일</th><td th:text="${#dates.format(goodsCommand.goodsDate, 'yyyy-MM-dd')}"></td>
             </tr>
             </tbody>
           </table>
-
-          <div class="btnbar">
+          
+		   <div id="action-bar" class="btnbar">
             <a th:href="@{/goods/list}" class="btnset btnset-line btnset-round">목록으로</a>
             <a th:href="@{/goods/{num}/edit(num=${goodsCommand.goodsNum})}" class="btnset btnset-line btnset-round">상품 수정</a>
+            <button type="button" class="btnset btnset-line btnset-round" onclick="toggleHistory()">재고변경이력</button>
+          </div>
+		  
+          <div id="historySection" class="history-table" th:style="${showHistory} ? 'display:block;' : 'display:none;'">
+            <h3>재고 변경 이력</h3>
+            <table border="1">
+              <thead>
+                <tr style="background:#fafafa;">
+                  <th style="width: 25%;">변경일</th>
+                  <th style="width: 20%;">변경 수량</th>
+                  <th>사유</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:if="${#lists.isEmpty(historyPageData.items)}">
+                  <td colspan="3" style="text-align:center; color:#777; padding: 20px;">재고 변경 이력이 없습니다.</td>
+                </tr>
+                <tr th:each="history : ${historyPageData.items}">
+                  <td th:text="${#dates.format(history.ipgoDate, 'yyyy-MM-dd HH:mm')}"></td>
+                  <td>
+                    <span th:if="${history.ipgoQty > 0}" class="qty-plus" th:text="'+' + ${history.ipgoQty}"></span>
+                    <span th:if="${history.ipgoQty < 0}" class="qty-minus" th:text="${history.ipgoQty}"></span>
+                  </td>
+                  <td th:text="${history.ipgoMemo}"></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:20px;"
+                 th:if="${historyPageData.total > 0 and historyPageData.totalPages > 1}">
+              <a class="page-btn" th:href="@{/goods/{num}(num=${goodsCommand.goodsNum}, historyPage=${historyPageData.startPage - 1}, showHistory=true)} + '#historySection'" th:if="${historyPageData.hasPrev}">이전</a>
+              <a class="page-btn" th:each="i : ${#numbers.sequence(historyPageData.startPage, historyPageData.endPage)}" th:text="${i}"
+                 th:classappend="${historyPageData.page == i} ? 'active' : ''"
+                 th:href="@{/goods/{num}(num=${goodsCommand.goodsNum}, historyPage=${i}, showHistory=true)} + '#historySection'"></a>
+              <a class="page-btn" th:href="@{/goods/{num}(num=${goodsCommand.goodsNum}, historyPage=${historyPageData.endPage + 1}, showHistory=true)} + '#historySection'" th:if="${historyPageData.hasNext}">다음</a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </main>
 </div>
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    // [추가] 페이지 로드 시 URL에 showHistory=true가 있으면 창을 열어줌
+    const showHistoryOnLoad = /*[[${showHistory}]]*/ false;
+    /*]]>*/
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (showHistoryOnLoad) {
+            const historySection = document.getElementById('historySection');
+            historySection.style.display = 'block';
+        }
+    });
+
+    // [수정] 페이지 새로고침 없이 순수 JS로 열고 닫는 기능으로 변경
+    function toggleHistory() {
+      const historySection = document.getElementById('historySection');
+      if (historySection.style.display === 'none' || historySection.style.display === '') {
+        historySection.style.display = 'block';
+      } else {
+        historySection.style.display = 'none';
+      }
+    }
+  </script>
+</th:block>
 </body>
 </html>

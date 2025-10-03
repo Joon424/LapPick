@@ -20,8 +20,8 @@
         /* margin-bottom: 15px; <-- 이 줄을 삭제합니다. */
       }
 
-      /* [추가] 첫 번째 그룹에만 구분선과 여백을 적용 */
-      .sidebar-group:first-child {
+       /* [수정] 마지막 그룹을 제외한 모든 그룹 아래에 구분선과 여백을 적용 */
+      .sidebar-group:not(:last-child) {
         padding-bottom: 15px; /* 그룹 내 마지막 버튼과 구분선 사이의 여백 */
         margin-bottom: 15px;  /* 구분선과 아래 그룹 사이의 여백 */
         border-bottom: 1px solid #e5e7eb; /* 연한 회색 구분선 */
@@ -71,16 +71,19 @@
           </div>
 
           <div class="mypage-container">
-            <div class="mypage-sidebar">
+      <div class="mypage-sidebar">
               <div class="sidebar-group">
                 <a href="javascript:showSection('infoSection');" class="btnset btnset-line btnset-round">내 정보 보기</a>
                 <a href="javascript:showSection('editSection');" class="btnset btnset-line btnset-round">내 정보 수정</a>
                 <a href="javascript:showSection('passwordSection');" class="btnset btnset-line btnset-round">비밀번호 변경</a>
               </div>
-               <div class="sidebar-group">
-                <a th:href="@{/qna/my-qna}" class="btnset btnset-line btnset-round">상품 문의</a>
+              <div class="sidebar-group">
                 <a th:href="@{/cart/cartList}" class="btnset btnset-line btnset-round">장바구니</a>
-                <a th:href="@{/purchase/my-orders}" class="btnset btnset-line btnset-round">주문 내역</a>     
+                <a th:href="@{/purchase/my-orders}" class="btnset btnset-line btnset-round">주문 내역</a>
+              </div>
+              <div class="sidebar-group">
+                <a th:href="@{/qna/my-qna}" class="btnset btnset-line btnset-round">상품 문의</a>
+                <a th:href="@{/member/my-reviews}" class="btnset btnset-line btnset-round">내 리뷰</a>
               </div>
             </div>
 

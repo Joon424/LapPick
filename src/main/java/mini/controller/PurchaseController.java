@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Collections;
 import java.util.List;
@@ -97,15 +98,21 @@ public class PurchaseController {
         return "thymeleaf/purchase/order";
     }
 
-    // 주문하기 (결제)
+ // 주문하기 (결제)
     @PostMapping("/placeOrder")
-    public String placeOrder(PurchaseCommand command, Authentication auth) {
+    public String placeOrder(PurchaseCommand command, Authentication auth, RedirectAttributes ra) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
         
-        String purchaseNum = purchaseService.placeOrder(command, memberDTO.getMemberNum());
-        
-        return "redirect:/purchase/complete?purchaseNum=" + purchaseNum;
+        try {
+            String purchaseNum = purchaseService.placeOrder(command, memberDTO.getMemberNum());
+            return "redirect:/purchase/complete?purchaseNum=" + purchaseNum;
+        } catch (IllegalStateException e) {
+            // [추가] 재고 부족 등 서비스에서 발생한 오류 메시지를 이전 페이지에 전달
+            ra.addFlashAttribute("error", e.getMessage());
+            // [추가] 오류 발생 시 장바구니 페이지로 리다이렉트
+            return "redirect:/cart/cartList";
+        }
     }
     
     // 주문 완료 페이지

@@ -4,11 +4,12 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mini.mapper.PurchaseMapper">
 
-  <resultMap id="purchaseListResultMap" type="mini.domain.PurchaseListDTO">
+<resultMap id="purchaseListResultMap" type="mini.domain.PurchaseListDTO">
         <id property="purchaseNum" column="PURCHASE_NUM"/>
         <id property="goodsNum" column="GOODS_NUM"/>
         <result property="purchaseQty" column="PURCHASE_QTY"/>
         <result property="purchasePrice" column="PURCHASE_PRICE"/>
+        <result property="reviewWritten" column="REVIEW_WRITTEN"/>
         <association property="goodsDTO" javaType="mini.domain.GoodsDTO">
             <id property="goodsNum" column="GOODS_NUM"/>
             <result property="goodsName" column="GOODS_NAME"/>
@@ -55,11 +56,15 @@
                 P.PAYMENT_METHOD, P.BANK_NAME, P.DEPOSITOR_NAME, P.CARD_COMPANY, P.CARD_NUMBER,
                 PL.GOODS_NUM, PL.PURCHASE_QTY, PL.PURCHASE_PRICE,
                 G.GOODS_NAME, G.GOODS_MAIN_STORE_IMAGE, G.GOODS_CONTENTS,
-                D.DELIVERY_COMPANY, D.TRACKING_NUMBER
+                D.DELIVERY_COMPANY, D.TRACKING_NUMBER,
+                /* [추가] REVIEWS 테이블과 JOIN하여 리뷰 작성 여부(1 또는 0)를 확인 */
+                CASE WHEN R.REVIEW_NUM IS NOT NULL THEN 1 ELSE 0 END AS REVIEW_WRITTEN
             FROM PURCHASE P
             JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
             JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
             LEFT JOIN DELIVERY D ON P.PURCHASE_NUM = D.PURCHASE_NUM
+            /* [추가] REVIEWS 테이블을 LEFT JOIN하여 각 주문 상품별 리뷰 존재 여부 확인 */
+            LEFT JOIN REVIEWS R ON P.PURCHASE_NUM = R.PURCHASE_NUM AND PL.GOODS_NUM = R.GOODS_NUM
             WHERE P.MEMBER_NUM = #{memberNum}
             <if test="searchWord != null and searchWord != ''">
                 AND G.GOODS_NAME LIKE '%' || #{searchWord} || '%'

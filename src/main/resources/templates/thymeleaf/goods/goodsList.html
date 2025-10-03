@@ -7,9 +7,9 @@
   <title>직원_상품관리</title>
 <th:block layout:fragment="css">
     <style>
-      /* [수정] empList, memList와 동일한 기본 스타일만 남김 */
-      table { table-layout: fixed; border-collapse: collapse; }
+      table { table-layout: fixed; }
       th, td { vertical-align: middle; padding: 8px; }
+
       .manage-btn {
         display: inline-block; padding: 5px 10px; font-size: 12px;
         text-align: center; text-decoration: none; color: #333;
@@ -28,16 +28,53 @@
         background-color: #333; color: #fff; border-color: #333; font-weight: bold;
       }
       
-      /* ... 팝업 모달 스타일 (기존과 동일) ... */
       .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 1000; }
-      .modal-content { background-color: #fff; padding: 25px 30px; border-radius: 8px; width: 90%; max-width: 480px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-      .modal-header h3 { font-size: 1.6rem; font-weight: 600; margin: 0; }
+      
+      .modal-content { 
+        background-color: #fff; 
+        padding: 30px 40px;
+        border-radius: 8px; 
+        width: 90%; 
+        max-width: 560px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+      }
+      
+      #stockChangeModal form { margin: 0; }
       .close-btn { font-size: 2rem; font-weight: bold; color: #888; cursor: pointer; border: none; background: none; }
-      .modal-body p { margin: 0 0 15px 0; font-size: 1rem; color: #555; }
-      .modal-body p strong { color: #0056b3; }
-      .modal-body input[type="number"] { width: 100%; box-sizing: border-box; height: 40px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-      .modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+      
+      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+      .modal-header h3 { font-size: 1.8rem; font-weight: 600; margin: 0; }
+      
+      .modal-body p { margin: 0 0: 15px 0; font-size: 1.3rem; color: #555; }
+      .modal-body .guide-text { font-size: 0.9rem; color: #666; margin-top: -10px; margin-bottom: 15px; }
+      
+      .modal-body p strong { font-size: 1.4rem; font-weight: 600; color: #007bff; }
+      
+      .modal-body input[type="number"],
+      .modal-body textarea { 
+        width: 100%; 
+        box-sizing: border-box; 
+        padding: 0 12px; 
+        border: 1px solid #ccc; 
+        border-radius: 4px; 
+      }
+      .modal-body input[type="number"] { height: 48px; font-size: 1.3rem; margin-bottom: 5px; }
+      .modal-body textarea { min-height: 80px; font-size: 1rem; padding-top:10px; padding-bottom:10px; }
+      
+      .modal-footer { 
+        display: flex; 
+        gap: 12px;
+        margin-top: 30px; 
+      }
+      .modal-footer .btnset {
+        flex: 1;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        font-size: 1.1rem;
+      }
+            /* [추가] 재고 수량 색상 스타일 */
+      .stock-positive { color: #2a45b4; }
+      .stock-zero-negative { color: #d21818; }
     </style>
   </th:block>
 </head>
@@ -68,36 +105,42 @@
             </div>
           </div>
 
-<form id="bulkDeleteForm" th:action="@{/goods/delete}" method="post">
-            <table border="1" width="100%" style="border-collapse:collapse; border-color:#eee;">
+          <form id="bulkDeleteForm" th:action="@{/goods/delete}" method="post">
+          <table border="1" width="100%" style="border-collapse:collapse; border-color:#eee;">
               <thead>
                 <tr style="background:#f9fafb;">
-                  <th width="4%" style="text-align:center; vertical-align: middle;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
-                  <th width="5%" style="text-align:center;">번호</th>
-                  <th width="15%">상품번호</th>
-                  <th>상품명</th>
-                  <th width="15%" style="text-align:center;">가격</th>
-                  <th width="14%" style="text-align:center;">등록일</th>
+                  <th width="48" style="text-align:center;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
+                  <th width="80" style="text-align:center; padding-left: 10px;">번호</th>
+                  <th width="12%" style="padding-left: 30px;">상품번호</th>
+                  <th style="padding-left: 50px;">상품명</th>
+                  <th width="10%" style="text-align:center; padding-left: 40px;">현재고</th>
+                  <th width="12%" style="text-align:left; padding-left: 40px;">가격</th>
+                  <th width="12%" style="text-align:left; padding-left: 40px;">등록일</th>
                   <th width="18%" style="text-align:center;">관리</th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:if="${#lists.isEmpty(goodsList)}">
-                  <td colspan="7" style="text-align:center; padding:20px; color:#666;">표시할 상품이 없습니다.</td>
+                  <td colspan="8" style="text-align:center; padding:20px; color:#666;">표시할 상품이 없습니다.</td>
                 </tr>
                 <tr th:each="goods, stat : ${goodsList}">
                   <td style="text-align:center;"><input type="checkbox" name="nums" th:value="${goods.goodsNum}"></td>
-                  <td style="text-align:center;" th:text="${(pageData.page - 1) * pageData.size + stat.count}"></td>
-                  <td th:text="${goods.goodsNum}"></td>
-                  <td th:text="${goods.goodsName}"></td>
-                  <td style="text-align: right; padding-right: 20px;" th:text="${#numbers.formatInteger(goods.goodsPrice, 0, 'COMMA')} + '원'"></td>
-                  <td style="text-align:center;" th:text="${#dates.format(goods.goodsDate, 'yyyy-MM-dd')}"></td>
+                  <td style="text-align:center; padding-left: 10px;" th:text="${(pageData.page - 1) * pageData.size + stat.count}"></td>
+                  <td style="padding-left: 30px;" th:text="${goods.goodsNum}"></td>
+                  <td style="padding-left: 50px;" th:text="${goods.goodsName}"></td>
+                  <td style="text-align:center; padding-left: 40px;">
+                    <span th:text="${goods.stockQty}"
+                          th:classappend="${goods.stockQty > 0} ? 'stock-positive' : 'stock-zero-negative'">
+                    </span>
+                  </td>
+                  <td style="text-align:left; padding-left: 40px;" th:text="${#numbers.formatInteger(goods.goodsPrice, 0, 'COMMA')} + '원'"></td>
+                  <td style="text-align:left; padding-left: 40px;" th:text="${#dates.format(goods.goodsDate, 'yyyy-MM-dd')}"></td>
                   <td style="text-align:center;">
                     <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
                       <button type="button" class="manage-btn" 
                               th:data-goods-num="${goods.goodsNum}"
                               th:data-goods-name="${goods.goodsName}"
-                              onclick="openStockInModal(this)">입고</button>
+                              onclick="openStockChangeModal(this)">재고</button>
                       <a class="manage-btn" th:href="@{/goods/{num}(num=${goods.goodsNum})}">상세</a>
                       <a class="manage-btn" th:href="@{/goods/{num}/edit(num=${goods.goodsNum})}">수정</a>
                     </div>
@@ -106,6 +149,7 @@
               </tbody>
             </table>
           </form>
+          
           <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:20px;"
                th:if="${pageData != null and pageData.total > 0 and pageData.startPage != null and pageData.endPage != null}">
             <a class="page-btn" th:href="@{/goods/list(page=${pageData.startPage - 1}, searchWord=${filter?.searchWord})}" th:if="${pageData.hasPrev}">이전</a>
@@ -119,25 +163,29 @@
     </div>
   </main>
   
-  <div id="stockInModal" class="modal-overlay">
-<div class="modal-content">
-  <form th:action="@{/goods/stock-in}" method="post">
-    <div class="modal-header">
-      <h3>상품 입고</h3>
-      <button type="button" class="close-btn" onclick="closeStockInModal()">×</button>
+  <div id="stockChangeModal" class="modal-overlay">
+    <div class="modal-content">
+      <form id="stockChangeForm" th:action="@{/goods/stock-change}" method="post" onsubmit="return validateStockChange();">
+        <div class="modal-header">
+          <h3>재고 변경</h3>
+          <button type="button" class="close-btn" onclick="closeStockChangeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <p>상품명: <strong id="modalGoodsName"></strong></p>
+          <input type="hidden" id="modalGoodsNum" name="goodsNum" />
+          
+          <input type="number" name="quantity" id="modalQuantity" placeholder="변경 수량 (예: 10 또는 -10)" required />
+          <p class="guide-text">입고는 양수(+), 출고/차감은 음수(-)로 입력하세요.</p>
+
+          <textarea name="memo" id="modalMemo" placeholder="변경 사유 (재고 차감 시 필수)"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btnset btnset-line" onclick="closeStockChangeModal()">취소</button>
+          <button type="submit" class="btnset">변경 처리</button>
+        </div>
+      </form>
     </div>
-    <div class="modal-body">
-      <p>상품명: <strong id="modalGoodsName"></strong></p>
-      <input type="hidden" id="modalGoodsNum" name="goodsNum" />
-      <input type="number" name="quantity" min="1" placeholder="입고 수량을 입력하세요" required />
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btnset btnset-line" onclick="closeStockInModal()">취소</button>
-      <button type="submit" class="btnset">입고 처리</button>
-    </div>
-  </form>
-</div>
-</div>
+  </div>
 
 <th:block layout:fragment="script">
   <script>
@@ -154,21 +202,53 @@
       }
     }
 
-    // [추가] 입고 모달 제어 스크립트
-    const stockInModal = document.getElementById('stockInModal');
+    const stockChangeModal = document.getElementById('stockChangeModal');
+    const quantityInput = document.getElementById('modalQuantity');
+    const memoInput = document.getElementById('modalMemo');
 
-    function openStockInModal(button) {
+    function openStockChangeModal(button) {
       const goodsNum = button.dataset.goodsNum;
       const goodsName = button.dataset.goodsName;
 
       document.getElementById('modalGoodsNum').value = goodsNum;
       document.getElementById('modalGoodsName').textContent = goodsName;
       
-      stockInModal.style.display = 'flex';
+      quantityInput.value = '';
+      memoInput.value = '';
+      
+      stockChangeModal.style.display = 'flex';
+      quantityInput.focus();
     }
 
-    function closeStockInModal() {
-      stockInModal.style.display = 'none';
+    function closeStockChangeModal() {
+      stockChangeModal.style.display = 'none';
+    }
+
+    function validateStockChange() {
+      const quantityValue = quantityInput.value;
+      
+      if (isNaN(quantityValue) || quantityValue.trim() === '') {
+        alert('변경 수량을 숫자로 입력해주세요.');
+        quantityInput.focus();
+        return false;
+      }
+      
+      const quantity = parseInt(quantityValue, 10);
+      const memo = memoInput.value.trim();
+
+      if (quantity === 0) {
+        alert('변경 수량은 0이 될 수 없습니다.');
+        quantityInput.focus();
+        return false;
+      }
+      
+      if (quantity < 0 && memo === '') {
+        alert('재고를 차감하는 경우, 변경 사유를 반드시 입력해야 합니다.');
+        memoInput.focus();
+        return false;
+      }
+
+      return true;
     }
   </script>
 </th:block>

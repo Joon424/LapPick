@@ -12,6 +12,19 @@
       .accordset-header .btn { pointer-events: none; }
       /* 3. 필터 초기화 버튼 스타일 */
       .filter-reset-btn { font-size: 12px; color: #888; text-decoration: underline; margin-top: 10px; cursor: pointer; display: block; text-align: right; }
+      /* [추가] 리뷰 요약 스타일 */
+      .cardset-review {
+          font-size: 13px;
+          color: #666;
+          margin-top: 8px;
+          display: flex;
+          align-items: center;
+      }
+      .star-rating-summary {
+          color: #f59e0b; /* 별점 색상 */
+          letter-spacing: -1px;
+      }
+    
     </style>
   </th:block>
 </head>
@@ -147,6 +160,17 @@
                       <p class="cardset-desc">
                         <span th:text="${#numbers.formatInteger(goods.goodsPrice, 3, 'COMMA')}">가격</span><small>원</small>
                       </p>
+                      
+                      <div class="cardset-review" th:if="${goods.reviewCount > 0}">
+                          <span class="star-rating-summary">
+                              <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                  <span th:if="${i <= goods.avgRating}">★</span>
+                                  <span th:if="${i > goods.avgRating}" style="color: #e4e5e9;">★</span>
+                              </th:block>
+                          </span>
+                          <span th:text="${#numbers.formatDecimal(goods.avgRating, 1, 1)}" style="font-weight: bold; margin-left: 5px;"></span>
+                          <span th:text="'(' + ${goods.reviewCount} + ')'" style="margin-left: 5px;"></span>
+                      </div>
                     </div>
                   </a>
                 </th:block>

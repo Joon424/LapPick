@@ -59,7 +59,6 @@
         color: #212529;
     }
     
-    /* [추가] 직원용 답변 폼 스타일 */
     .answer-form { 
         margin-top: 25px; 
     }
@@ -76,7 +75,6 @@
         margin-top: 10px; 
     }
 
-    /* 팝업 모달 스타일 */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { background-color: #fff; padding: 25px 30px; border-radius: 8px; width: 90%; max-width: 680px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -89,51 +87,102 @@
     .form-table textarea { resize: vertical; min-height: 150px; }
     .btn-bar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-end; }
     
-/* [교체] 배송/교환/반품 안내 스타일 */
-.info-panel {
-    text-align: left;
-    padding: 20px 10px;
-    line-height: 1.7;
-    color: #333;
-    font-size: 15px;
-}
-.info-panel h4 {
-    font-size: 1.4rem; /* [수정] 폰트 크기 키움 */
-    font-weight: 600;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
-}
-/* [추가] 첫 번째가 아닌 h4에만 상단 여백을 주어 간격 확보 */
-.info-panel h4:not(:first-child) {
-    margin-top: 40px;
-}
-.info-panel dl {
-    display: grid;
-    grid-template-columns: 150px 1fr;
-    margin-bottom: 20px;
-}
-.info-panel dt {
-    font-weight: 500;
-    color: #555;
-    padding: 8px 0;
-}
-.info-panel dd {
-    margin: 0;
-    padding: 8px 0;
-    color: #777;
-}
-.info-panel .notice-list {
-    list-style-type: decimal;
-    list-style-position: inside;
-    padding-left: 0;
-    color: #777;
-    font-size: 15px; /* [추가] 폰트 크기를 15px로 지정 */
-}
-.info-panel .notice-list li {
-    margin-bottom: 5px;
-    line-height: 1.8; /* [추가] 이 목록의 행간만 넓게 조정 */
-}
+	.info-panel {
+	    text-align: left;
+	    padding: 20px 10px;
+	    line-height: 1.7;
+	    color: #333;
+	    font-size: 15px;
+	}
+	.info-panel h4 {
+	    font-size: 1.4rem;
+	    font-weight: 600;
+	    margin-bottom: 15px;
+	    padding-bottom: 10px;
+	    border-bottom: 1px solid #ddd;
+	}
+	.info-panel h4:not(:first-child) {
+	    margin-top: 40px;
+	}
+	.info-panel dl {
+	    display: grid;
+	    grid-template-columns: 150px 1fr;
+	    margin-bottom: 20px;
+	}
+	.info-panel dt {
+	    font-weight: 500;
+	    color: #555;
+	    padding: 8px 0;
+	}
+	.info-panel dd {
+	    margin: 0;
+	    padding: 8px 0;
+	    color: #777;
+	}
+	.info-panel .notice-list {
+	    list-style-type: decimal;
+	    list-style-position: inside;
+	    padding-left: 0;
+	    color: #777;
+	    font-size: 15px;
+	}
+	.info-panel .notice-list li {
+	    margin-bottom: 5px;
+	    line-height: 1.8;
+	}
+	
+    /* [추가] 품절 및 재고 부족, 버튼 비활성화 스타일 */
+    .stock-info { font-size: 1.3rem; font-weight: 600; margin-top: 20px; padding: 15px; border-radius: 6px; text-align: center; }
+    .stock-info.out-of-stock { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; }
+    .stock-info.low-stock { color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; margin-top:10px; padding: 10px; font-size: 1.3rem; }
+    .btnset:disabled {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #adb5bd !important;
+        cursor: not-allowed !important;
+    }
+    /* [추가] 리뷰 영역 스타일 */
+    .review-summary { display: flex; align-items: center; gap: 15px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; margin-bottom: 30px; }
+    .star-rating { font-size: 2rem; color: #f59e0b; }
+    .star-rating .empty { color: #e4e5e9; }
+    .summary-text { font-size: 1.1rem; }
+    .summary-text strong { font-size: 1.5rem; font-weight: 600; }
+
+    .review-item { border-bottom: 1px solid #e5e7eb; padding: 25px 0; text-align: left; }
+    .review-item:last-child { border-bottom: none; }
+    .review-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; color: #6c757d; }
+    .review-goods-name { font-size: 1.2rem; font-weight: 600; color: #333; margin: 15px 0 10px; padding-left: 10px; border-left: 3px solid #767676;}
+    .review-content { margin: 15px 0; line-height: 1.7; white-space: pre-wrap; }
+    .review-images { display: flex; gap: 10px; margin-top: 15px; }
+    .review-images img { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+    .review-images img:hover { opacity: 0.8; }
+    
+    /* [추가] 이미지 확대(라이트박스) 스타일 */
+    #imageLightbox {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        display: none; /* 기본 숨김 */
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        cursor: pointer;
+    }
+    #imageLightbox .lightbox-content {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    }
+    #imageLightbox .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 3rem;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
 </style>
 </th:block>
 </head>
@@ -170,9 +219,19 @@
                             <li class="contents-right-item"><strong>판매자정보</strong><span th:text="${goods.goodsSellerInfo}">판매자</span></li>
                         </ul>
                     </div>
+                    
+                    <div class="contents-right-group">
+                        <div th:if="${goods.stockQty <= 0}" class="stock-info out-of-stock">
+                            <p style="margin:0;">현재 품절된 상품입니다.</p>
+                        </div>
+                        <div th:if="${goods.stockQty > 0 and goods.stockQty < 10}" class="stock-info low-stock">
+                            <p style="margin:0;" th:text="|남은 수량: ${goods.stockQty}개 (재고가 얼마 남지 않았어요!)|"></p>
+                        </div>
+                    </div>
+                    
                     <div class="contents-btn-group">
-                        <button id="cartBtn" class="btnset btnset-line">장바구니</button>
-                        <button id="buyItem" class="btnset">구매하기</button>
+                        <button id="cartBtn" class="btnset btnset-line" th:disabled="${goods.stockQty <= 0}">장바구니</button>
+                        <button id="buyItem" class="btnset" th:disabled="${goods.stockQty <= 0}">구매하기</button>
                     </div>
                 </div>
             </div>
@@ -215,92 +274,131 @@
                             <tr><td colspan="5" style="padding:40px 0;">등록된 문의가 없습니다.</td></tr>
                         </tbody>
                       <tbody th:unless="${#lists.isEmpty(qnaList)}">
-    <th:block th:each="qna : ${qnaList}">
-        <tr class="qna-title-row" th:data-qna-num="${qna.qnaNum}" th:data-author-num="${qna.memberNum}">
-            <td th:text="${qna.qnaStatus}">답변대기</td>
-            <td th:text="${qna.qnaType}">상품문의</td>
-            <td style="text-align:left;">
-                <span th:if="${!isEmployee and (loginMemberNum == null or qna.memberNum != loginMemberNum)}">🔒 </span>
-                <span th:text="${qna.qnaTitle}"></span>
-            </td>
-            <td th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'">mem***</td>
-            <td th:text="${#dates.format(qna.qnaDate, 'yyyy-MM-dd')}">2025-09-25</td>
-        </tr>
-        <tr class="qna-content-row" th:id="'qna-content-' + ${qna.qnaNum}">
-            <td colspan="5" class="qna-content-cell">
-                <div class="qna-box">
-                    <div class="qa-icon question">Q</div>
-                    <div class="qa-main">
-                        <div class="qa-meta">
-                            <span class="author" th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'"></span>
-                            <span class="date" th:text="${#dates.format(qna.qnaDate, 'yyyy.MM.dd HH:mm')}"></span>
-                        </div>
-                        <p class="qa-text" th:text="${qna.qnaContent}"></p>
-                    </div>
-                </div>
-                <div class="answer-box" th:if="${qna.answerContent != null}">
-                    <div class="qa-icon answer">A</div>
-                    <div class="qa-main">
-                        <div class="qa-meta">
-                            <span class="author">LapPick 답변</span>
-                            <span class="date" th:text="${#dates.format(qna.answerDate, 'yyyy.MM.dd HH:mm')}"></span>
-                        </div>
-                        <p class="qa-text" th:text="${qna.answerContent}"></p>
-                    </div>
-                </div>
-                
-                <form th:if="${isEmployee and qna.answerContent == null}" class="answer-form" th:action="@{/employee/qna/answer}" method="post">
-                    <input type="hidden" name="qnaNum" th:value="${qna.qnaNum}" />
-                    <input type="hidden" name="returnUrl" th:value="@{/corner/detailView/{num}(num=${goods.goodsNum})}" />
-                    <textarea name="answerContent" placeholder="답변을 입력하세요." required></textarea>
-                    <div class="btn-bar">
-                        <button type="submit" class="btnset btnset-sm">답변 등록</button>
-                    </div>
-                </form>
-            </td>
-        </tr>
-    </th:block>
-</tbody>
+					    <th:block th:each="qna : ${qnaList}">
+					        <tr class="qna-title-row" th:data-qna-num="${qna.qnaNum}" th:data-author-num="${qna.memberNum}">
+					            <td th:text="${qna.qnaStatus}">답변대기</td>
+					            <td th:text="${qna.qnaType}">상품문의</td>
+					            <td style="text-align:left;">
+					                <span th:if="${!isEmployee and (loginMemberNum == null or qna.memberNum != loginMemberNum)}">🔒 </span>
+					                <span th:text="${qna.qnaTitle}"></span>
+					            </td>
+					            <td th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'">mem***</td>
+					            <td th:text="${#dates.format(qna.qnaDate, 'yyyy-MM-dd')}">2025-09-25</td>
+					        </tr>
+					        <tr class="qna-content-row" th:id="'qna-content-' + ${qna.qnaNum}">
+					            <td colspan="5" class="qna-content-cell">
+					                <div class="qna-box">
+					                    <div class="qa-icon question">Q</div>
+					                    <div class="qa-main">
+					                        <div class="qa-meta">
+					                            <span class="author" th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'"></span>
+					                            <span class="date" th:text="${#dates.format(qna.qnaDate, 'yyyy.MM.dd HH:mm')}"></span>
+					                        </div>
+					                        <p class="qa-text" th:text="${qna.qnaContent}"></p>
+					                    </div>
+					                </div>
+					                <div class="answer-box" th:if="${qna.answerContent != null}">
+					                    <div class="qa-icon answer">A</div>
+					                    <div class="qa-main">
+					                        <div class="qa-meta">
+					                            <span class="author">LapPick 답변</span>
+					                            <span class="date" th:text="${#dates.format(qna.answerDate, 'yyyy.MM.dd HH:mm')}"></span>
+					                        </div>
+					                        <p class="qa-text" th:text="${qna.answerContent}"></p>
+					                    </div>
+					                </div>
+					                
+					                <form th:if="${isEmployee and qna.answerContent == null}" class="answer-form" th:action="@{/employee/qna/answer}" method="post">
+					                    <input type="hidden" name="qnaNum" th:value="${qna.qnaNum}" />
+					                    <input type="hidden" name="returnUrl" th:value="@{/corner/detailView/{num}(num=${goods.goodsNum})}" />
+					                    <textarea name="answerContent" placeholder="답변을 입력하세요." required></textarea>
+					                    <div class="btn-bar">
+					                        <button type="submit" class="btnset btnset-sm">답변 등록</button>
+					                    </div>
+					                </form>
+					            </td>
+					        </tr>
+					    </th:block>
+					</tbody>
                     </table>
                 </div>
-                <div id="reviewContent" style="display:none; padding: 40px 0; text-align: center; color: #888;">
+           <div id="reviewContent" style="display:none; padding: 20px 0;">
                     <h3 class="section-title" style="text-align:left; margin-bottom: 20px;">리뷰</h3>
-                    <p>리뷰 기능은 현재 준비 중입니다.</p>
+
+                    <div th:if="${reviewSummary.reviewCount > 0}" class="review-summary">
+                        <div class="star-rating">
+                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                <span th:if="${i <= reviewSummary.avgRating}">★</span>
+                                <span th:if="${i > reviewSummary.avgRating}" class="empty">★</span>
+                            </th:block>
+                        </div>
+                        <div class="summary-text">
+                            <strong th:text="${#numbers.formatDecimal(reviewSummary.avgRating, 1, 1)}"></strong> / 5.0
+                            <span th:text="'(' + ${reviewSummary.reviewCount} + '개 리뷰)'"></span>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${#lists.isEmpty(reviewList)}" style="padding: 60px 0; text-align: center; color: #888;">
+                        <p>아직 작성된 리뷰가 없습니다.</p>
+                    </div>
+                    
+                    <div th:unless="${#lists.isEmpty(reviewList)}" class="review-list">
+                        <div th:each="review : ${reviewList}" class="review-item">
+                            <div class="review-meta">
+                                <span class="star-rating" style="font-size: 1rem;">
+                                    <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <span th:if="${i <= review.reviewRating}">★</span>
+                                        <span th:if="${i > review.reviewRating}" class="empty">★</span>
+                                    </th:block>
+                                </span>
+                                <span th:text="${#strings.substring(review.memberId, 0, 3)} + '***'"></span>
+                                <span th:text="${#dates.format(review.reviewDate, 'yyyy.MM.dd')}"></span>
+                            </div>
+                            <p class="review-goods-name" th:text="${review.goodsName}"></p>
+                            <p class="review-content" th:text="${review.reviewContent}"></p>
+                            <div class="review-images" th:if="${review.reviewImage != null and !review.reviewImage.isEmpty()}">
+                                <img class="review-thumbnail" th:each="img : ${#strings.listSplit(review.reviewImage, '/')}"
+                                     th:if="${!img.isEmpty()}"
+                                     th:src="@{/upload/{imgName}(imgName=${img})}"
+                                     alt="리뷰 이미지" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="shippingContent" style="display:none;">
-    <div class="info-panel">
-        <h4>배송 안내</h4>
-        <dl>
-            <dt>배송사</dt>
-            <dd>CJ대한통운</dd>
-            <dt>배송 지역</dt>
-            <dd>전국</dd>
-            <dt>배송비</dt>
-            <dd>3,000원 (50,000원 이상 구매 시 무료배송)</dd>
-            <dt>배송 기간</dt>
-            <dd>결제 완료 후 2~5일 이내 출고 (주말/공휴일 제외)</dd>
-        </dl>
-
-        <h4>교환 및 반품 안내</h4>
-        <dl>
-            <dt>신청 방법</dt>
-            <dd>마이페이지 > 주문내역 > 주문상세보기에서 '교환' 또는 '반품' 신청</dd>
-            <dt>신청 기간</dt>
-            <dd>상품을 공급 받으신 날로부터 7일 이내</dd>
-            <dt>반품 배송비</dt>
-            <dd>단순 변심의 경우 왕복 배송비 6,000원 (최초 배송비 무료인 경우 포함)</dd>
-        </dl>
-        
-        <h4>교환 및 반품 불가 사유</h4>
-        <ol class="notice-list">
-            <li>신청 기간이 경과한 경우</li>
-            <li>고객님의 책임 있는 사유로 상품 등이 멸실 또는 훼손된 경우</li>
-            <li>포장을 개봉하였거나 포장이 훼손되어 상품가치가 상실된 경우</li>
-            <li>고객님의 사용 또는 일부 소비에 의하여 상품의 가치가 현저히 감소한 경우</li>
-            <li>시간의 경과에 의하여 재판매가 곤란할 정도로 상품 등의 가치가 현저히 감소한 경우</li>
-        </ol>
-    </div>
-</div>
+				    <div class="info-panel">
+				        <h4>배송 안내</h4>
+				        <dl>
+				            <dt>배송사</dt>
+				            <dd>CJ대한통운</dd>
+				            <dt>배송 지역</dt>
+				            <dd>전국</dd>
+				            <dt>배송비</dt>
+				            <dd>3,000원 (50,000원 이상 구매 시 무료배송)</dd>
+				            <dt>배송 기간</dt>
+				            <dd>결제 완료 후 2~5일 이내 출고 (주말/공휴일 제외)</dd>
+				        </dl>
+				
+				        <h4>교환 및 반품 안내</h4>
+				        <dl>
+				            <dt>신청 방법</dt>
+				            <dd>마이페이지 > 주문내역 > 주문상세보기에서 '교환' 또는 '반품' 신청</dd>
+				            <dt>신청 기간</dt>
+				            <dd>상품을 공급 받으신 날로부터 7일 이내</dd>
+				            <dt>반품 배송비</dt>
+				            <dd>단순 변심의 경우 왕복 배송비 6,000원 (최초 배송비 무료인 경우 포함)</dd>
+				        </dl>
+				        
+				        <h4>교환 및 반품 불가 사유</h4>
+				        <ol class="notice-list">
+				            <li>신청 기간이 경과한 경우</li>
+				            <li>고객님의 책임 있는 사유로 상품 등이 멸실 또는 훼손된 경우</li>
+				            <li>포장을 개봉하였거나 포장이 훼손되어 상품가치가 상실된 경우</li>
+				            <li>고객님의 사용 또는 일부 소비에 의하여 상품의 가치가 현저히 감소한 경우</li>
+				            <li>시간의 경과에 의하여 재판매가 곤란할 정도로 상품 등의 가치가 현저히 감소한 경우</li>
+				        </ol>
+				    </div>
+				</div>
             </div>
         </div>
     </div>
@@ -348,6 +446,12 @@
         </form>
     </div>
 </div>
+
+<div id="imageLightbox">
+    <span class="lightbox-close">&times;</span>
+    <img class="lightbox-content" id="lightboxImage">
+</div>
+
 </div>
 <th:block layout:fragment="script">
    <script th:inline="javascript">
@@ -400,7 +504,6 @@
                return;
            }
            
-           // 직원이거나, 본인이 작성한 글일 경우에만 통과
            if (!isEmployee && String(authorNum) !== String(loginMemberNum)) {
                alert("본인이 작성한 문의만 볼 수 있습니다.");
                return;
@@ -454,6 +557,31 @@
            }
            location.href = `/purchase/orderDirect?goodsNum=${goodsNumForJs}&qty=1`;
        });
+   });
+   
+// [추가] 라이트박스 기능 스크립트
+   const lightbox = document.getElementById('imageLightbox');
+   const lightboxImage = document.getElementById('lightboxImage');
+   const lightboxClose = document.querySelector('.lightbox-close');
+
+   // body에 이벤트 위임을 사용하여, 동적으로 추가될 이미지에도 이벤트가 적용되도록 함
+   document.body.addEventListener('click', function(event) {
+       if (event.target.classList.contains('review-thumbnail')) {
+           lightbox.style.display = 'flex';
+           lightboxImage.src = event.target.src;
+       }
+   });
+
+   function closeLightbox() {
+       lightbox.style.display = 'none';
+   }
+
+   lightboxClose.addEventListener('click', closeLightbox);
+   lightbox.addEventListener('click', function(event) {
+       // 이미지를 클릭했을 때는 닫히지 않도록 함
+       if (event.target === lightbox) {
+           closeLightbox();
+       }
    });
     </script>
 </th:block>

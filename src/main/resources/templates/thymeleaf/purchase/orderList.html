@@ -79,10 +79,20 @@
             .empty-list { text-align: center; padding: 80px 0; color: #777; }
 
             .manage-btn {
-              display: inline-block; padding: 5px 10px; font-size: 12px;
-              text-align: center; text-decoration: none; color: #333;
-              background-color: #fff; border: 1px solid #ccc; border-radius: 4px;
-              cursor: pointer; margin: 0 2px; white-space: nowrap;
+              display: inline-block;
+              padding: 5px 10px;
+              font-size: 12px;
+              text-align: center;
+              text-decoration: none;
+              color: #333;
+              background-color: #fff;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              cursor: pointer;
+              margin: 0 2px;
+              /* [추가] 버튼이 세로로 쌓일 때를 위한 아래쪽 여백 */
+              margin-bottom: 5px;
+              white-space: nowrap;
             }
             .manage-btn:hover { background-color: #f0f0f0; border-color: #bbb; }
 			
@@ -159,6 +169,13 @@
                                                        (${order.purchaseStatus == '배송완료'} ? 'status-delivered' : 'status-canceled')))">
                                     </td>
                                     <td>
+                                        <a th:if="${order.purchaseStatus == '배송완료' and !item.reviewWritten}"
+                                           th:href="@{/review/write(purchaseNum=${order.purchaseNum}, goodsNum=${item.goodsNum})}"
+                                           class="manage-btn">리뷰 작성</a>
+                                           
+                                        <button th:if="${order.purchaseStatus == '배송완료' and item.reviewWritten}"
+                                                class="manage-btn" disabled style="cursor: default; background: #f8f9fa;">작성완료</button>
+
                                         <a th:if="${order.purchaseStatus == '배송중' or order.purchaseStatus == '배송완료'}"
                                            href="javascript:void(0);"
                                            th:onclick="trackDelivery([[${order.deliveryDTO?.deliveryCompany}]], [[${order.deliveryDTO?.trackingNumber}]], [[${order.purchaseStatus}]])"

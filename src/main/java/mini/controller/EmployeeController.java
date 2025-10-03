@@ -33,6 +33,14 @@ public class EmployeeController {
     private final AutoNumService autoNumService;
 
     /**
+     * [추가] 관리자 허브 페이지를 보여주는 메소드
+     */
+    @GetMapping("/hub")
+    public String adminHub() {
+        return "thymeleaf/employee/empLogin"; // empLogin.html을 보여줌
+    }
+    
+    /**
      * 💥 [수정] 직원 목록 페이지 (GET /employee)
      */
     @GetMapping
@@ -169,6 +177,7 @@ public class EmployeeController {
             return "redirect:/employee/my-page";
         }
     }
+    
 }
 
 

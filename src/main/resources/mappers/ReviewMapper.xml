@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC
         "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mini.mapper.ReviewMapper">
+<mapper namespace="lappick.mapper.ReviewMapper">
 
-    <insert id="insertReview" parameterType="mini.domain.ReviewDTO">
+    <insert id="insertReview" parameterType="lappick.domain.ReviewDTO">
         INSERT INTO REVIEWS (
             REVIEW_NUM,
             GOODS_NUM,
@@ -26,7 +26,7 @@
         )
     </insert>
 
-<resultMap id="reviewResultMap" type="mini.domain.ReviewDTO">
+<resultMap id="reviewResultMap" type="lappick.domain.ReviewDTO">
         <id property="reviewNum" column="REVIEW_NUM"/>
         <result property="goodsNum" column="GOODS_NUM"/>
         <result property="memberNum" column="MEMBER_NUM"/>
@@ -39,26 +39,25 @@
         <result property="goodsName" column="GOODS_NAME"/>
     </resultMap>
 
-  <select id="selectReviewsByGoodsNum" parameterType="string" resultMap="reviewResultMap">
-        SELECT 
-            R.REVIEW_NUM, R.GOODS_NUM, R.MEMBER_NUM, R.PURCHASE_NUM,
-            R.REVIEW_RATING, R.REVIEW_CONTENT, R.REVIEW_IMAGE, R.REVIEW_DATE,
-            M.MEMBER_ID,
-            G.GOODS_NAME
-        FROM REVIEWS R
-        JOIN MEMBERS M ON R.MEMBER_NUM = M.MEMBER_NUM
-        JOIN GOODS G ON R.GOODS_NUM = G.GOODS_NUM
-        WHERE R.GOODS_NUM = #{goodsNum}
-        ORDER BY R.REVIEW_DATE DESC
-    </select>
+<select id="selectReviewsByGoodsNum" parameterType="string" resultMap="reviewResultMap">
+    SELECT 
+        R.REVIEW_NUM, R.GOODS_NUM, R.MEMBER_NUM, R.PURCHASE_NUM,
+        R.REVIEW_RATING, R.REVIEW_CONTENT, R.REVIEW_IMAGE, R.REVIEW_DATE,
+        M.MEMBER_ID,
+        G.GOODS_NAME
+    FROM REVIEWS R
+    JOIN MEMBERS M ON R.MEMBER_NUM = M.MEMBER_NUM
+    JOIN GOODS G ON R.GOODS_NUM = G.GOODS_NUM
+    WHERE R.GOODS_NUM = #{goodsNum} AND R.REVIEW_STATUS = 'PUBLISHED' ORDER BY R.REVIEW_DATE DESC
+</select>
     
-    <select id="getReviewSummary" parameterType="string" resultType="mini.domain.ReviewSummaryDTO">
-        SELECT
-            COUNT(*) AS reviewCount,
-            COALESCE(AVG(REVIEW_RATING), 0) AS avgRating
-        FROM REVIEWS
-        WHERE GOODS_NUM = #{goodsNum}
-    </select>
+
+<select id="getReviewSummary" parameterType="string" resultType="lappick.domain.ReviewSummaryDTO">
+    SELECT
+        COUNT(*) AS reviewCount,
+        COALESCE(AVG(REVIEW_RATING), 0) AS avgRating
+    FROM REVIEWS
+    WHERE GOODS_NUM = #{goodsNum} AND REVIEW_STATUS = 'PUBLISHED' </select>
     
     <select id="countReviewsByMemberNum" parameterType="string" resultType="int">
         SELECT COUNT(*)
@@ -81,7 +80,7 @@
         ) WHERE RN BETWEEN #{startRow} AND #{endRow}
     </select>
     
-    <select id="selectReview" parameterType="long" resultType="mini.domain.ReviewDTO">
+    <select id="selectReview" parameterType="long" resultType="lappick.domain.ReviewDTO">
         SELECT
             REVIEW_NUM, GOODS_NUM, MEMBER_NUM, PURCHASE_NUM, REVIEW_IMAGE
         FROM REVIEWS
@@ -93,7 +92,7 @@
         WHERE REVIEW_NUM = #{reviewNum}
     </delete>
 	
-	  <update id="updateReview" parameterType="mini.domain.ReviewDTO">
+	  <update id="updateReview" parameterType="lappick.domain.ReviewDTO">
         UPDATE REVIEWS
         SET 
             REVIEW_RATING = #{reviewRating},
@@ -102,5 +101,101 @@
             REVIEW_DATE = SYSTIMESTAMP
         WHERE REVIEW_NUM = #{reviewNum}
     </update>
+    
+    <select id="findAllReviewsForAdmin" resultMap="reviewResultMap">
+        SELECT
+            R.REVIEW_NUM, R.REVIEW_RATING, R.REVIEW_CONTENT, R.REVIEW_DATE,
+            G.GOODS_NAME,
+            M.MEMBER_ID
+        FROM
+            REVIEWS R
+        JOIN
+            GOODS G ON R.GOODS_NUM = G.GOODS_NUM
+        JOIN
+            MEMBERS M ON R.MEMBER_NUM = M.MEMBER_NUM
+        ORDER BY
+            R.REVIEW_NUM DESC
+    </select>
+    
+   <select id="countReviewsForAdmin" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM REVIEWS R
+    JOIN GOODS G ON R.GOODS_NUM = G.GOODS_NUM
+    JOIN MEMBERS M ON R.MEMBER_NUM = M.MEMBER_NUM
+    <where>
+        <if test="searchWord != null and searchWord != ''">
+            (R.REVIEW_CONTENT LIKE '%' || #{searchWord} || '%' OR
+             G.GOODS_NAME LIKE '%' || #{searchWord} || '%' OR
+             M.MEMBER_ID LIKE '%' || #{searchWord} || '%')
+        </if>
+        <if test="rating != null and rating > 0">
+            AND R.REVIEW_RATING = #{rating}
+        </if>
+        <if test="goodsNum != null and goodsNum != ''">
+            AND R.GOODS_NUM = #{goodsNum}
+        </if>
+    </where>
+</select>
+
+ <select id="findReviewsForAdminPaginated" parameterType="map" resultMap="reviewResultMap">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, T.* FROM (
+            SELECT
+                R.REVIEW_NUM, R.REVIEW_RATING, R.REVIEW_CONTENT, R.REVIEW_DATE,
+                R.REVIEW_IMAGE, R.REVIEW_STATUS, -- reviewStatus 조회 추가
+                G.GOODS_NAME,
+                M.MEMBER_ID
+            FROM REVIEWS R
+            JOIN GOODS G ON R.GOODS_NUM = G.GOODS_NUM
+            JOIN MEMBERS M ON R.MEMBER_NUM = M.MEMBER_NUM
+            <where>
+                <if test="searchWord != null and searchWord != ''">
+                    (R.REVIEW_CONTENT LIKE '%' || #{searchWord} || '%' OR
+                     G.GOODS_NAME LIKE '%' || #{searchWord} || '%' OR
+                     M.MEMBER_ID LIKE '%' || #{searchWord} || '%')
+                </if>
+                <if test="rating != null and rating > 0">
+                    AND R.REVIEW_RATING = #{rating}
+                </if>
+                <if test="goodsNum != null and goodsNum != ''">
+                    AND R.GOODS_NUM = #{goodsNum}
+                </if>
+            </where>
+            ORDER BY R.REVIEW_NUM DESC
+        ) T
+    ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+</select>
+    
+    <update id="updateReviewStatus" parameterType="map">
+    UPDATE REVIEWS
+    SET REVIEW_STATUS = #{status}
+    WHERE REVIEW_NUM IN
+    <foreach item="item" index="index" collection="reviewNums" open="(" separator="," close=")">
+        #{item}
+    </foreach>
+</update>
+
+<select id="countReviewsByGoodsNum" parameterType="string" resultType="int">
+    SELECT COUNT(*)
+    FROM REVIEWS
+    WHERE GOODS_NUM = #{goodsNum} AND REVIEW_STATUS = 'PUBLISHED'
+</select>
+
+<select id="selectReviewsByGoodsNumPaginated" parameterType="map" resultMap="reviewResultMap">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, T.* FROM (
+            SELECT 
+                R.REVIEW_NUM, R.GOODS_NUM, R.MEMBER_NUM, R.PURCHASE_NUM,
+                R.REVIEW_RATING, R.REVIEW_CONTENT, R.REVIEW_IMAGE, R.REVIEW_DATE,
+                M.MEMBER_ID,
+                G.GOODS_NAME
+            FROM REVIEWS R
+            JOIN MEMBERS M ON R.MEMBER_NUM = M.MEMBER_NUM
+            JOIN GOODS G ON R.GOODS_NUM = G.GOODS_NUM
+            WHERE R.GOODS_NUM = #{goodsNum} AND R.REVIEW_STATUS = 'PUBLISHED'
+            ORDER BY R.REVIEW_DATE DESC
+        ) T
+    ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+</select>
     
 </mapper>

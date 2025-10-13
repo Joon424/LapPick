@@ -11,12 +11,12 @@
     <relativePath/>
   </parent>
 
-  <groupId>miniShopping</groupId>
-  <artifactId>mini</artifactId>
+  <groupId>lappickShopping</groupId>
+  <artifactId>lappick</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
 
-  <name>mini</name>
+  <name>lappick</name>
   <description>Demo project for Spring Boot</description>
 
   <properties>

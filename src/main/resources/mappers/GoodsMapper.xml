@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mini.mapper.GoodsMapper">
+<mapper namespace="lappick.mapper.GoodsMapper">
 
-<resultMap id="goodsResultMap" type="mini.domain.GoodsDTO">
+<resultMap id="goodsResultMap" type="lappick.domain.GoodsDTO">
     <id property="goodsNum" column="GOODS_NUM" />
     <result property="goodsName" column="GOODS_NAME" />
     <result property="goodsPrice" column="GOODS_PRICE" />
@@ -32,7 +32,7 @@
     <result property="avgRating" column="AVG_RATING" />
 </resultMap>
     
-    <resultMap id="goodsStockResultMap" type="mini.domain.GoodsStockDTO" extends="goodsResultMap">
+    <resultMap id="goodsStockResultMap" type="lappick.domain.GoodsStockDTO" extends="goodsResultMap">
         <result property="stockQty" column="STOCK_QTY" />
     </resultMap>
 
@@ -46,48 +46,66 @@
         UPDATE_EMP_NUM, UPDATE_DATE
     </sql>
 
-    <sql id="filterConditions">
-        <where>
-            <if test="searchWord != null and searchWord != ''">(UPPER(GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(GOODS_CONTENTS) LIKE '%' || UPPER(#{searchWord}) || '%')</if>
-            <if test="goodsBrand != null and !goodsBrand.isEmpty()">AND UPPER(GOODS_BRAND) IN <foreach item="brand" collection="goodsBrand" open="(" separator="," close=")">UPPER(#{brand})</foreach></if>
-            <if test="priceRange != null and priceRange != ''">
-                <choose>
-                    <when test='priceRange == "0-50"'>AND GOODS_PRICE &lt; 500000</when>
-                    <when test='priceRange == "50-100"'>AND GOODS_PRICE BETWEEN 500000 AND 1000000</when>
-                    <when test='priceRange == "100-"'>AND GOODS_PRICE &gt;= 1000000</when>
-                </choose>
-            </if>
-            <if test="goodsPurpose != null and !goodsPurpose.isEmpty()">AND UPPER(GOODS_PURPOSE) IN <foreach item="purpose" collection="goodsPurpose" open="(" separator="," close=")">UPPER(#{purpose})</foreach></if>
-            <if test="minScreenSize != null">AND GOODS_SCREEN_SIZE >= #{minScreenSize}</if>
-            <if test="maxScreenSize != null">AND GOODS_SCREEN_SIZE &lt;= #{maxScreenSize}</if>
-            <if test="minWeight != null">AND GOODS_WEIGHT >= #{minWeight}</if>
-            <if test="maxWeight != null">AND GOODS_WEIGHT &lt;= #{maxWeight}</if>
-        </where>
-    </sql>
+<sql id="filterConditions">
+    <where>
+        <if test="searchWord != null and searchWord != ''">(UPPER(GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(GOODS_CONTENTS) LIKE '%' || UPPER(#{searchWord}) || '%')</if>
+        <if test="goodsBrand != null and !goodsBrand.isEmpty()">AND UPPER(GOODS_BRAND) IN <foreach item="brand" collection="goodsBrand" open="(" separator="," close=")">UPPER(#{brand})</foreach></if>
+        
+        <if test="minPrice != null">AND GOODS_PRICE &gt;= #{minPrice} * 10000</if>
+        <if test="maxPrice != null">AND GOODS_PRICE &lt;= #{maxPrice} * 10000</if>
 
-    <select id="allSelect" parameterType="mini.command.GoodsFilterCommand" resultMap="goodsResultMap">
-        SELECT * FROM (
-            SELECT ROWNUM AS RN, T.* FROM (
-                SELECT
-                    G.*,
-                    COALESCE(S.STOCK_QTY, 0) AS STOCK_QTY,
-                    COALESCE(R.REVIEW_COUNT, 0) AS REVIEW_COUNT,
-                    COALESCE(R.AVG_RATING, 0) AS AVG_RATING
-                FROM
-                    GOODS G
-                LEFT JOIN
-                    (SELECT GOODS_NUM, SUM(IPGO_QTY) AS STOCK_QTY FROM GOODS_IPGO GROUP BY GOODS_NUM) S
-                    ON G.GOODS_NUM = S.GOODS_NUM
-                LEFT JOIN
-                    (SELECT GOODS_NUM, COUNT(*) AS REVIEW_COUNT, AVG(REVIEW_RATING) AS AVG_RATING FROM REVIEWS GROUP BY GOODS_NUM) R
-                    ON G.GOODS_NUM = R.GOODS_NUM
-                <include refid="filterConditions"/>
-                ORDER BY G.GOODS_NUM DESC
-            ) T
-        ) WHERE RN BETWEEN #{startRow} AND #{endRow}
-    </select>
+        <if test="goodsPurpose != null and !goodsPurpose.isEmpty()">AND UPPER(GOODS_PURPOSE) IN <foreach item="purpose" collection="goodsPurpose" open="(" separator="," close=")">UPPER(#{purpose})</foreach></if>
+        <if test="minScreenSize != null">AND GOODS_SCREEN_SIZE >= #{minScreenSize}</if>
+        <if test="maxScreenSize != null">AND GOODS_SCREEN_SIZE &lt;= #{maxScreenSize}</if>
+        <if test="minWeight != null">AND GOODS_WEIGHT >= #{minWeight}</if>
+        <if test="maxWeight != null">AND GOODS_WEIGHT &lt;= #{maxWeight}</if>
+    </where>
+</sql>
+
+<select id="allSelect" parameterType="lappick.command.GoodsFilterCommand" resultMap="goodsResultMap">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, T.* FROM (
+            SELECT
+                G.*,
+                COALESCE(PL.TOTAL_SOLD, 0) AS TOTAL_SOLD,
+                COALESCE(S.STOCK_QTY, 0) AS STOCK_QTY,
+                COALESCE(R.REVIEW_COUNT, 0) AS REVIEW_COUNT,
+                COALESCE(R.AVG_RATING, 0) AS AVG_RATING,
+                P_DATE.LATEST_PURCHASE_DATE
+            FROM
+                GOODS G
+            LEFT JOIN
+                (SELECT GOODS_NUM, SUM(IPGO_QTY) AS STOCK_QTY FROM GOODS_IPGO GROUP BY GOODS_NUM) S
+                ON G.GOODS_NUM = S.GOODS_NUM
+            LEFT JOIN
+                (SELECT GOODS_NUM, COUNT(*) AS REVIEW_COUNT, AVG(REVIEW_RATING) AS AVG_RATING 
+                 FROM REVIEWS WHERE REVIEW_STATUS = 'PUBLISHED' GROUP BY GOODS_NUM) R
+                ON G.GOODS_NUM = R.GOODS_NUM
+            LEFT JOIN
+                (SELECT GOODS_NUM, SUM(PURCHASE_QTY) AS TOTAL_SOLD FROM PURCHASE_LIST GROUP BY GOODS_NUM) PL
+                ON G.GOODS_NUM = PL.GOODS_NUM
+            LEFT JOIN
+                (SELECT PL.GOODS_NUM, MAX(P.PURCHASE_DATE) AS LATEST_PURCHASE_DATE
+                 FROM PURCHASE P JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+                 GROUP BY PL.GOODS_NUM) P_DATE ON G.GOODS_NUM = P_DATE.GOODS_NUM
+            <include refid="filterConditions"/>
+            ORDER BY
+                <choose>
+                    <when test='sortBy == "reviews"'>REVIEW_COUNT DESC</when>
+                    <when test='sortBy == "priceHigh"'>G.GOODS_PRICE DESC</when>
+                    <when test='sortBy == "priceLow"'>G.GOODS_PRICE ASC</when>
+                    <otherwise> -- 인기순 (기본값)
+                        TOTAL_SOLD DESC,
+                        LATEST_PURCHASE_DATE DESC NULLS LAST,
+                        G.GOODS_DATE DESC
+                    </otherwise>
+                </choose>
+                , G.GOODS_NAME ASC
+        ) T
+    ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+</select>
     
-    <select id="goodsCount" parameterType="mini.command.GoodsFilterCommand" resultType="int">
+    <select id="goodsCount" parameterType="lappick.command.GoodsFilterCommand" resultType="int">
         SELECT COUNT(*) FROM GOODS <include refid="filterConditions"/>
     </select>
     
@@ -103,11 +121,11 @@
         WHERE G.GOODS_NUM = #{goodsNum}
     </select>
     
-    <insert id="goodsInsert" parameterType="mini.domain.GoodsDTO">
+    <insert id="goodsInsert" parameterType="lappick.domain.GoodsDTO">
         INSERT INTO GOODS (<include refid="goodsColumns" />) VALUES (#{goodsNum}, #{goodsName}, #{goodsPrice}, #{goodsContents}, #{goodsBrand}, #{goodsPurpose}, #{goodsScreenSize}, #{goodsWeight}, #{goodsKeyword1}, #{goodsKeyword2}, #{goodsKeyword3}, #{goodsShippingInfo}, #{goodsSellerInfo}, #{empNum}, SYSDATE, #{goodsMainImage, jdbcType=VARCHAR}, #{goodsMainStoreImage, jdbcType=VARCHAR}, #{goodsDetailImage, jdbcType=VARCHAR}, #{goodsDetailStoreImage, jdbcType=VARCHAR}, #{goodsDetail, jdbcType=VARCHAR}, #{goodsDetailStore, jdbcType=VARCHAR}, #{updateEmpNum, jdbcType=VARCHAR}, #{updateDate, jdbcType=TIMESTAMP})
     </insert>
     
-    <update id="goodsUpdate" parameterType="mini.domain.GoodsDTO">
+    <update id="goodsUpdate" parameterType="lappick.domain.GoodsDTO">
         UPDATE GOODS SET GOODS_NAME = #{goodsName}, GOODS_PRICE = #{goodsPrice}, GOODS_CONTENTS = #{goodsContents}, GOODS_BRAND = #{goodsBrand}, GOODS_PURPOSE = #{goodsPurpose}, GOODS_SCREEN_SIZE = #{goodsScreenSize}, GOODS_WEIGHT = #{goodsWeight}, GOODS_KEYWORD1 = #{goodsKeyword1}, GOODS_KEYWORD2 = #{goodsKeyword2}, GOODS_KEYWORD3 = #{goodsKeyword3}, GOODS_SHIPPING_INFO = #{goodsShippingInfo}, GOODS_SELLER_INFO = #{goodsSellerInfo}, GOODS_MAIN_IMAGE = #{goodsMainImage, jdbcType=VARCHAR}, GOODS_MAIN_STORE_IMAGE = #{goodsMainStoreImage, jdbcType=VARCHAR}, GOODS_DETAIL_IMAGE = #{goodsDetailImage, jdbcType=VARCHAR}, GOODS_DETAIL_STORE_IMAGE = #{goodsDetailStoreImage, jdbcType=VARCHAR}, GOODS_DETAIL = #{goodsDetail, jdbcType=VARCHAR}, GOODS_DETAIL_STORE = #{goodsDetailStore, jdbcType=VARCHAR}, UPDATE_EMP_NUM = #{updateEmpNum, jdbcType=VARCHAR}, UPDATE_DATE = SYSDATE WHERE GOODS_NUM = #{goodsNum}
     </update>
     
@@ -119,7 +137,7 @@
     </foreach>
 </delete>
 
-<select id="selectGoodsByNumList" parameterType="java.util.List" resultType="mini.domain.GoodsDTO">
+<select id="selectGoodsByNumList" parameterType="java.util.List" resultType="lappick.domain.GoodsDTO">
     SELECT
         GOODS_MAIN_STORE_IMAGE,
         GOODS_DETAIL_STORE_IMAGE,
@@ -147,7 +165,7 @@
   )
 </insert>
     
-<resultMap id="goodsIpgoResultMap" type="mini.domain.GoodsIpgoDTO">
+<resultMap id="goodsIpgoResultMap" type="lappick.domain.GoodsIpgoDTO">
         <id property="ipgoNum" column="IPGO_NUM" />
         <result property="goodsNum" column="GOODS_NUM" />
         <result property="ipgoQty" column="IPGO_QTY" />
@@ -176,4 +194,109 @@
         )
         WHERE RN BETWEEN #{startRow} AND #{endRow}
     </select>
+    
+    <select id="selectAllForFilter" resultType="lappick.domain.GoodsDTO">
+    SELECT
+        GOODS_NUM,
+        GOODS_NAME
+    FROM
+        GOODS
+    ORDER BY
+        GOODS_NAME ASC
+</select>
+
+<select id="selectBestGoodsList" resultMap="goodsResultMap">
+    SELECT *
+    FROM (
+        SELECT
+            G.GOODS_NUM,
+            G.GOODS_NAME,
+            G.GOODS_PRICE,
+            G.GOODS_MAIN_STORE_IMAGE,
+            G.GOODS_DATE,
+            NVL(PL.TOTAL_SOLD, 0) AS TOTAL_SOLD,
+            P.LATEST_PURCHASE_DATE
+        FROM
+            GOODS G
+        LEFT JOIN
+            (SELECT
+                 GOODS_NUM,
+                 SUM(PURCHASE_QTY) AS TOTAL_SOLD
+             FROM
+                 PURCHASE_LIST
+             GROUP BY
+                 GOODS_NUM) PL ON G.GOODS_NUM = PL.GOODS_NUM
+        LEFT JOIN
+            (SELECT
+                 PL.GOODS_NUM,
+                 MAX(P.PURCHASE_DATE) AS LATEST_PURCHASE_DATE
+             FROM
+                 PURCHASE P
+             JOIN
+                 PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+             GROUP BY
+                 PL.GOODS_NUM) P ON G.GOODS_NUM = P.GOODS_NUM
+        ORDER BY
+            TOTAL_SOLD DESC,
+            LATEST_PURCHASE_DATE DESC NULLS LAST,
+            G.GOODS_DATE DESC,
+            G.GOODS_NAME ASC
+    )
+    FETCH FIRST 6 ROWS ONLY
+</select>
+
+<select id="countGoodsSalesStatus" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM GOODS G
+    <where>
+        <if test="searchWord != null and searchWord != ''">
+            G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
+        </if>
+    </where>
+</select>
+
+<select id="findGoodsSalesStatusPaginated" parameterType="map" resultType="lappick.domain.GoodsSalesDTO">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, T.* FROM (
+            SELECT
+                G.GOODS_NUM AS goodsNum,
+                G.GOODS_NAME AS goodsName,
+                G.GOODS_DATE, -- 정렬을 위해 추가
+                NVL(S.TOTAL_SOLD_QTY, 0) AS totalSoldQty,
+                NVL(S.TOTAL_SALES_AMOUNT, 0) AS totalSalesAmount,
+                NVL(R.REVIEW_COUNT, 0) AS reviewCount,
+                NVL(R.AVG_RATING, 0) AS avgRating,
+                P_DATE.LATEST_PURCHASE_DATE -- 정렬을 위해 추가
+            FROM
+                GOODS G
+            LEFT JOIN
+                (SELECT PL.GOODS_NUM, SUM(PL.PURCHASE_QTY) AS TOTAL_SOLD_QTY, SUM(PL.PURCHASE_QTY * PL.PURCHASE_PRICE) AS TOTAL_SALES_AMOUNT
+                 FROM PURCHASE_LIST PL JOIN PURCHASE P ON PL.PURCHASE_NUM = P.PURCHASE_NUM
+                 GROUP BY PL.GOODS_NUM) S ON G.GOODS_NUM = S.GOODS_NUM
+            LEFT JOIN
+                (SELECT GOODS_NUM, COUNT(*) AS REVIEW_COUNT, AVG(REVIEW_RATING) AS AVG_RATING
+                 FROM REVIEWS WHERE REVIEW_STATUS = 'PUBLISHED'
+                 GROUP BY GOODS_NUM) R ON G.GOODS_NUM = R.GOODS_NUM
+            LEFT JOIN
+                (SELECT PL.GOODS_NUM, MAX(P.PURCHASE_DATE) AS LATEST_PURCHASE_DATE
+                 FROM PURCHASE P JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+                 GROUP BY PL.GOODS_NUM) P_DATE ON G.GOODS_NUM = P_DATE.GOODS_NUM
+            <where>
+                <if test="searchWord != null and searchWord != ''">
+                    G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
+                </if>
+            </where>
+            ORDER BY
+                <choose>
+                    <when test='sortBy == "sales"'>totalSoldQty ${sortDir}, P_DATE.LATEST_PURCHASE_DATE DESC NULLS LAST, G.GOODS_DATE DESC</when>
+                    <when test='sortBy == "reviews"'>reviewCount ${sortDir}</when>
+                    <when test='sortBy == "rating"'>avgRating ${sortDir}</when>
+                    <when test='sortBy == "amount"'>totalSalesAmount ${sortDir}</when>
+                    <otherwise>totalSoldQty ${sortDir}</otherwise>
+                </choose>
+                , G.GOODS_NAME ASC
+        ) T
+    ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+</select>
+
 </mapper>

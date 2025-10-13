@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC
         "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mini.mapper.MemberMapper">
+<mapper namespace="lappick.mapper.MemberMapper">
 
 
   <!-- 아이디 중복 -->
@@ -184,18 +184,18 @@
     where member_id = #{memberId}
 </update>
 
-    <select id="selectAllMembers" resultType="mini.domain.MemberDTO">
+    <select id="selectAllMembers" resultType="lappick.domain.MemberDTO">
         SELECT MEMBER_ID AS "memberId", MEMBER_PW AS "memberPw" 
         FROM MEMBER
     </select>
     
-    <update id="updatePassword" parameterType="mini.domain.MemberDTO">
+    <update id="updatePassword" parameterType="lappick.domain.MemberDTO">
         UPDATE MEMBER
         SET MEMBER_PW = #{memberPw}
         WHERE MEMBER_ID = #{memberId}
     </update>
 
-<select id="selectOneById" parameterType="string" resultType="mini.domain.MemberDTO">
+<select id="selectOneById" parameterType="string" resultType="lappick.domain.MemberDTO">
     SELECT
         MEMBER_NUM as memberNum,
         MEMBER_ID as memberId,
@@ -215,6 +215,19 @@
         MEMBERS
     WHERE
         MEMBER_ID = #{memberId}
+</select>
+
+<select id="findIdByNameAndEmail" resultType="string">
+    SELECT MEMBER_ID
+    FROM MEMBERS
+    WHERE MEMBER_NAME = #{memberName} AND MEMBER_EMAIL = #{memberEmail}
+</select>
+
+<select id="findByIdAndEmail" resultType="lappick.domain.MemberDTO">
+    SELECT
+        <include refid="memberBaseColumns" />
+    FROM MEMBERS
+    WHERE MEMBER_ID = #{memberId} AND MEMBER_EMAIL = #{memberEmail}
 </select>
 
 </mapper>

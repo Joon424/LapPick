@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC
         "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mini.mapper.AutoNumMapper">
+<mapper namespace="lappick.mapper.AutoNumMapper">
     <!-- 파라미터가 ${colName}, ${tableName} 으로 올바르게 작성되었는지 확인 -->
    <select id="AutoNumSelect" parameterType="map" resultType="string">
     SELECT

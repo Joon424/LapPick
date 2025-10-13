@@ -23,17 +23,17 @@
             <form th:action="@{/login}" method="post">
               <input type="hidden" name="returnUrl" th:value="${param.returnUrl}">
               <div class="inputset">
-                <input type="text" name="userId" class="inputset-input form-control" aria-label="아이디" placeholder="아이디를 입력해주세요." required>
+                <input type="text" id="userId" name="userId" class="inputset-input form-control" aria-label="아이디" placeholder="아이디를 입력해주세요." required>
               </div>
               <div class="inputset">
                 <input type="password" name="userPw" class="inputset-input form-control" aria-label="비밀번호" placeholder="비밀번호를 입력해주세요." required>
               </div>
               <div class="checkset">
-                <input id="checkset-a-1-1" class="checkset-input input-fill" type="checkbox" name="idStore">
+                <input id="checkset-a-1-1" class="checkset-input input-fill" type="checkbox" name="rememberId">
                 <label class="checkset-label" for="checkset-a-1-1"></label>
                 <span class="checkset-text">아이디 저장</span>
                 &nbsp;&nbsp;&nbsp;
-                <input id="checkset-a-1-2" class="checkset-input input-fill" type="checkbox" name="autoLogin">
+                <input id="checkset-a-1-2" class="checkset-input input-fill" type="checkbox" name="remember-me">
                 <label class="checkset-label" for="checkset-a-1-2"></label>
                 <span class="checkset-text">자동 로그인</span>
               </div>
@@ -47,8 +47,8 @@
               <div th:if="${errorMessage}" class="text-danger" th:text="${errorMessage}"></div>
             </form>
             <ul class="contents-list">
-              <li class="contents-item"><a href="#">아이디 찾기</a></li>
-              <li class="contents-item"><a href="#">비밀번호 찾기</a></li>
+              <li class="contents-item"><a th:href="@{/login/findId}">아이디 찾기</a></li>
+              <li class="contents-item"><a th:href="@{/login/findPw}">비밀번호 찾기</a></li>
               <li class="contents-item"><a href="/register/userWrite">회원가입</a></li>
             </ul>
           </div>
@@ -70,6 +70,60 @@
       var el = document.getElementById('flash-msg');
       if (el) { alert(el.textContent); el.remove(); }
     })();
+  </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const userIdInput = document.getElementById('userId');
+      const rememberIdChk = document.getElementById('checkset-a-1-1'); // 기존 id 사용
+      const loginForm = document.querySelector('form');
+
+      // 1. 쿠키에서 저장된 아이디 불러오기
+      const savedId = getCookie("savedUserId"); // 쿠키 이름 변경
+      if (savedId) {
+          userIdInput.value = savedId;
+          rememberIdChk.checked = true;
+      }
+
+      // 2. 폼 제출 시 아이디 저장 쿠키 관리
+      if(loginForm) {
+          loginForm.addEventListener('submit', function() {
+              if (rememberIdChk.checked) {
+                  // 쿠키 만료일을 30일로 설정
+                  setCookie("savedUserId", userIdInput.value, 30);
+              } else {
+                  // 체크 해제 시 쿠키 삭제
+                  deleteCookie("savedUserId");
+              }
+          });
+      }
+
+      // 쿠키 getter, setter, deleter 함수
+      function setCookie(name, value, days) {
+          let expires = "";
+          if (days) {
+              const date = new Date();
+              date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+              expires = "; expires=" + date.toUTCString();
+          }
+          document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+      }
+
+      function getCookie(name) {
+          const nameEQ = name + "=";
+          const ca = document.cookie.split(';');
+          for(let i = 0; i < ca.length; i++) {
+              let c = ca[i];
+              while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+              if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+          }
+          return null;
+      }
+
+      function deleteCookie(name) {
+          document.cookie = name + '=; Max-Age=-99999999; path=/;';
+      }
+  });
   </script>
 </th:block>
 

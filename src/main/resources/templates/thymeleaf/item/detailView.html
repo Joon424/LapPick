@@ -183,6 +183,11 @@
         font-weight: bold;
         cursor: pointer;
     }
+    
+    /* [추가] 페이지네이션 스타일 */
+.pagination-container { display:flex; gap:6px; justify-content:center; align-items:center; margin-top:30px; }
+.page-btn { display: inline-block; min-width: 32px; padding: 6px 10px; font-size: 13px; font-weight: 500; text-align: center; text-decoration: none; color: #333; background-color: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+.page-btn.active { background-color: #333; color: #fff; border-color: #333; font-weight: bold; }
 </style>
 </th:block>
 </head>
@@ -224,7 +229,7 @@
                         <div th:if="${goods.stockQty <= 0}" class="stock-info out-of-stock">
                             <p style="margin:0;">현재 품절된 상품입니다.</p>
                         </div>
-                        <div th:if="${goods.stockQty > 0 and goods.stockQty < 10}" class="stock-info low-stock">
+                        <div th:if="${goods.stockQty > 0 and goods.stockQty < 3}" class="stock-info low-stock">
                             <p style="margin:0;" th:text="|남은 수량: ${goods.stockQty}개 (재고가 얼마 남지 않았어요!)|"></p>
                         </div>
                     </div>
@@ -242,164 +247,172 @@
         <div class="contents-inner">
             <div class="tabset tabset-fluid">
                 <ul class="tabset-list container-md">
-                    <li class="tabset-item"><a class="tabset-link active" href="javascript:void(0)"><span>상세정보</span></a></li>
-                    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>상품문의</span></a></li>
-                    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>리뷰</span></a></li>
-                    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>배송/교환/반품안내</span></a></li>
-                </ul>
+    <li class="tabset-item"><a class="tabset-link active" href="javascript:void(0)"><span>상세정보</span></a></li>
+    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>리뷰</span></a></li>
+    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>상품문의</span></a></li>
+    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>배송/교환/반품안내</span></a></li>
+</ul>
             </div>
-            <div class="contents-container container-md">
-                <div id="detailContent" class="image" align="center" th:if="${goods.goodsDetailStore != null and goods.goodsDetailStore != ''}">
-                    <img th:each="img : ${#strings.listSplit(goods.goodsDetailStore, '/')}"
-                         th:if="${!img.isEmpty()}"
-                         th:src="@{/upload/{imgName}(imgName=${img})}"
-                         alt="상세 설명 이미지" style="max-width: 100%; display: block;" />
-                </div>
-                <div id="qnaContent" style="display:none; padding-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 0;">
-                        <h3 style="margin: 0; font-size: 1.5rem; font-weight: 600; padding-top: 20px;">상품 문의</h3>
-                        <button type="button" class="btnset btnset-line btnset-round" onclick="openQnaModal()">문의하기</button>
-                    </div>
-                    <table class="item-table" style="border-top: none;">
-                        <thead>
-                            <tr>
-                                <th style="width:10%;">상태</th>
-                                <th style="width:15%;">유형</th>
-                                <th style="width:50%;">제목</th>
-                                <th style="width:10%;">작성자</th>
-                                <th style="width:15%;">작성일</th>
-                            </tr>
-                        </thead>
-                        <tbody th:if="${#lists.isEmpty(qnaList)}">
-                            <tr><td colspan="5" style="padding:40px 0;">등록된 문의가 없습니다.</td></tr>
-                        </tbody>
-                      <tbody th:unless="${#lists.isEmpty(qnaList)}">
-					    <th:block th:each="qna : ${qnaList}">
-					        <tr class="qna-title-row" th:data-qna-num="${qna.qnaNum}" th:data-author-num="${qna.memberNum}">
-					            <td th:text="${qna.qnaStatus}">답변대기</td>
-					            <td th:text="${qna.qnaType}">상품문의</td>
-					            <td style="text-align:left;">
-					                <span th:if="${!isEmployee and (loginMemberNum == null or qna.memberNum != loginMemberNum)}">🔒 </span>
-					                <span th:text="${qna.qnaTitle}"></span>
-					            </td>
-					            <td th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'">mem***</td>
-					            <td th:text="${#dates.format(qna.qnaDate, 'yyyy-MM-dd')}">2025-09-25</td>
-					        </tr>
-					        <tr class="qna-content-row" th:id="'qna-content-' + ${qna.qnaNum}">
-					            <td colspan="5" class="qna-content-cell">
-					                <div class="qna-box">
-					                    <div class="qa-icon question">Q</div>
-					                    <div class="qa-main">
-					                        <div class="qa-meta">
-					                            <span class="author" th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'"></span>
-					                            <span class="date" th:text="${#dates.format(qna.qnaDate, 'yyyy.MM.dd HH:mm')}"></span>
-					                        </div>
-					                        <p class="qa-text" th:text="${qna.qnaContent}"></p>
-					                    </div>
-					                </div>
-					                <div class="answer-box" th:if="${qna.answerContent != null}">
-					                    <div class="qa-icon answer">A</div>
-					                    <div class="qa-main">
-					                        <div class="qa-meta">
-					                            <span class="author">LapPick 답변</span>
-					                            <span class="date" th:text="${#dates.format(qna.answerDate, 'yyyy.MM.dd HH:mm')}"></span>
-					                        </div>
-					                        <p class="qa-text" th:text="${qna.answerContent}"></p>
-					                    </div>
-					                </div>
-					                
-					                <form th:if="${isEmployee and qna.answerContent == null}" class="answer-form" th:action="@{/employee/qna/answer}" method="post">
-					                    <input type="hidden" name="qnaNum" th:value="${qna.qnaNum}" />
-					                    <input type="hidden" name="returnUrl" th:value="@{/corner/detailView/{num}(num=${goods.goodsNum})}" />
-					                    <textarea name="answerContent" placeholder="답변을 입력하세요." required></textarea>
-					                    <div class="btn-bar">
-					                        <button type="submit" class="btnset btnset-sm">답변 등록</button>
-					                    </div>
-					                </form>
-					            </td>
-					        </tr>
-					    </th:block>
-					</tbody>
-                    </table>
-                </div>
-           <div id="reviewContent" style="display:none; padding: 20px 0;">
-                    <h3 class="section-title" style="text-align:left; margin-bottom: 20px;">리뷰</h3>
+           <div class="contents-container container-md">
+    <div id="detailContent" class="image" align="center" th:if="${goods.goodsDetailStore != null and goods.goodsDetailStore != ''}">
+        <img th:each="img : ${#strings.listSplit(goods.goodsDetailStore, '/')}"
+             th:if="${!img.isEmpty()}"
+             th:src="@{/upload/{imgName}(imgName=${img})}"
+             alt="상세 설명 이미지" style="max-width: 100%; display: block;" />
+    </div>
+<div id="reviewContent" style="display:none; padding: 20px 0;">
+    <h3 class="section-title" style="text-align:left; margin-bottom: 20px;">리뷰</h3>
 
-                    <div th:if="${reviewSummary.reviewCount > 0}" class="review-summary">
-                        <div class="star-rating">
-                            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
-                                <span th:if="${i <= reviewSummary.avgRating}">★</span>
-                                <span th:if="${i > reviewSummary.avgRating}" class="empty">★</span>
-                            </th:block>
-                        </div>
-                        <div class="summary-text">
-                            <strong th:text="${#numbers.formatDecimal(reviewSummary.avgRating, 1, 1)}"></strong> / 5.0
-                            <span th:text="'(' + ${reviewSummary.reviewCount} + '개 리뷰)'"></span>
-                        </div>
-                    </div>
-                    
-                    <div th:if="${#lists.isEmpty(reviewList)}" style="padding: 60px 0; text-align: center; color: #888;">
-                        <p>아직 작성된 리뷰가 없습니다.</p>
-                    </div>
-                    
-                    <div th:unless="${#lists.isEmpty(reviewList)}" class="review-list">
-                        <div th:each="review : ${reviewList}" class="review-item">
-                            <div class="review-meta">
-                                <span class="star-rating" style="font-size: 1rem;">
-                                    <th:block th:each="i : ${#numbers.sequence(1, 5)}">
-                                        <span th:if="${i <= review.reviewRating}">★</span>
-                                        <span th:if="${i > review.reviewRating}" class="empty">★</span>
-                                    </th:block>
-                                </span>
-                                <span th:text="${#strings.substring(review.memberId, 0, 3)} + '***'"></span>
-                                <span th:text="${#dates.format(review.reviewDate, 'yyyy.MM.dd')}"></span>
-                            </div>
-                            <p class="review-goods-name" th:text="${review.goodsName}"></p>
-                            <p class="review-content" th:text="${review.reviewContent}"></p>
-                            <div class="review-images" th:if="${review.reviewImage != null and !review.reviewImage.isEmpty()}">
-                                <img class="review-thumbnail" th:each="img : ${#strings.listSplit(review.reviewImage, '/')}"
-                                     th:if="${!img.isEmpty()}"
-                                     th:src="@{/upload/{imgName}(imgName=${img})}"
-                                     alt="리뷰 이미지" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="shippingContent" style="display:none;">
-				    <div class="info-panel">
-				        <h4>배송 안내</h4>
-				        <dl>
-				            <dt>배송사</dt>
-				            <dd>CJ대한통운</dd>
-				            <dt>배송 지역</dt>
-				            <dd>전국</dd>
-				            <dt>배송비</dt>
-				            <dd>3,000원 (50,000원 이상 구매 시 무료배송)</dd>
-				            <dt>배송 기간</dt>
-				            <dd>결제 완료 후 2~5일 이내 출고 (주말/공휴일 제외)</dd>
-				        </dl>
-				
-				        <h4>교환 및 반품 안내</h4>
-				        <dl>
-				            <dt>신청 방법</dt>
-				            <dd>마이페이지 > 주문내역 > 주문상세보기에서 '교환' 또는 '반품' 신청</dd>
-				            <dt>신청 기간</dt>
-				            <dd>상품을 공급 받으신 날로부터 7일 이내</dd>
-				            <dt>반품 배송비</dt>
-				            <dd>단순 변심의 경우 왕복 배송비 6,000원 (최초 배송비 무료인 경우 포함)</dd>
-				        </dl>
-				        
-				        <h4>교환 및 반품 불가 사유</h4>
-				        <ol class="notice-list">
-				            <li>신청 기간이 경과한 경우</li>
-				            <li>고객님의 책임 있는 사유로 상품 등이 멸실 또는 훼손된 경우</li>
-				            <li>포장을 개봉하였거나 포장이 훼손되어 상품가치가 상실된 경우</li>
-				            <li>고객님의 사용 또는 일부 소비에 의하여 상품의 가치가 현저히 감소한 경우</li>
-				            <li>시간의 경과에 의하여 재판매가 곤란할 정도로 상품 등의 가치가 현저히 감소한 경우</li>
-				        </ol>
-				    </div>
-				</div>
+    <div th:if="${reviewSummary.reviewCount > 0}" class="review-summary">
+        <div class="star-rating">
+            <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                <span th:if="${i <= reviewSummary.avgRating}">★</span>
+                <span th:if="${i > reviewSummary.avgRating}" class="empty">★</span>
+            </th:block>
+        </div>
+        <div class="summary-text">
+            <strong th:text="${#numbers.formatDecimal(reviewSummary.avgRating, 1, 1)}"></strong> / 5.0
+            <span th:text="'(' + ${reviewSummary.reviewCount} + '개 리뷰)'"></span>
+        </div>
+    </div>
+
+    <div th:if="${reviewPageData == null or #lists.isEmpty(reviewPageData.items)}" style="padding: 60px 0; text-align: center; color: #888;">
+        <p>아직 작성된 리뷰가 없습니다.</p>
+    </div>
+
+    <div th:unless="${reviewPageData == null or #lists.isEmpty(reviewPageData.items)}" class="review-list">
+        <div th:each="review : ${reviewPageData.items}" class="review-item">
+            <div class="review-meta">
+                <span class="star-rating" style="font-size: 1rem;">
+                    <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                        <span th:if="${i <= review.reviewRating}">★</span>
+                        <span th:if="${i > review.reviewRating}" class="empty">★</span>
+                    </th:block>
+                </span>
+                <span th:text="${#strings.substring(review.memberId, 0, 3)} + '***'"></span>
+                <span th:text="${#dates.format(review.reviewDate, 'yyyy.MM.dd')}"></span>
             </div>
+            <p class="review-goods-name" th:text="${review.goodsName}"></p>
+            <p class="review-content" th:text="${review.reviewContent}"></p>
+            <div class="review-images" th:if="${review.reviewImage != null and !review.reviewImage.isEmpty()}">
+                <img class="review-thumbnail" th:each="img : ${#strings.listSplit(review.reviewImage, '/')}"
+                     th:if="${!img.isEmpty()}"
+                     th:src="@{/upload/{imgName}(imgName=${img})}"
+                     alt="리뷰 이미지" />
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination-container" th:if="${reviewPageData != null and reviewPageData.total > 0}">
+        <a class="page-btn" th:href="@{/corner/detailView/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.startPage - 1})}" th:if="${reviewPageData.hasPrev}">이전</a>
+        <a class="page-btn" th:each="p : ${#numbers.sequence(reviewPageData.startPage, reviewPageData.endPage)}" th:text="${p}"
+           th:classappend="${reviewPageData.page == p} ? 'active' : ''"
+           th:href="@{/corner/detailView/{num}(num=${goods.goodsNum}, reviewPage=${p})}"></a>
+        <a class="page-btn" th:href="@{/corner/detailView/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.endPage + 1})}" th:if="${reviewPageData.hasNext}">다음</a>
+    </div>
+</div>
+    <div id="qnaContent" style="display:none; padding-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 0;">
+            <h3 style="margin: 0; font-size: 1.5rem; font-weight: 600; padding-top: 20px;">상품 문의</h3>
+            <button type="button" class="btnset btnset-line btnset-round" onclick="openQnaModal()">문의하기</button>
+        </div>
+        <table class="item-table" style="border-top: none;">
+            <thead>
+                <tr>
+                    <th style="width:10%;">상태</th>
+                    <th style="width:15%;">유형</th>
+                    <th style="width:50%;">제목</th>
+                    <th style="width:10%;">작성자</th>
+                    <th style="width:15%;">작성일</th>
+                </tr>
+            </thead>
+            <tbody th:if="${#lists.isEmpty(qnaList)}">
+                <tr><td colspan="5" style="padding:40px 0;">등록된 문의가 없습니다.</td></tr>
+            </tbody>
+          <tbody th:unless="${#lists.isEmpty(qnaList)}">
+            <th:block th:each="qna : ${qnaList}">
+                <tr class="qna-title-row" th:data-qna-num="${qna.qnaNum}" th:data-author-num="${qna.memberNum}">
+                    <td th:text="${qna.qnaStatus}">답변대기</td>
+                    <td th:text="${qna.qnaType}">상품문의</td>
+                    <td style="text-align:left;">
+                        <span th:if="${!isEmployee and (loginMemberNum == null or qna.memberNum != loginMemberNum)}">🔒 </span>
+                        <span th:text="${qna.qnaTitle}"></span>
+                    </td>
+                    <td th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'">mem***</td>
+                    <td th:text="${#dates.format(qna.qnaDate, 'yyyy-MM-dd')}">2025-09-25</td>
+                </tr>
+                <tr class="qna-content-row" th:id="'qna-content-' + ${qna.qnaNum}">
+                    <td colspan="5" class="qna-content-cell">
+                        <div class="qna-box">
+                            <div class="qa-icon question">Q</div>
+                            <div class="qa-main">
+                                <div class="qa-meta">
+                                    <span class="author" th:text="${#strings.substring(qna.memberDTO.memberId, 0, 3)} + '***'"></span>
+                                    <span class="date" th:text="${#dates.format(qna.qnaDate, 'yyyy.MM.dd HH:mm')}"></span>
+                                </div>
+                                <p class="qa-text" th:text="${qna.qnaContent}"></p>
+                            </div>
+                        </div>
+                        <div class="answer-box" th:if="${qna.answerContent != null}">
+                            <div class="qa-icon answer">A</div>
+                            <div class="qa-main">
+                                <div class="qa-meta">
+                                    <span class="author">LapPick 답변</span>
+                                    <span class="date" th:text="${#dates.format(qna.answerDate, 'yyyy.MM.dd HH:mm')}"></span>
+                                </div>
+                                <p class="qa-text" th:text="${qna.answerContent}"></p>
+                            </div>
+                        </div>
+
+                        <form th:if="${isEmployee and qna.answerContent == null}" class="answer-form" th:action="@{/employee/qna/answer}" method="post">
+                            <input type="hidden" name="qnaNum" th:value="${qna.qnaNum}" />
+                            <input type="hidden" name="returnUrl" th:value="@{/corner/detailView/{num}(num=${goods.goodsNum})}" />
+                            <textarea name="answerContent" placeholder="답변을 입력하세요." required></textarea>
+                            <div class="btn-bar">
+                                <button type="submit" class="btnset btnset-sm">답변 등록</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+            </th:block>
+        </tbody>
+        </table>
+    </div>
+    <div id="shippingContent" style="display:none;">
+        <div class="info-panel">
+            <h4>배송 안내</h4>
+            <dl>
+                <dt>배송사</dt>
+                <dd>CJ대한통운</dd>
+                <dt>배송 지역</dt>
+                <dd>전국</dd>
+                <dt>배송비</dt>
+                <dd>3,000원 (50,000원 이상 구매 시 무료배송)</dd>
+                <dt>배송 기간</dt>
+                <dd>결제 완료 후 2~5일 이내 출고 (주말/공휴일 제외)</dd>
+            </dl>
+
+            <h4>교환 및 반품 안내</h4>
+            <dl>
+                <dt>신청 방법</dt>
+                <dd>마이페이지 > 주문내역 > 주문상세보기에서 '교환' 또는 '반품' 신청</dd>
+                <dt>신청 기간</dt>
+                <dd>상품을 공급 받으신 날로부터 7일 이내</dd>
+                <dt>반품 배송비</dt>
+                <dd>단순 변심의 경우 왕복 배송비 6,000원 (최초 배송비 무료인 경우 포함)</dd>
+            </dl>
+
+            <h4>교환 및 반품 불가 사유</h4>
+            <ol class="notice-list">
+                <li>신청 기간이 경과한 경우</li>
+                <li>고객님의 책임 있는 사유로 상품 등이 멸실 또는 훼손된 경우</li>
+                <li>포장을 개봉하였거나 포장이 훼손되어 상품가치가 상실된 경우</li>
+                <li>고객님의 사용 또는 일부 소비에 의하여 상품의 가치가 현저히 감소한 경우</li>
+                <li>시간의 경과에 의하여 재판매가 곤란할 정도로 상품 등의 가치가 현저히 감소한 경우</li>
+            </ol>
+        </div>
+    </div>
+</div>
         </div>
     </div>
 </main>

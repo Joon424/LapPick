@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lappick.command.PurchaseCommand;
 import lappick.domain.DeliveryDTO;
-import lappick.domain.GoodsStockDTO;
 import lappick.domain.PurchaseDTO;
 import lappick.domain.PurchaseListDTO;
 import lappick.domain.PurchaseListPage;
+import lappick.goods.GoodsService;
+import lappick.goods.dto.GoodsStockResponse;
 import lappick.mapper.CartMapper;
 import lappick.mapper.PurchaseMapper;
-import lappick.service.goods.GoodsService;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,7 +44,7 @@ public class PurchaseService {
             String goodsNum = command.getGoodsNums()[i];
             int quantity = Integer.parseInt(command.getGoodsQtys()[i]);
             
-            GoodsStockDTO goodsStock = goodsService.getGoodsDetailWithStock(goodsNum);
+            GoodsStockResponse goodsStock = goodsService.getGoodsDetailWithStock(goodsNum);
             
             if (goodsStock == null) {
                 throw new IllegalStateException("주문 처리 중 오류가 발생했습니다. (상품 정보 없음: " + goodsNum + ")");

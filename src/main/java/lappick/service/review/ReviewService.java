@@ -18,13 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lappick.command.PageData;
 import lappick.command.ReviewCommand;
-import lappick.domain.GoodsDTO;
 import lappick.domain.ReviewDTO;
 import lappick.domain.ReviewPageDTO;
 import lappick.domain.ReviewSummaryDTO;
-import lappick.mapper.MemberMapper;
+import lappick.goods.GoodsService;
+import lappick.goods.dto.GoodsResponse;
 import lappick.mapper.ReviewMapper;
-import lappick.service.goods.GoodsService;
+import lappick.member.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
 
 
@@ -294,7 +294,7 @@ public class ReviewService {
      * [추가] 모든 상품 목록을 가져오는 서비스 (필터링용)
      * 이제 GoodsService에 실제 구현된 메서드를 호출합니다.
      */
-     public List<GoodsDTO> getAllGoods() {
+     public List<GoodsResponse> getAllGoods() {
         return goodsService.getAllGoodsForFilter();
      }
 

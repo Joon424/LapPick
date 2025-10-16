@@ -3,7 +3,7 @@ package lappick.config.interceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import lappick.domain.AuthInfoDTO;
+import lappick.auth.dto.AuthDetails;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,7 +21,7 @@ public class AuthCheckInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) throws Exception {
         HttpSession session = req.getSession(false);
-        AuthInfoDTO auth = (session == null) ? null : (AuthInfoDTO) session.getAttribute("auth");
+        AuthDetails auth = (session == null) ? null : (AuthDetails) session.getAttribute("auth");
 
         if (auth == null) {
             String q = req.getQueryString();

@@ -16,7 +16,7 @@
                                 가입 시 등록한 이름과 이메일 주소를 입력해주세요.
                             </p>
                         </div>
-                        <form th:action="@{/login/findId}" method="post">
+                       <form th:action="@{/find-id}" method="post">
                             <div class="inputset">
                                 <input type="text" id="memberName" name="memberName" class="inputset-input form-control" placeholder="이름을 입력해주세요." required>
                             </div>
@@ -24,7 +24,7 @@
                                 <input type="email" id="memberEmail" name="memberEmail" class="inputset-input form-control" placeholder="이메일을 입력해주세요." required>
                             </div>
                             <div class="btn-group" style="display: flex; gap: 10px; margin-top: 10px;">
-                                <a th:href="@{/login/item.login}" class="btnset btnset-line" style="flex: 1; text-align: center;">로그인으로</a>
+                                <a th:href="@{/login}" class="btnset btnset-line" style="flex: 1; text-align: center;">로그인으로</a>
                                 <button type="submit" class="btnset" style="flex: 1;">아이디 찾기</button>
                             </div>
                         </form>

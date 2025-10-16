@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import lappick.command.ReviewCommand;
-import lappick.domain.GoodsDTO;
 import lappick.domain.ReviewDTO;
-import lappick.mapper.GoodsMapper;
+import lappick.goods.GoodsMapper;
+import lappick.goods.dto.GoodsResponse;
 import lappick.service.review.ReviewService;
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +35,7 @@ public class ReviewController {
                              Model model) {
         
         // 리뷰할 상품 정보 조회
-        GoodsDTO goods = goodsMapper.selectOne(goodsNum);
+        GoodsResponse goods = goodsMapper.selectOne(goodsNum);
         
         ReviewCommand reviewCommand = new ReviewCommand();
         reviewCommand.setPurchaseNum(purchaseNum);
@@ -53,7 +53,7 @@ public class ReviewController {
         
         if (result.hasErrors()) {
             // 유효성 검사 실패 시, 다시 작성 폼으로 돌아감
-            GoodsDTO goods = goodsMapper.selectOne(command.getGoodsNum());
+            GoodsResponse goods = goodsMapper.selectOne(command.getGoodsNum());
             model.addAttribute("goods", goods);
             model.addAttribute("reviewCommand", command);
             return "thymeleaf/review/reviewWrite";
@@ -96,7 +96,7 @@ public class ReviewController {
             command.setReviewContent(review.getReviewContent());
             
             // 3. 리뷰할 상품 정보와 기존 리뷰 내용을 모델에 담아 전달
-            GoodsDTO goods = goodsMapper.selectOne(review.getGoodsNum());
+            GoodsResponse goods = goodsMapper.selectOne(review.getGoodsNum());
             model.addAttribute("goods", goods);
             model.addAttribute("reviewCommand", command);
             model.addAttribute("reviewNum", reviewNum); // 수정할 리뷰의 번호를 전달
@@ -124,7 +124,7 @@ public class ReviewController {
 
         if (result.hasErrors()) {
             // 유효성 검사 실패 시, 다시 수정 폼으로 돌아감
-            GoodsDTO goods = goodsMapper.selectOne(command.getGoodsNum());
+            GoodsResponse goods = goodsMapper.selectOne(command.getGoodsNum());
             model.addAttribute("goods", goods);
             model.addAttribute("reviewCommand", command);
             model.addAttribute("reviewNum", reviewNum);

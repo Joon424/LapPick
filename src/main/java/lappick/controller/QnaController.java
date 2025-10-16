@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import lappick.command.PageData;
-import lappick.domain.MemberDTO;
+
 import lappick.domain.PurchaseListDTO;
 import lappick.domain.QnaDTO;
-import lappick.mapper.MemberMapper;
+import lappick.member.mapper.MemberMapper;
 import lappick.service.purchase.PurchaseService;
 import lappick.service.qna.QnaService;
+import lappick.member.dto.MemberResponse;
+
 
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class QnaController {
         // [수정] 서비스 호출 시 status 전달
         PageData<QnaDTO> pageData = qnaService.getMyQnaList(memberId, searchWord, status, page, size);
 
-        MemberDTO member = memberMapper.selectOneById(memberId);
+        MemberResponse member = memberMapper.selectOneById(memberId);
         String memberNum = member.getMemberNum();
         List<PurchaseListDTO> purchaseList = purchaseService.getPurchasedItems(memberNum);
 

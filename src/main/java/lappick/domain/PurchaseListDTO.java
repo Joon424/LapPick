@@ -2,6 +2,7 @@ package lappick.domain;
 
 import java.util.Date;
 
+import lappick.goods.dto.GoodsResponse;
 import lombok.Data;
 
 @Data
@@ -15,7 +16,7 @@ public class PurchaseListDTO {
     private Integer purchasePrice;
 
     // JOIN해서 가져올 정보
-    private GoodsDTO goodsDTO;
+    private GoodsResponse goodsDTO;
     private Date purchaseDate; // [추가] 구매일 필드
     
  // [추가] 리뷰 작성 여부를 확인하기 위한 필드

@@ -3,6 +3,9 @@ package lappick.domain;
 import lombok.Data;
 import java.util.Date;
 
+import lappick.goods.dto.GoodsResponse;
+import lappick.member.dto.MemberResponse;
+
 @Data
 public class QnaDTO {
     private Integer qnaNum;
@@ -17,6 +20,6 @@ public class QnaDTO {
     private String qnaStatus;
 
     // JOIN해서 가져올 정보
-    private GoodsDTO goodsDTO;
-    private MemberDTO memberDTO;
+    private GoodsResponse goodsDTO;
+    private MemberResponse memberDTO;
 }

@@ -15,13 +15,13 @@
         <result property="answerContent" column="ANSWER_CONTENT"/>
         <result property="answerDate" column="ANSWER_DATE"/>
         <result property="qnaStatus" column="QNA_STATUS"/>
-        <association property="goodsDTO" javaType="lappick.domain.GoodsDTO">
+        <association property="goodsDTO" javaType="lappick.goods.dto.GoodsResponse">
             <result property="goodsName" column="GOODS_NAME"/>
         </association>
-        <association property="memberDTO" javaType="lappick.domain.MemberDTO">
+        <association property="memberDTO" javaType="lappick.member.dto.MemberResponse">
             <result property="memberId" column="MEMBER_ID"/>
         </association>
-    </resultMap>
+        </resultMap>
 
     <insert id="insertQna" parameterType="lappick.domain.QnaDTO">
         INSERT INTO QNA (

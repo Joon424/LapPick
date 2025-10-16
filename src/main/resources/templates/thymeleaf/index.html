@@ -17,22 +17,21 @@
             <p class="textset-desc">베스트 상품을 지금 바로 만나보세요!</p>
           </div>
           <div class="swiper contents-swiper">
-            <div class="swiper-wrapper">
+        <div class="swiper-wrapper">
               <th:block th:each="goods : ${goodsList}">
                 <div class="swiper-slide">
-                  <a th:href="@{'/corner/detailView/' + ${goods.goodsNum}}" class="cardset cardset-shopping">
+                  <a th:href="@{'/goods/detail/' + ${goods.goodsNum}}" class="cardset cardset-shopping">
                     <figure class="cardset-figure">
                       <img th:src="@{'/upload/' + ${goods.goodsMainStoreImage}}" class="cardset-img" alt="상품 이미지">
                     </figure>
                     <div class="cardset-body">
-
                       <h2 class="cardset-tit" th:text="${goods.goodsName}">상품명</h2>
                       <p class="cardset-desc">
                         <span th:text="${#numbers.formatInteger(goods.goodsPrice, 3, 'COMMA')}">가격</span><small>원</small>
                       </p>
                     </div>
                   </a>
-                </div>
+                  </div>
               </th:block>
             </div>
           </div>

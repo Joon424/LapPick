@@ -26,11 +26,13 @@
         <div class="contents-container container-md">
           <div class="textset" style="margin-bottom: 30px;">
             <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
-            <h2 class="textset-tit">직원 정보 수정</h2>
+            <h2 class="textset-tit" th:text="${#authentication.name == employeeCommand.empId} ? '내 정보 수정' : '직원 정보 수정'">직원 정보 수정</h2>
             <p class="textset-desc">직원 정보를 수정하는 페이지입니다.</p>
           </div>
 
-          <form id="employeeEditForm" th:action="@{/employee/edit}" th:object="${employeeCommand}" method="post">
+          <form id="employeeEditForm" 
+                th:action="${#authentication.name == employeeCommand.empId} ? @{/employee/my-page/update} : @{/admin/employees/edit}" 
+                th:object="${employeeCommand}" method="post">
             <input type="hidden" th:field="*{empNum}">
             <input type="hidden" th:field="*{empId}">
 
@@ -81,7 +83,10 @@
           </form>
 
           <div class="btn-bar">
-            <a class="btnset btnset-line btnset-round" th:href="@{/employee}">목록으로</a>
+            <a class="btnset btnset-line btnset-round" 
+               th:href="${#authentication.name == employeeCommand.empId} ? @{/employee/my-page} : @{/admin/employees}">
+               <span th:text="${#authentication.name == employeeCommand.empId} ? '취소' : '목록으로'"></span>
+            </a>
             <button form="employeeEditForm" type="submit" class="btnset btnset-line btnset-round">수정완료</button>
           </div>
 

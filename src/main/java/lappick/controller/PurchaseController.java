@@ -16,14 +16,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import lappick.command.PurchaseCommand;
 import lappick.domain.CartDTO;
 import lappick.domain.GoodsCartDTO;
-import lappick.domain.GoodsDTO;
-import lappick.domain.MemberDTO;
 import lappick.domain.PurchaseDTO;
 import lappick.domain.PurchaseListPage;
+import lappick.goods.GoodsMapper;
+import lappick.goods.dto.GoodsResponse;
 import lappick.mapper.CartMapper;
-import lappick.mapper.GoodsMapper;
-import lappick.mapper.MemberMapper;
+import lappick.member.mapper.MemberMapper;
 import lappick.service.purchase.PurchaseService;
+import lappick.member.dto.MemberResponse;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +44,7 @@ public class PurchaseController {
     @PostMapping("/order")
     public String purchaseForm(@RequestParam("nums") String[] goodsNums, Authentication auth, Model model) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
+        MemberResponse memberDTO = memberMapper.selectOneById(userDetails.getUsername());
         
         // 주문할 상품 목록 정보 가져오기
         List<GoodsCartDTO> items = cartMapper.cartSelectList(memberDTO.getMemberNum(), goodsNums, null);
@@ -70,10 +71,10 @@ public class PurchaseController {
                                      Authentication auth, Model model) {
 
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
+        MemberResponse memberDTO = memberMapper.selectOneById(userDetails.getUsername());
 
         // GoodsMapper를 사용해 상품 정보를 직접 조회
-        GoodsDTO goodsDTO = goodsMapper.selectOne(goodsNum);
+        GoodsResponse goodsDTO = goodsMapper.selectOne(goodsNum);
 
         // View(order.html)와 데이터 구조를 맞추기 위해 GoodsCartDTO 형태로 가공
         CartDTO cartDTO = new CartDTO();
@@ -104,7 +105,7 @@ public class PurchaseController {
     @PostMapping("/placeOrder")
     public String placeOrder(PurchaseCommand command, Authentication auth, RedirectAttributes ra) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
+        MemberResponse memberDTO = memberMapper.selectOneById(userDetails.getUsername());
         
         try {
             String purchaseNum = purchaseService.placeOrder(command, memberDTO.getMemberNum());
@@ -129,7 +130,7 @@ public class PurchaseController {
                               @RequestParam(value="searchWord", required=false) String searchWord,
                               @RequestParam(value="page", defaultValue = "1") int page) {
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
+        MemberResponse memberDTO = memberMapper.selectOneById(userDetails.getUsername());
         
         // 한 페이지에 5개씩 표시
         int pageSize = 5;
@@ -151,7 +152,7 @@ public class PurchaseController {
     public String cancelOrderRequest(@PathVariable("purchaseNum") String purchaseNum, Authentication auth) {
         // 본인의 주문이 맞는지 간단히 확인 (선택적이지만 권장)
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        MemberDTO memberDTO = memberMapper.selectOneById(userDetails.getUsername());
+        MemberResponse memberDTO = memberMapper.selectOneById(userDetails.getUsername());
         
         purchaseService.requestCancelOrder(purchaseNum, memberDTO.getMemberNum());
         

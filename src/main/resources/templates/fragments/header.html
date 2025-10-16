@@ -41,7 +41,7 @@
               <img src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
               <span class="badgeset-text" id="cart-item-count" style="display: none;">0</span>
             </a>
-            <a sec:authorize="hasAuthority('ROLE_EMP')" class="header-btn" th:href="@{/employee/hub}">
+           <a sec:authorize="hasAuthority('ROLE_EMP')" class="header-btn" th:href="@{/admin/employees/hub}">
                 <img src="/resources/icons/gear_options_preferences_settings_icon.svg" alt="관리자 허브 아이콘"
                      style="width: 26px; height: 26px; position: relative; top: 3px;">
             </a>

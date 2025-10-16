@@ -303,13 +303,13 @@
         </div>
     </div>
 
-    <div class="pagination-container" th:if="${reviewPageData != null and reviewPageData.total > 0}">
-        <a class="page-btn" th:href="@{/corner/detailView/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.startPage - 1})}" th:if="${reviewPageData.hasPrev}">이전</a>
-        <a class="page-btn" th:each="p : ${#numbers.sequence(reviewPageData.startPage, reviewPageData.endPage)}" th:text="${p}"
-           th:classappend="${reviewPageData.page == p} ? 'active' : ''"
-           th:href="@{/corner/detailView/{num}(num=${goods.goodsNum}, reviewPage=${p})}"></a>
-        <a class="page-btn" th:href="@{/corner/detailView/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.endPage + 1})}" th:if="${reviewPageData.hasNext}">다음</a>
-    </div>
+   <div class="pagination-container" th:if="${reviewPageData != null and reviewPageData.total > 0}">
+            <a class="page-btn" th:href="@{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.startPage - 1})}" th:if="${reviewPageData.hasPrev}">이전</a>
+            <a class="page-btn" th:each="p : ${#numbers.sequence(reviewPageData.startPage, reviewPageData.endPage)}" th:text="${p}"
+               th:classappend="${reviewPageData.page == p} ? 'active' : ''"
+               th:href="@{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=${p})}"></a>
+            <a class="page-btn" th:href="@{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.endPage + 1})}" th:if="${reviewPageData.hasNext}">다음</a>
+        </div>
 </div>
     <div id="qnaContent" style="display:none; padding-top: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 0;">
@@ -366,13 +366,13 @@
 
                         <form th:if="${isEmployee and qna.answerContent == null}" class="answer-form" th:action="@{/employee/qna/answer}" method="post">
                             <input type="hidden" name="qnaNum" th:value="${qna.qnaNum}" />
-                            <input type="hidden" name="returnUrl" th:value="@{/corner/detailView/{num}(num=${goods.goodsNum})}" />
+                            <input type="hidden" name="returnUrl" th:value="@{/goods/detail/{num}(num=${goods.goodsNum})}" />
                             <textarea name="answerContent" placeholder="답변을 입력하세요." required></textarea>
                             <div class="btn-bar">
                                 <button type="submit" class="btnset btnset-sm">답변 등록</button>
                             </div>
                         </form>
-                    </td>
+                        </td>
                 </tr>
             </th:block>
         </tbody>

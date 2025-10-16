@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC    
+    "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lappick.admin.employee.mapper.EmployeeMapper">
+
+    <sql id="employeeColumns">
+        EMP_NUM, EMP_ID, EMP_PW, EMP_NAME, EMP_ADDR, EMP_ADDR_DETAIL, EMP_POST,
+        EMP_HIRE_DATE, EMP_PHONE, EMP_EMAIL, EMP_JUMIN
+    </sql>
+
+    <resultMap type="lappick.admin.employee.dto.EmployeeResponse" id="employeeResultMap">
+        <id column="EMP_NUM" jdbcType="VARCHAR" property="empNum"/>
+        <result column="EMP_ID" jdbcType="VARCHAR" property="empId"/>
+        <result column="EMP_PW" jdbcType="VARCHAR" property="empPw"/>
+        <result column="EMP_NAME" jdbcType="VARCHAR" property="empName"/>
+        <result column="EMP_ADDR" jdbcType="VARCHAR" property="empAddr"/>
+        <result column="EMP_ADDR_DETAIL" jdbcType="VARCHAR" property="empAddrDetail"/>
+        <result column="EMP_POST" jdbcType="BIGINT" property="empPost"/>
+        <result column="EMP_HIRE_DATE" jdbcType="DATE" property="empHireDate" />
+        <result column="EMP_PHONE" jdbcType="VARCHAR" property="empPhone"/>
+        <result column="EMP_EMAIL" jdbcType="VARCHAR" property="empEmail"/>
+        <result column="EMP_JUMIN" jdbcType="VARCHAR" property="empJumin"/>
+    </resultMap>
+
+    <insert id="employeeInsert" parameterType="lappick.admin.employee.dto.EmployeeResponse" >
+        insert into employees( <include refid="employeeColumns" />)
+        values( #{empNum},#{empId} ,#{empPw} ,#{empName} ,#{empAddr} 
+                ,#{empAddrDetail} ,#{empPost} 
+                ,sysdate ,#{empPhone} ,#{empEmail},#{empJumin})
+    </insert>
+    
+    <update id="employeeUpdate" parameterType="lappick.admin.employee.dto.EmployeeResponse">
+        update employees
+        set   EMP_NAME = #{empName}
+            , EMP_ADDR =#{empAddr}
+            , EMP_ADDR_detail = #{empAddrDetail, jdbcType=VARCHAR}
+            , EMP_POST =#{empPost}
+            , EMP_PHONE = #{empPhone}
+            , emp_jumin = #{empJumin}
+            , EMP_HIRE_DATE = #{empHireDate}
+            , EMP_EMAIL = #{empEmail}
+        where EMP_NUM = #{empNum}
+    </update>
+
+    <update id="employeePwUpdate" >
+        update employees
+        set emp_pw = #{empPw}
+        where emp_id = #{empId}
+    </update>
+
+    <delete id="employeesDelete">
+        delete from employees where EMP_NUM in
+        <foreach collection="empNums" item="num" close=")" open="(" separator=",">
+            #{num}
+        </foreach>
+    </delete>
+
+    <select id="employeeAllSelect" parameterType="lappick.domain.StartEndPageDTO" resultMap="employeeResultMap" >
+        select * from (
+            select ROW_NUMBER() over (order by emp_hire_date DESC) as rn, 
+                    <include refid="employeeColumns" />
+            from employees
+            <where>
+                <if test="searchWord != null and searchWord != ''">
+                    UPPER(emp_NAME) like '%' || UPPER(#{searchWord}) || '%'
+                    or UPPER(emp_id) like '%' || UPPER(#{searchWord}) || '%'
+                    or UPPER(emp_num) like '%' || UPPER(#{searchWord}) || '%'
+                </if>
+            </where>    
+        ) 
+        where rn between #{startRow} and #{endRow}
+    </select>
+    
+    <select id="employeeCount" parameterType="string" resultType="integer">
+        select count(*) from employees
+        <where>
+            <if test="searchWord != null and searchWord != ''">
+                emp_NAME like '%' || #{searchWord} || '%'
+                or emp_id like '%' || #{searchWord} || '%'
+                or emp_num like '%' || #{searchWord} || '%'
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByEmpNum" parameterType="string" resultMap="employeeResultMap">
+        select <include refid="employeeColumns" /> 
+        from employees
+        where EMP_NUM = #{empNum}
+    </select>
+    
+    <select id="selectByEmpId" parameterType="string" resultMap="employeeResultMap">
+        select <include refid="employeeColumns" />
+        from employees
+        where EMP_ID = #{empId}
+    </select>
+
+    <select id="getEmpNum" parameterType="string" resultType="string">
+        select emp_num from employees
+        where emp_id = #{empId}
+    </select>
+</mapper>

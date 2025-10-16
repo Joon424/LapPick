@@ -8,13 +8,13 @@ import org.apache.ibatis.annotations.Param;
 
 import lappick.domain.CartDTO;
 import lappick.domain.GoodsCartDTO;
-import lappick.domain.GoodsDTO;
+import lappick.goods.dto.GoodsResponse;
 
 @Mapper
 public interface CartMapper {
 	public void cartMerge(CartDTO dto);
 	
-	public GoodsDTO goodsSelect(String goodsNum);
+	public GoodsResponse goodsSelect(String goodsNum);
 	public CartDTO cartSelect(Integer cartNum);
 	 // [수정] searchWord 파라미터 추가
     public List<GoodsCartDTO> cartSelectList(

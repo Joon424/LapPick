@@ -6,9 +6,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import jakarta.servlet.http.HttpSession;
-import lappick.domain.AuthInfoDTO;
-
 @ControllerAdvice(annotations = Controller.class)
 public class GlobalControllerAdvice {
 

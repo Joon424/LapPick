@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lappick.command.PageData;
-import lappick.domain.MemberDTO;
 import lappick.domain.PurchaseDTO;
 import lappick.domain.QnaDTO;
-import lappick.mapper.MemberMapper;
 import lappick.mapper.PurchaseMapper;
 import lappick.mapper.QnaMapper;
+import lappick.member.dto.MemberResponse;
+import lappick.member.mapper.MemberMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +27,7 @@ public class QnaService {
 
     @Transactional(readOnly = true)
     public PageData<QnaDTO> getMyQnaList(String memberId, String searchWord, String status, int page, int size) {
-        MemberDTO member = memberMapper.selectOneById(memberId);
+    	MemberResponse member = memberMapper.selectOneById(memberId);
         
         Map<String, Object> params = new HashMap<>();
         params.put("memberNum", member.getMemberNum());
@@ -49,7 +49,7 @@ public class QnaService {
         PurchaseDTO purchase = purchaseMapper.selectPurchaseDetail(purchaseNum);
 
         // 2. memberId로 현재 사용자 정보 조회
-        MemberDTO member = memberMapper.selectOneById(memberId);
+        MemberResponse member = memberMapper.selectOneById(memberId);
 
         // 3. 본인의 구매 건이 맞는지 검증
         if (member == null || !member.getMemberNum().equals(purchase.getMemberNum())) {
@@ -78,7 +78,7 @@ public class QnaService {
     @Transactional
     public void writeQnaFromProductPage(QnaDTO qnaDTO, String goodsNum, String memberId) {
         // 1. 현재 로그인한 사용자의 정보를 조회합니다.
-        MemberDTO member = memberMapper.selectOneById(memberId);
+    	MemberResponse member = memberMapper.selectOneById(memberId);
         if (member == null) {
             throw new SecurityException("사용자 정보를 찾을 수 없습니다.");
         }

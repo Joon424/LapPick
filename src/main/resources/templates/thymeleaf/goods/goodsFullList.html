@@ -152,10 +152,10 @@
                   </div>
                   </div>
               </div>
-              <div class="contents-list">
+       <div class="contents-list">
                 <th:block th:if="${#lists.isEmpty(goodsList)}"><p style="text-align: center; width: 100%; padding: 50px 0;">조건에 맞는 상품이 없습니다.</p></th:block>
                 <th:block th:each="goods : ${goodsList}">
-                  <a th:href="@{'/corner/detailView/' + ${goods.goodsNum}}" class="cardset cardset-shopping">
+                  <a th:href="@{'/goods/detail/' + ${goods.goodsNum}}" class="cardset cardset-shopping">
                     <figure class="cardset-figure"><img th:src="@{'/upload/' + ${goods.goodsMainStoreImage}}" class="cardset-img" alt="상품 이미지" onerror="this.onerror=null; this.src='https://placehold.co/600x400?text=Image+Not+Found'"></figure>
                     <div class="cardset-body">
                       <h2 class="cardset-tit" th:text="${goods.goodsName}">상품명</h2>
@@ -167,7 +167,7 @@
                       </div>
                     </div>
                   </a>
-                </th:block>
+                  </th:block>
               </div>
               <nav class="pagiset pagiset-line" th:if="${pageData.total > 0}">
                 <div class="pagiset-ctrl"><a class="pagiset-link pagiset-first" th:classappend="${pageData.page == 1} ? 'disabled' : ''" th:href="@{/goods/goodsFullList(page=1, sortBy=${filter.sortBy}, minPrice=${filter.minPrice}, maxPrice=${filter.maxPrice}, goodsBrand=${filter.goodsBrand}, goodsPurpose=${filter.goodsPurpose}, minScreenSize=${filter.minScreenSize}, maxScreenSize=${filter.maxScreenSize}, minWeight=${filter.minWeight}, maxWeight=${filter.maxWeight})}"><span class="visually-hidden">처음</span></a></div>

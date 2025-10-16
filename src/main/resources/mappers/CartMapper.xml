@@ -9,7 +9,7 @@
 	  ,GOODS_MAIN_STORE_IMAGE 
 </sql>
 
-<resultMap type="goods" id="goodsResultMap">
+<resultMap type="lappick.goods.dto.GoodsResponse" id="goodsResultMap">
 	<id column="goods_Num" 						jdbcType="VARCHAR" 	property="goodsNum"/>
 	<result column="goods_Name" 				jdbcType="VARCHAR" 	property="goodsName" />
 	<result column="GOODS_PRICE" 				jdbcType="BIGINT" 	property="goodsPrice" />
@@ -22,6 +22,7 @@
 	from goods  
 	where goods_Num = #{goodsNum} 
 </select>
+
 <resultMap type="cart" id="cartResultMap">
 	<id column="goods_num" jdbcType="VARCHAR" property="goodsNum"/>
 	<id column="member_num" jdbcType="VARCHAR" property="memberNum"/>
@@ -29,14 +30,15 @@
 	<result column="cart_date" jdbcType="DATE" property="cartDate"/>
 	<result column="cart_qty" jdbcType="BIGINT" property="cartQty"/>
 </resultMap>
-<select id="cartSelect" resultMap="cartResultMap" parameterType="integer"> 
-	select cart_num , goods_num, member_num, cart_date,cart_qty
-	from cart
-	where cart_num = #{cartNum}
+
+<select id="cartSelect" resultMap="cartResultMap" parameterType="int">
+    select cart_num, goods_num, member_num, cart_date, cart_qty
+    from cart
+    where cart_num = #{cartNum}
 </select>
 <resultMap type="cartGoods" id="cartGoodsResultMap">
-	<association property="goodsDTO" javaType="goods" column="goodsNum"  select="goodsSelect" />
-	<association property="cartDTO" javaType="cart" column="cartNum"  select="cartSelect"/>
+	<association property="goodsDTO" javaType="lappick.goods.dto.GoodsResponse" column="goodsNum"  select="lappick.mapper.CartMapper.goodsSelect" />
+	<association property="cartDTO" javaType="cart" column="cartNum"  select="lappick.mapper.CartMapper.cartSelect"/>
 </resultMap>
 
 <select id="cartSelectList" resultMap="cartGoodsResultMap" >
@@ -71,12 +73,14 @@ WHEN NOT MATCHED THEN
 	values ((select COALESCE(max(cart_num ),0) + 1  from cart)
 			,#{memberNum}, #{goodsNum}, sysdate, #{cartQty})
 </update>
+
 <update id="cartQtyDown" >
 	update cart
 	set cart_qty = cart_qty - 1
 	where goods_num = #{goodsNum} 
 	and member_num = #{memberNum}
 </update>
+
 <delete id="goodsNumsDelete" parameterType="hashmap">
 delete from cart
 where member_num = #{memberNum}
@@ -85,6 +89,7 @@ and goods_num in
 		#{goodsNum}
 	</foreach>
 </delete>
+
 <delete id="cartAllDelete" parameterType="string">
     DELETE FROM cart
     WHERE member_num = #{memberNum}

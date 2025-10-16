@@ -20,7 +20,7 @@
               <p th:text="${errorMessage}"></p>
             </div>
 
-            <form th:action="@{/login}" method="post">
+            <form th:action="@{/login/action}" method="post">
               <input type="hidden" name="returnUrl" th:value="${param.returnUrl}">
               <div class="inputset">
                 <input type="text" id="userId" name="userId" class="inputset-input form-control" aria-label="아이디" placeholder="아이디를 입력해주세요." required>
@@ -46,10 +46,11 @@
               <button type="submit" class="btnset">로그인</button>
               <div th:if="${errorMessage}" class="text-danger" th:text="${errorMessage}"></div>
             </form>
+
             <ul class="contents-list">
-              <li class="contents-item"><a th:href="@{/login/findId}">아이디 찾기</a></li>
-              <li class="contents-item"><a th:href="@{/login/findPw}">비밀번호 찾기</a></li>
-              <li class="contents-item"><a href="/register/userWrite">회원가입</a></li>
+              <li class="contents-item"><a th:href="@{/find-id}">아이디 찾기</a></li>
+              <li class="contents-item"><a th:href="@{/find-pw}">비밀번호 찾기</a></li>
+              <li class="contents-item"><a th:href="@{/register/write}">회원가입</a></li>
             </ul>
           </div>
         </div>

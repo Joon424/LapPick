@@ -10,7 +10,7 @@
         <result property="purchaseQty" column="PURCHASE_QTY"/>
         <result property="purchasePrice" column="PURCHASE_PRICE"/>
         <result property="reviewWritten" column="REVIEW_WRITTEN"/>
-        <association property="goodsDTO" javaType="lappick.domain.GoodsDTO">
+        <association property="goodsDTO" javaType="lappick.goods.dto.GoodsResponse">
             <id property="goodsNum" column="GOODS_NUM"/>
             <result property="goodsName" column="GOODS_NAME"/>
             <result property="goodsMainStoreImage" column="GOODS_MAIN_STORE_IMAGE"/>
@@ -18,7 +18,7 @@
         </association>
     </resultMap>
 
-   <resultMap id="purchaseResultMap" type="lappick.domain.PurchaseDTO">
+  <resultMap id="purchaseResultMap" type="lappick.domain.PurchaseDTO">
         <id property="purchaseNum" column="PURCHASE_NUM"/>
         <result property="memberNum" column="MEMBER_NUM"/>
         <result property="purchaseDate" column="PURCHASE_DATE"/>
@@ -34,11 +34,10 @@
         <result property="bankName" column="BANK_NAME"/>
         <result property="depositorName" column="DEPOSITOR_NAME"/>
         
-        <association property="memberDTO" javaType="lappick.domain.MemberDTO">
+        <association property="memberDTO" javaType="lappick.member.dto.MemberResponse">
             <result property="memberId" column="MEMBER_ID"/>
             <result property="memberName" column="MEMBER_NAME"/>
         </association>
-
         <association property="deliveryDTO" javaType="lappick.domain.DeliveryDTO">
             <result property="deliveryCompany" column="DELIVERY_COMPANY"/>
             <result property="trackingNumber" column="TRACKING_NUMBER"/>
@@ -123,11 +122,11 @@
 </insert>
 
 <resultMap id="adminPurchaseResultMap" type="lappick.domain.PurchaseDTO" extends="purchaseResultMap">
-        <association property="memberDTO" javaType="lappick.domain.MemberDTO">
+        <association property="memberDTO" javaType="lappick.member.dto.MemberResponse">
             <result property="memberId" column="MEMBER_ID"/>
             <result property="memberName" column="MEMBER_NAME"/>
         </association>
-    </resultMap>
+        </resultMap>
 
        <select id="selectAllPurchases" parameterType="map" resultMap="adminPurchaseResultMap">
         SELECT * FROM (
@@ -205,7 +204,7 @@
         <result property="purchaseNum" column="PURCHASE_NUM"/>
         <result property="goodsNum" column="GOODS_NUM"/>
         <result property="purchaseDate" column="PURCHASE_DATE"/>
-        <association property="goodsDTO" javaType="lappick.domain.GoodsDTO">
+        <association property="goodsDTO" javaType="lappick.goods.dto.GoodsResponse">
             <result property="goodsName" column="GOODS_NAME"/>
         </association>
     </resultMap>

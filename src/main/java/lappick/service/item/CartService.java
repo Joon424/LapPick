@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lappick.domain.CartDTO;
 import lappick.domain.GoodsCartDTO;
 import lappick.mapper.CartMapper;
-import lappick.mapper.MemberMapper;
+import lappick.member.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
 
 @Service

@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import lappick.command.PageData;
-import lappick.domain.GoodsDTO;
 import lappick.domain.ReviewDTO;
+import lappick.goods.dto.GoodsResponse;
 import lappick.service.review.ReviewService;
 
 @Controller
@@ -36,7 +36,7 @@ public class EmployeeReviewController {
                                   Model model) {
         int size = 10;
         PageData<ReviewDTO> pageData = reviewService.getReviewPageForAdmin(searchWord, rating, goodsNum, page, size);
-        List<GoodsDTO> goodsFilterList = reviewService.getAllGoods(); // 상품 필터 목록
+        List<GoodsResponse> goodsFilterList = reviewService.getAllGoods(); // 상품 필터 목록
 
         model.addAttribute("pageData", pageData);
         model.addAttribute("reviewList", pageData.getItems());

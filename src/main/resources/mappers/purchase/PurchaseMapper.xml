@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lappick.purchase.mapper.PurchaseMapper">
+
+    <resultMap id="purchaseItemResultMap" type="lappick.purchase.dto.PurchaseItemResponse">
+        <id property="purchaseNum" column="PURCHASE_NUM"/>
+        <id property="goodsNum" column="GOODS_NUM"/>
+        <result property="purchaseQty" column="PURCHASE_QTY"/>
+        <result property="purchasePrice" column="PURCHASE_PRICE"/>
+        <result property="reviewWritten" column="REVIEW_WRITTEN" javaType="boolean"/>
+        <result property="purchaseDate" column="PURCHASE_DATE"/>
+        <association property="goods" javaType="lappick.goods.dto.GoodsResponse">
+            <id property="goodsNum" column="GOODS_NUM"/>
+            <result property="goodsName" column="GOODS_NAME"/>
+            <result property="goodsMainStoreImage" column="GOODS_MAIN_STORE_IMAGE"/>
+            <result property="goodsContents" column="GOODS_CONTENTS"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="purchaseResultMap" type="lappick.purchase.dto.PurchaseResponse">
+        <id property="purchaseNum" column="PURCHASE_NUM"/>
+        <result property="memberNum" column="MEMBER_NUM"/>
+        <result property="purchaseDate" column="PURCHASE_DATE"/>
+        <result property="purchaseTotal" column="PURCHASE_TOTAL"/>
+        <result property="receiverName" column="RECEIVER_NAME"/>
+        <result property="receiverPhone" column="RECEIVER_PHONE"/>
+        <result property="purchaseAddr" column="PURCHASE_ADDR"/>
+        <result property="purchaseMsg" column="PURCHASE_MSG"/>
+        <result property="purchaseStatus" column="PURCHASE_STATUS"/>
+        <result property="paymentMethod" column="PAYMENT_METHOD"/>
+        <result property="cardCompany" column="CARD_COMPANY"/>
+        <result property="cardNumber" column="CARD_NUMBER"/>
+        <result property="bankName" column="BANK_NAME"/>
+        <result property="depositorName" column="DEPOSITOR_NAME"/>
+        <association property="member" javaType="lappick.member.dto.MemberResponse">
+            <result property="memberId" column="MEMBER_ID"/>
+            <result property="memberName" column="MEMBER_NAME"/>
+        </association>
+        <association property="delivery" javaType="lappick.purchase.dto.DeliveryResponse">
+            <result property="deliveryCompany" column="DELIVERY_COMPANY"/>
+            <result property="trackingNumber" column="TRACKING_NUMBER"/>
+        </association>
+        <collection property="purchaseItems" resultMap="purchaseItemResultMap" />
+    </resultMap>
+
+    <insert id="insertPurchase" parameterType="lappick.purchase.dto.PurchaseResponse">
+        INSERT INTO PURCHASE (
+            PURCHASE_NUM, MEMBER_NUM, PURCHASE_DATE, PURCHASE_TOTAL,
+            RECEIVER_NAME, RECEIVER_PHONE, PURCHASE_ADDR, PURCHASE_MSG, PURCHASE_STATUS,
+            PAYMENT_METHOD, CARD_COMPANY, CARD_NUMBER, BANK_NAME, DEPOSITOR_NAME
+        ) VALUES (
+            #{purchaseNum}, #{memberNum}, SYSTIMESTAMP, #{purchaseTotal},
+            #{receiverName}, #{receiverPhone}, #{purchaseAddr}, #{purchaseMsg}, '결제완료',
+            #{paymentMethod}, #{cardCompany, jdbcType=VARCHAR}, #{cardNumber, jdbcType=VARCHAR},
+            #{bankName, jdbcType=VARCHAR}, #{depositorName, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <insert id="insertPurchaseItem" parameterType="lappick.purchase.dto.PurchaseItemResponse">
+        INSERT INTO PURCHASE_LIST (PURCHASE_LIST_NUM, PURCHASE_NUM, GOODS_NUM, PURCHASE_QTY, PURCHASE_PRICE) 
+        VALUES (PURCHASE_LIST_SEQ.NEXTVAL, #{purchaseNum}, #{goodsNum}, #{purchaseQty}, #{purchasePrice})
+    </insert>
+    
+    <select id="selectMyPurchases" parameterType="map" resultMap="purchaseResultMap">
+        SELECT
+            P.PURCHASE_NUM, P.PURCHASE_DATE, P.PURCHASE_TOTAL, P.PURCHASE_STATUS,
+            PL.PURCHASE_NUM AS PL_PURCHASE_NUM, PL.GOODS_NUM AS PL_GOODS_NUM, PL.PURCHASE_QTY, PL.PURCHASE_PRICE,
+            G.GOODS_NUM, G.GOODS_NAME, G.GOODS_MAIN_STORE_IMAGE, G.GOODS_CONTENTS,
+            D.DELIVERY_COMPANY, D.TRACKING_NUMBER,
+            CASE WHEN R.REVIEW_NUM IS NOT NULL THEN 1 ELSE 0 END AS REVIEW_WRITTEN
+        FROM PURCHASE P
+        LEFT JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+        LEFT JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+        LEFT JOIN DELIVERY D ON P.PURCHASE_NUM = D.PURCHASE_NUM
+        LEFT JOIN REVIEWS R ON P.PURCHASE_NUM = R.PURCHASE_NUM AND PL.GOODS_NUM = R.GOODS_NUM
+        WHERE P.PURCHASE_NUM IN (
+            SELECT PURCHASE_NUM FROM (
+                SELECT ROWNUM RN, PURCHASE_NUM FROM (
+                    SELECT P.PURCHASE_NUM, P.PURCHASE_DATE
+                    FROM PURCHASE P
+                    JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+                    JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+                    WHERE P.MEMBER_NUM = #{memberNum}
+                    <if test="searchWord != null and searchWord != ''">
+                        AND UPPER(G.GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%'
+                        </if>
+                    GROUP BY P.PURCHASE_NUM, P.PURCHASE_DATE
+                    ORDER BY P.PURCHASE_DATE DESC
+                )
+            ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+        )
+        ORDER BY P.PURCHASE_DATE DESC
+    </select>
+    
+    <select id="countMyPurchases" parameterType="map" resultType="int">
+        SELECT COUNT(DISTINCT P.PURCHASE_NUM)
+        FROM PURCHASE P
+        JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+        JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+        WHERE P.MEMBER_NUM = #{memberNum}
+        <if test="searchWord != null and searchWord != ''">
+            AND UPPER(G.GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%'
+            </if>
+    </select>
+
+    <select id="selectAllPurchases" parameterType="map" resultMap="purchaseResultMap">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.*
+            FROM (
+                SELECT P.PURCHASE_NUM, P.PURCHASE_DATE, P.PURCHASE_TOTAL, P.PURCHASE_STATUS, P.MEMBER_NUM, M.MEMBER_ID, M.MEMBER_NAME
+                FROM PURCHASE P
+                JOIN MEMBERS M ON P.MEMBER_NUM = M.MEMBER_NUM
+                <where>
+                    <if test="status != null and status != ''"> AND P.PURCHASE_STATUS = #{status} </if>
+                    <if test="searchWord != null and searchWord != ''">
+                        AND (UPPER(P.PURCHASE_NUM) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(M.MEMBER_ID) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(M.MEMBER_NAME) LIKE '%' || UPPER(#{searchWord}) || '%')
+                        </if>
+                </where>
+                ORDER BY P.PURCHASE_DATE DESC
+            ) T
+        ) WHERE RN BETWEEN #{startRow} AND #{endRow}
+    </select>
+
+    <select id="countAllPurchases" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM PURCHASE P JOIN MEMBERS M ON P.MEMBER_NUM = M.MEMBER_NUM
+        <where>
+            <if test="status != null and status != ''"> AND P.PURCHASE_STATUS = #{status} </if>
+            <if test="searchWord != null and searchWord != ''">
+                AND (UPPER(P.PURCHASE_NUM) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(M.MEMBER_ID) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(M.MEMBER_NAME) LIKE '%' || UPPER(#{searchWord}) || '%')
+                </if>
+        </where>
+    </select>
+
+    <select id="selectPurchaseDetail" parameterType="string" resultMap="purchaseResultMap">
+        SELECT
+            P.PURCHASE_NUM, P.MEMBER_NUM, P.PURCHASE_DATE, P.PURCHASE_TOTAL, P.PURCHASE_STATUS,
+            P.RECEIVER_NAME, P.RECEIVER_PHONE, P.PURCHASE_ADDR, P.PURCHASE_MSG,
+            P.PAYMENT_METHOD, P.CARD_COMPANY, P.CARD_NUMBER, P.BANK_NAME, P.DEPOSITOR_NAME,
+            PL.PURCHASE_NUM AS PL_PURCHASE_NUM, PL.GOODS_NUM AS PL_GOODS_NUM, PL.PURCHASE_QTY, PL.PURCHASE_PRICE,
+            G.GOODS_NUM, G.GOODS_NAME, G.GOODS_MAIN_STORE_IMAGE, G.GOODS_CONTENTS,
+            D.DELIVERY_COMPANY, D.TRACKING_NUMBER,
+            M.MEMBER_ID, M.MEMBER_NAME
+        FROM PURCHASE P
+        LEFT JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+        LEFT JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+        LEFT JOIN MEMBERS M ON P.MEMBER_NUM = M.MEMBER_NUM
+        LEFT JOIN DELIVERY D ON P.PURCHASE_NUM = D.PURCHASE_NUM
+        WHERE P.PURCHASE_NUM = #{purchaseNum}
+    </select>
+    
+    <update id="updatePurchaseStatus">
+        UPDATE PURCHASE SET PURCHASE_STATUS = #{status} WHERE PURCHASE_NUM = #{purchaseNum}
+    </update>
+    
+    <insert id="insertDelivery" parameterType="lappick.purchase.dto.DeliveryRequest">
+        INSERT INTO DELIVERY (PURCHASE_NUM, DELIVERY_COMPANY, TRACKING_NUMBER, DELIVERY_START_DATE) 
+        VALUES (#{purchaseNum}, #{deliveryCompany}, #{deliveryNum}, SYSTIMESTAMP)
+    </insert>
+
+    <select id="selectPurchasedItemsByMemberNum" parameterType="string" resultMap="purchaseItemResultMap">
+        SELECT
+            PL.PURCHASE_NUM, PL.GOODS_NUM, P.PURCHASE_DATE, G.GOODS_NAME,
+            CASE WHEN R.REVIEW_NUM IS NOT NULL THEN 1 ELSE 0 END AS REVIEW_WRITTEN
+        FROM PURCHASE_LIST PL
+        JOIN PURCHASE P ON PL.PURCHASE_NUM = P.PURCHASE_NUM
+        JOIN GOODS G ON PL.GOODS_NUM = G.GOODS_NUM
+        LEFT JOIN REVIEWS R ON P.PURCHASE_NUM = R.PURCHASE_NUM AND PL.GOODS_NUM = R.GOODS_NUM
+        WHERE P.MEMBER_NUM = #{memberNum}
+        ORDER BY P.PURCHASE_DATE DESC, G.GOODS_NAME ASC
+    </select>
+
+</mapper>

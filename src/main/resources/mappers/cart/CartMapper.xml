@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lappick.cart.mapper.CartMapper">
+
+    <resultMap type="lappick.cart.dto.CartItemResponse" id="cartItemResultMap">
+        <association property="cart" javaType="lappick.cart.domain.Cart">
+            <id     column="cart_num"   property="cartNum"/>
+            <result column="member_num" property="memberNum"/>
+            <result column="goods_num"  property="goodsNum"/>
+            <result column="cart_qty"   property="cartQty"/>
+            <result column="cart_date"  property="cartDate"/>
+        </association>
+        <association property="goods" javaType="lappick.goods.dto.GoodsResponse">
+            <id     column="goods_num"          property="goodsNum"/>
+            <result column="goods_name"         property="goodsName" />
+            <result column="goods_price"        property="goodsPrice" />
+            <result column="goods_contents"     property="goodsContents" />
+            <result column="goods_main_store_image" property="goodsMainStoreImage" />		
+        </association>
+    </resultMap>
+
+    <select id="cartSelectList" resultMap="cartItemResultMap" >
+        SELECT 
+            c.cart_num, c.member_num, c.goods_num, c.cart_qty, c.cart_date,
+            g.goods_name, g.goods_price, g.goods_contents, g.goods_main_store_image
+        FROM cart c
+        JOIN goods g ON c.goods_num = g.goods_num
+        <trim prefix="where" prefixOverrides="AND | OR">
+            c.member_num = #{memberNum}
+            <if test="nums != null">
+                AND c.goods_num IN
+                <foreach collection="nums" item="goodsNum" close=")" open="(" separator=",">
+                    #{goodsNum}
+                </foreach>
+            </if>
+            <if test="searchWord != null and searchWord != ''">
+                AND UPPER(g.goods_name) LIKE '%' || UPPER(#{searchWord}) || '%'
+            </if>
+        </trim>
+        ORDER BY c.cart_date DESC
+    </select>
+    
+    <update id="cartMerge" parameterType="lappick.cart.domain.Cart">
+    merge into cart c	
+    using (select goods_num from goods where goods_num = #{goodsNum}) g	
+    on (c.goods_num = g.goods_num and MEMBER_NUM = #{memberNum})	
+    WHEN MATCHED THEN	
+        update set CART_QTY = CART_QTY + #{cartQty}	
+    WHEN NOT MATCHED THEN	
+        insert (cart_NUM
+                , MEMBER_NUM,GOODS_NUM,CART_DATE, CART_QTY)
+        values ((select COALESCE(max(cart_num ),0) + 1  from cart)
+                ,#{memberNum}, #{goodsNum}, sysdate, #{cartQty})
+    </update>
+    
+    <update id="cartQtyDown" >
+        update cart
+        set cart_qty = cart_qty - 1
+        where goods_num = #{goodsNum} 
+        and member_num = #{memberNum}
+    </update>
+    
+    <delete id="goodsNumsDelete" parameterType="hashmap">
+    delete from cart
+    where member_num = #{memberNum}
+    and goods_num in 
+        <foreach collection="goodsNums" item="goodsNum" close=")" open="(" separator=",">
+            #{goodsNum}
+        </foreach>
+    </delete>
+    
+    <delete id="cartAllDelete" parameterType="string">
+        DELETE FROM cart
+        WHERE member_num = #{memberNum}
+    </delete>
+    
+    <select id="countCartItems" parameterType="string" resultType="int">
+        SELECT COUNT(*) 
+        FROM cart 
+        WHERE member_num = #{memberNum}
+    </select>
+</mapper>

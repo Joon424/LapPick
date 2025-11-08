@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+    <title>내가 작성한 리뷰</title>
+    <th:block layout:fragment="css">
+        <style>
+            .review-list-item {
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                padding: 20px;
+            }
+            .review-item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #f2f2f2;
+            }
+            .review-product-info { display: flex; align-items: center; gap: 15px; }
+            .review-product-info img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+            .review-product-info .name { font-weight: 600; }
+            .review-meta { font-size: 14px; color: #6c757d; }
+            .review-meta .modified-mark { 
+                font-size: 12px; 
+                color: #888; 
+                margin-left: 3px; 
+                vertical-align: 1px;
+            }
+
+            .review-item-body { padding-top: 20px; }
+            .star-rating { color: #f59e0b; }
+            .star-rating .empty { color: #e4e5e9; }
+            .review-content { margin: 10px 0; line-height: 1.7; white-space: pre-wrap; }
+            .review-images { display: flex; gap: 10px; margin-top: 10px; }
+            .review-images img { 
+                width: 80px; 
+                height: 80px; 
+                object-fit: cover; 
+                border-radius: 6px; 
+                cursor: pointer;
+                transition: opacity 0.2s;
+            }
+            .review-images img:hover { opacity: 0.8; }
+            
+            .review-actions { text-align: right; margin-top: 15px; }
+            .review-actions .manage-btn { 
+                font-size: 14px; 
+                padding: 5px 10px; 
+            }
+            
+            .empty-list { text-align: center; padding: 80px 0; color: #777; }
+            
+            .pagination-container .page-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px; 
+                height: 32px;
+                padding: 0; 
+                font-size: 13px;
+                font-weight: 500;
+                text-align: center;
+                text-decoration: none;
+                color: #555;
+                background-color: #fff;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                cursor: pointer;
+                box-sizing: border-box;
+                transition: background-color 0.2s, border-color 0.2s;
+            }
+            .page-btn:not(.active):not(.disabled):hover {
+                background-color: #f0f0f0;
+                border-color: #bbb;
+            }
+            .pagination-container .page-btn.active {
+                background-color: #333;
+                color: #fff;
+                border-color: #333;
+                font-weight: bold;
+                cursor: default;
+            }
+            .pagination-container .page-btn.disabled {
+                color: #bbb;
+                border-color: #e0e0e0;
+                cursor: default;
+                background-color: #f9f9f9;
+                pointer-events: none;
+            }
+            .pagination-container .page-btn.disabled:hover {
+                 background-color: #f9f9f9;
+                 border-color: #e0e0e0;
+            }
+            
+            #imageLightbox {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background-color: rgba(0,0,0,0.8);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                cursor: pointer;
+            }
+            #imageLightbox .lightbox-content {
+                max-width: 90%;
+                max-height: 90%;
+                object-fit: contain;
+            }
+            #imageLightbox .lightbox-close {
+                position: absolute;
+                top: 20px;
+                right: 30px;
+                font-size: 3rem;
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="basic-N23">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="textset" style="margin-bottom: 40px;">
+                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+                        <h2 class="textset-tit">내가 작성한 리뷰</h2>
+                        
+                        <div th:if="${message}" th:text="${message}" class="alert" style="background:#e0f7fa;color:#00796b;border:1px solid #b2ebf2;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+                        <div th:if="${error}" th:text="${error}" class="alert" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+                        <div th:if="${deleteMessage}" th:text="${deleteMessage}" class="alert" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+                        <p class="textset-desc">회원님께서 작성하신 소중한 리뷰 목록입니다.</p>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(pageData.items)}" class="empty-list">
+                        <p>작성한 리뷰가 없습니다.</p>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(pageData.items)}">
+                        <div th:each="review : ${pageData.items}" class="review-list-item">
+                            <div class="review-item-header">
+                                <div class="review-product-info">
+                                    <div>
+                                        <p class="name" th:text="${review.goodsName}"></p>
+                                    </div>
+                                </div>
+                                <div class="review-meta">
+                                    <span th:text="${#dates.format(review.reviewDate, 'yyyy.MM.dd')}"></span>
+                                    <span th:if="${review.reviewModDate != null}" class="modified-mark">(수정됨)</span>
+                                </div>
+                            </div>
+                            <div class="review-item-body">
+                                <div class="star-rating">
+                                    <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <span th:if="${i <= review.reviewRating}">★</span>
+                                        <span th:if="${i > review.reviewRating}" class="empty">★</span>
+                                    </th:block>
+                                </div>
+                                <p class="review-content" th:text="${review.reviewContent}"></p>
+                                <div class="review-images" th:if="${review.reviewImage != null and !review.reviewImage.isEmpty()}">
+                                    <img th:each="img : ${#strings.listSplit(review.reviewImage, '/')}"
+                                         th:if="${!img.isEmpty()}"
+                                         th:src="@{/upload/{imgName}(imgName=${img})}"
+                                         alt="리뷰 이미지"
+                                         class="review-thumbnail" /> </div>
+                                <div class="review-actions">
+    <a th:href="@{/review/edit/{num}(num=${review.reviewNum})}" class="btnset btnset-line btnset-sm manage-btn">수정</a>
+    <form th:action="@{/review/delete/{num}(num=${review.reviewNum})}" method="post" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <button type="submit" class="btnset btnset-line btnset-sm manage-btn">삭제</button>
+    </form>
+</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pagination-container" style="display:flex; gap:6px; justify-content:center; align-items:center; margin-top:40px;"
+                         th:if="${pageData != null and pageData.total > 0}">
+                        
+                        <a class="page-btn"
+                           th:href="${pageData.page > 1} ? @{/member/my-reviews(page=1)} : null"
+                           th:classappend="${pageData.page <= 1} ? 'disabled' : ''">&lt;&lt;</a>
+                        
+                        <a class="page-btn"
+                           th:href="${pageData.page > 1} ? @{/member/my-reviews(page=${pageData.page - 1})} : null"
+                           th:classappend="${pageData.page <= 1} ? 'disabled' : ''">&lt;</a>
+                        
+                        <a class="page-btn" th:each="p : ${#numbers.sequence(pageData.startPage, pageData.endPage)}" th:text="${p}"
+                           th:classappend="${pageData.page == p} ? 'active' : ''"
+                           th:href="@{/member/my-reviews(page=${p})}"></a>
+                        
+                        <a class="page-btn"
+                           th:href="${pageData.page < pageData.totalPages} ? @{/member/my-reviews(page=${pageData.page + 1})} : null"
+                           th:classappend="${pageData.page >= pageData.totalPages} ? 'disabled' : ''">&gt;</a>
+                        
+                        <a class="page-btn"
+                           th:href="${pageData.page < pageData.totalPages} ? @{/member/my-reviews(page=${pageData.totalPages})} : null"
+                           th:classappend="${pageData.page >= pageData.totalPages} ? 'disabled' : ''">&gt;&gt;</a>
+                    </div>
+                    </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="imageLightbox">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightboxImage">
+    </div>
+    </div>
+<th:block layout:fragment="script">
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const lightbox = document.getElementById('imageLightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxClose = document.querySelector('.lightbox-close');
+        
+        document.body.addEventListener('click', function(event) {
+            if (event.target.classList.contains('review-thumbnail')) {
+                lightbox.style.display = 'flex';
+                lightboxImage.src = event.target.src;
+            }
+        });
+
+        function closeLightbox() { 
+            lightbox.style.display = 'none'; 
+        }
+        
+        lightboxClose.addEventListener('click', closeLightbox);
+        
+        // 라이트박스 배경 클릭 시 닫기 (클릭 대상이 라이트박스 자신일 때만)
+        lightbox.addEventListener('click', function(event) { 
+            if (event.target === lightbox) { 
+                closeLightbox(); 
+            } 
+        });
+    });
+   </script>
+</th:block>
+</body>
+</html>

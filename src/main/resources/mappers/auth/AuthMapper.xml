@@ -67,4 +67,31 @@
       fetch first 1 rows only
     </select>
 
+    <select id="findIdByNameAndEmail" resultType="string">
+        SELECT MEMBER_ID
+        FROM MEMBERS
+        WHERE MEMBER_NAME = #{memberName} AND MEMBER_EMAIL = #{memberEmail}
+    </select>
+
+    <select id="findByIdAndEmail" resultType="lappick.member.dto.MemberResponse">
+        SELECT 
+            MEMBER_NUM, MEMBER_NAME, MEMBER_ID, MEMBER_PW, MEMBER_ADDR,
+            MEMBER_ADDR_DETAIL, MEMBER_POST, MEMBER_REGIST, GENDER,
+            MEMBER_PHONE1, MEMBER_PHONE2, MEMBER_EMAIL, MEMBER_BIRTH,
+            MEMBER_POINT, MEMBER_EMAIL_CONF
+        FROM MEMBERS
+        WHERE MEMBER_ID = #{memberId} AND MEMBER_EMAIL = #{memberEmail}
+    </select>
+    
+    <update id="memberPwUpdate" parameterType="lappick.member.dto.MemberResponse">
+        UPDATE members
+        SET member_pw = #{memberPw}
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <select id="selectPwById" parameterType="string" resultType="string">
+        SELECT member_pw
+        FROM members
+        WHERE member_id = #{memberId}
+    </select>
 </mapper>

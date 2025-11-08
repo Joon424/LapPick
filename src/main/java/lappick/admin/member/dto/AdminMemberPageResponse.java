@@ -7,7 +7,7 @@ import lombok.*;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 @Builder
-public class AdminMemberPageResponse { // MemberListPage -> AdminMemberPageResponse
+public class AdminMemberPageResponse {
     private List<MemberResponse> items;
     private int page;
     private int size;
@@ -16,7 +16,11 @@ public class AdminMemberPageResponse { // MemberListPage -> AdminMemberPageRespo
     private String searchWord;
     private long startRow;
     private long endRow;
-
-    public boolean isHasPrev() { return page > 1; }
-    public boolean isHasNext() { return page < totalPages; }
+    
+    private int startPage;
+    private int endPage;
+    
+    
+    public boolean isHasPrev() { return startPage > 1; }
+    public boolean isHasNext() { return endPage < totalPages; }
 }

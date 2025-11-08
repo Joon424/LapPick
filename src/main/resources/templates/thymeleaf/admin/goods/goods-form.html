@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+  <title>직원_상품등록</title>
+  <th:block layout:fragment="css">
+    <style>
+      table { table-layout: fixed; border-collapse: collapse; width: 800px; }
+      th, td { border:1px solid #e5e7eb; padding:12px 15px; vertical-align: top; }
+      th { width:160px; background:#fafafa; text-align:left; font-weight: 600; }
+      .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; }
+      input[type="text"], input[type="number"], input[type="file"], select, textarea {
+        width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px; font-size:14px;
+      }
+      textarea { resize: vertical; min-height: 120px; }
+      .hint { color:#777; font-size:12px; margin-top:4px; }
+      .error-message { color: red; font-size: 12px; margin-top: 4px; }
+    </style>
+  </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+  <main class="th-layout-main">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+
+          <div class="textset">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">상품 등록</h2>
+            <p class="textset-desc">새로운 상품의 상세 정보를 입력하는 페이지입니다.</p>
+          </div>
+
+          <form id="goodsWriteForm" th:action="@{/admin/goods/add}" th:object="${goodsCommand}" method="post" enctype="multipart/form-data" autocomplete="off">
+            <table>
+           <tbody>
+              <tr>
+                <th>상품번호</th>
+                <td><input type="text" th:field="*{goodsNum}" readonly></td>
+              </tr>
+              <tr>
+                <th>상품명</th>
+                <td>
+                  <input type="text" th:field="*{goodsName}" placeholder="상품명" required>
+                  <div th:if="${#fields.hasErrors('goodsName')}" th:errors="*{goodsName}" class="error-message"></div>
+                </td>
+              </tr>
+              <tr>
+                <th>상품가격</th>
+                <td>
+                  <input type="number" th:field="*{goodsPrice}" placeholder="숫자만 입력 (예: 1500000)" required>
+                  <div th:if="${#fields.hasErrors('goodsPrice')}" th:errors="*{goodsPrice}" class="error-message"></div>
+                </td>
+              </tr>
+              <tr>
+                <th>최초 입고 수량</th>
+                <td>
+                  <input type="number" th:field="*{initialStock}" placeholder="최초 입고 수량을 숫자로 입력 (없으면 0 또는 비워두세요)">
+                </td>
+              </tr>
+              <tr>
+                <th>브랜드</th>
+                <td>
+                  <select th:field="*{goodsBrand}">
+                    <option value="">-- 브랜드 선택 --</option>
+                    <option value="SAMSUNG">삼성전자</option>
+                    <option value="LG">LG전자</option>
+                    <option value="APPLE">Apple</option>
+                    <option value="MSI">MSI</option>
+                    <option value="ASUS">ASUS</option>
+                    <option value="LENOVO">레노버</option>
+                    <option value="MICROSOFT">마이크로소프트</option>
+                    <option value="HP">HP</option>
+                    <option value="HANSUNG">한성컴퓨터</option>
+                  </select>
+                  <div th:if="${#fields.hasErrors('goodsBrand')}" th:errors="*{goodsBrand}" class="error-message"></div>
+                </td>
+              </tr>
+              <tr>
+                <th>용도</th>
+                <td>
+                  <select th:field="*{goodsPurpose}">
+                    <option value="">-- 용도 선택 --</option>
+                    <option value="OFFICE">사무/인강용</option>
+                    <option value="GAMING">게이밍</option>
+                    <option value="VIDEO_EDIT">영상/디자인 작업용</option>
+                  </select>
+                  <div th:if="${#fields.hasErrors('goodsPurpose')}" th:errors="*{goodsPurpose}" class="error-message"></div>
+                </td>
+              </tr>
+              <tr>
+                <th>화면 크기 (인치)</th>
+                <td>
+                  <input type="text" th:field="*{goodsScreenSize}" 
+                         placeholder="예: 15.6인치 -> 156 입력" 
+                         inputmode="numeric" pattern="[0-9]*">
+                  <div class="hint">소수점을 제외한 숫자만 입력하세요. (예: 15.6 -> 156 / 14.0 -> 140)</div>
+                  <div th:if="${#fields.hasErrors('goodsScreenSize')}" th:errors="*{goodsScreenSize}" class="error-message"></div>
+                </td>
+              </tr>
+             <tr>
+                <th>무게 (kg)</th>
+                <td>
+                  <input type="text" th:field="*{goodsWeight}" 
+                         placeholder="예: 1.25kg -> 125 입력" 
+                         inputmode="numeric" pattern="[0-9]*">
+                  <div class="hint">소수점을 제외한 숫자(g)로 입력하세요. (예: 1.25 -> 125 / 0.99 -> 99)</div>
+                  <div th:if="${#fields.hasErrors('goodsWeight')}" th:errors="*{goodsWeight}" class="error-message"></div>
+                </td>
+              </tr>
+              <tr>
+                <th>상품설명</th>
+                <td>
+                  <textarea th:field="*{goodsContents}" placeholder="상품 상세 설명 (최상단에 표시됩니다)"></textarea>
+                  <div th:if="${#fields.hasErrors('goodsContents')}" th:errors="*{goodsContents}" class="error-message"></div>
+                </td>
+              </tr>
+              <tr>
+                <th>키워드</th>
+                <td>
+                  <div style="display:flex; gap:10px;">
+                    <input type="text" th:field="*{goodsKeyword1}" placeholder="#키워드1 ('#' 없이 입력)">
+                    <input type="text" th:field="*{goodsKeyword2}" placeholder="#키워드2 ('#' 없이 입력)">
+                    <input type="text" th:field="*{goodsKeyword3}" placeholder="#키워드3 ('#' 없이 입력)">
+                  </div>
+                  <div class="hint">'#' 없이 내용만 입력해도 자동으로 #이 추가됩니다.</div>
+                </td>
+              </tr>
+              <tr>
+                <th>배송 정보</th>
+                <td>
+                  <input type="text" th:field="*{goodsShippingInfo}" placeholder="예: 999,000원 이상 무료배송 (미입력 시 기본값 자동 적용)">
+                </td>
+              </tr>
+              <tr>
+                <th>판매자 정보</th>
+                <td>
+                  <input type="text" th:field="*{goodsSellerInfo}" placeholder="예: LapPick (필수 입력)" required>
+                  <div th:if="${#fields.hasErrors('goodsSellerInfo')}" th:errors="*{goodsSellerInfo}" class="error-message"></div>
+                </td>
+              </tr>
+              <tr>
+                <th>대표이미지<br>(필수, 1개)</th>
+                <td>
+                  <input type="file" name="goodsMainImage" id="goodsMainImage" required>
+                  <div class="hint">목록 및 썸네일에 표시될 대표 이미지 1장을 등록합니다.</div>
+                </td>
+              </tr>
+              <tr>
+                <th>상세이미지(썸네일) (최대 10개)</th>
+                <td>
+                  <input type="file" name="goodsDetailImage" id="goodsDetailImage" multiple="multiple">
+                  <div class="hint">상세 페이지 상단 썸네일에 표시될 이미지를 여러 장 등록할 수 있습니다.</div>
+                </td>
+              </tr>
+              <tr>
+                <th>상세 설명 이미지 (최대 5개)</th>
+                <td>
+                  <input type="file" name="goodsDetail" id="goodsDetail" multiple="multiple">
+                  <div class="hint">페이지 하단에 세로로 길게 표시될 상세 설명 이미지를 등록합니다.</div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </form>
+
+          <div class="btnbar">
+           <a class="btnset btnset-line btnset-round" th:href="@{/admin/goods}">목록으로</a>
+            <button form="goodsWriteForm" type="submit" class="btnset btnset-line btnset-round">등록완료</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<th:block layout:fragment="script">
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const detailImageInput = document.getElementById('goodsDetailImage');
+      const detailDescInput = document.getElementById('goodsDetail');
+      const MAX_DETAIL_IMAGES = 10;
+      const MAX_DETAIL_DESC = 5;
+
+      detailImageInput.addEventListener('change', function(event) {
+        if (event.target.files.length > MAX_DETAIL_IMAGES) {
+          alert('상세이미지(썸네일)는 최대 ' + MAX_DETAIL_IMAGES + '개까지만 등록할 수 있습니다.');
+          event.target.value = ''; // 파일 선택 초기화
+        }
+      });
+      
+      detailDescInput.addEventListener('change', function(event) {
+        if (event.target.files.length > MAX_DETAIL_DESC) {
+          alert('상세 설명 이미지는 최대 ' + MAX_DETAIL_DESC + '개까지만 등록할 수 있습니다.');
+          event.target.value = ''; // 파일 선택 초기화
+        }
+      });
+    });
+  </script>
+</th:block>
+</body>
+</html>

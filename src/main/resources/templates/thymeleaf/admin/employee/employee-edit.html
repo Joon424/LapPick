@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+
+<head>
+  <title>직원_직원수정</title>
+ <th:block layout:fragment="css">
+   <style>
+      .edit-table { table-layout: fixed; border-collapse: collapse; width:600px; margin: 0; }
+      .edit-table th, .edit-table td { border:1px solid #e5e7eb; padding:10px; vertical-align:top; }
+      .edit-table th { width:160px; background:#fafafa; text-align:left; }
+      .btn-bar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; width: 600px; margin: 20px 0 0 0; }
+      .edit-table input[type="text"], .edit-table input[type="date"], .edit-table input[type="email"], .edit-table input[type="password"] {
+        width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px;
+      }
+      
+      .flex-row { 
+        display: flex; 
+        gap: 8px; 
+        align-items: center; 
+      }
+    </style>
+  </th:block>
+</head>
+
+<div layout:fragment="content">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="textset" style="margin-bottom: 30px;">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit" th:text="${#authentication.name == employeeCommand.empId} ? '내 정보 수정' : '직원 정보 수정'">직원 정보 수정</h2>
+            <p class="textset-desc">직원 정보를 수정하는 페이지입니다.</p>
+          </div>
+
+         <form id="employeeEditForm"
+                th:action="${isAdminContext} ? @{/admin/employees/edit} : @{/employee/my-page/update}"
+                th:object="${employeeCommand}" method="post">
+            <input type="hidden" th:field="*{empNum}">
+            <input type="hidden" th:field="*{empId}">
+
+            <table class="edit-table">
+             <tbody>
+                <tr>
+                  <th>직원번호</th>
+                  <td th:text="*{empNum}">emp_xxxxxx</td>
+                </tr>
+                <tr>
+                  <th>아이디</th>
+                  <td th:text="*{empId}">userid</td>
+                </tr>
+                <tr>
+                  <th>이름</th>
+                  <td><input type="text" th:field="*{empName}" placeholder="이름 (예: 홍길동)" required></td>
+                </tr>
+               <tr>
+                  <th>주민번호</th>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                      <input type="text" id="jumin1" maxlength="6" placeholder="앞 6자리" style="width: 180px;" required>
+                      <span>-</span>
+                      <input type="password" id="jumin2" maxlength="7" placeholder="뒤 7자리" style="flex-grow: 1;" required>
+                    </div>
+                    <input type="hidden" th:field="*{empJumin}" />
+                  </td>
+                </tr>
+                <tr>
+                  <th>연락처</th>
+                  <td>
+                    <input type="text" th:field="*{empPhone}" 
+                           placeholder="'-' 없이 숫자 11자리 입력 (010...)"
+                           maxlength="11" 
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                           required>
+                  </td>
+                </tr>
+                <tr>
+                  <th>이메일</th>
+                  <td><input type="email" th:field="*{empEmail}" placeholder="user@example.com" required></td>
+                </tr>
+                <tr>
+                  <th>주소</th>
+                  <td>
+                    <div class="flex-row">
+                      <input type="text" th:field="*{empPost}" id="sample4_postcode" placeholder="우편번호" style="width: 120px; flex-grow: 0;" readonly>
+                      <button type="button" onclick="execDaumPostcode();" class="btnset btnset-line" style="height: 36px; padding: 0 12px; font-size: 13px; flex-shrink: 0;">우편번호 찾기</button>
+                    </div>
+                    <input type="text" th:field="*{empAddr}" id="sample4_roadAddress" placeholder="도로명주소" readonly style="margin-top: 8px;">
+                    <input type="text" th:field="*{empAddrDetail}" placeholder="상세주소 입력" style="margin-top: 8px;">
+                  </td>
+                </tr>
+              <tr>
+                  <th>입사일</th>
+                  <td th:if="${isAdminContext}">
+                    <input type="date" th:field="*{empHireDate}">
+                    <div th:if="${#fields.hasErrors('empHireDate')}" th:errors="*{empHireDate}" class="hint" style="color:red; font-size:12px; margin-top:4px;"></div>
+                  </td>
+                  <td th:unless="${isAdminContext}" th:text="${#dates.format(employeeCommand.empHireDate, 'yyyy-MM-dd')}"></td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+
+          <div class="btn-bar">
+            <a class="btnset btnset-line btnset-round" 
+               th:href="${isAdminContext} ? @{/admin/employees} : @{/employee/my-page}">
+               <span th:text="${isAdminContext} ? '목록으로' : '취소'"></span>
+            </a>
+            <button form="employeeEditForm" type="submit" class="btnset btnset-line btnset-round">수정완료</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+</div>
+<th:block layout:fragment="script">
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  $(function() {
+    // 페이지 로딩 시: DB에 저장된 주민번호(xxx-xxx)를 폼 필드(jumin1, jumin2)에 분리하여 표시합니다.
+    const juminValue = /*[[${employeeCommand.empJumin}]]*/ null;
+    if (juminValue && juminValue.includes('-')) {
+      const parts = juminValue.split('-');
+      $('#jumin1').val(parts[0]);
+      $('#jumin2').val(parts[1]);
+    }
+
+    // 폼 제출 시: 분리된 주민번호(jumin1, jumin2)를 합쳐서 숨겨진 empJumin 필드에 저장합니다.
+    $('#employeeEditForm').on('submit', function() {
+      const jumin1 = $('#jumin1').val();
+      const jumin2 = $('#jumin2').val();
+      $('input[name="empJumin"]').val(jumin1 + '-' + jumin2);
+    });
+  });
+  
+  function execDaumPostcode() {
+    new daum.Postcode({
+      oncomplete: function(data) {
+        document.getElementById('sample4_roadAddress').value = data.roadAddress;
+        document.getElementById('sample4_postcode').value = data.zonecode;
+      }
+    }).open();
+  }
+  /*]]>*/
+</script>
+</th:block>
+</html>

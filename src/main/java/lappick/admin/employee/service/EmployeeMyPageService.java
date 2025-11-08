@@ -4,7 +4,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lappick.admin.employee.dto.EmployeeResponse;
-import lappick.admin.employee.dto.EmployeeUpdateRequest;
 import lappick.admin.employee.mapper.EmployeeMapper;
 import lombok.RequiredArgsConstructor;
 
@@ -30,19 +29,23 @@ public class EmployeeMyPageService {
         employeeMapper.employeePwUpdate(encodedNewPw, empId);
     }
     
-    public void updateMyInfo(EmployeeUpdateRequest command, String empId) {
-        // 수정 요청을 보낸 사용자가 본인인지 확인 (empId는 컨트롤러에서 Principal로 가져온 값이므로 신뢰 가능)
-        command.setEmpId(empId);
+    public void updateMyInfo(EmployeeResponse updatedInfo, String empId) {
+        // 1. DB에서 기존의 완전한 정보를 가져옵니다.
+        EmployeeResponse existingInfo = employeeMapper.selectByEmpId(empId);
 
-        // EmployeeUpdateRequest를 EmployeeResponse(DTO)로 변환하여 업데이트
-        EmployeeResponse dto = new EmployeeResponse();
-        dto.setEmpNum(command.getEmpNum());
-        dto.setEmpAddr(command.getEmpAddr());
-        dto.setEmpAddrDetail(command.getEmpAddrDetail());
-        dto.setEmpEmail(command.getEmpEmail());
-        dto.setEmpPhone(command.getEmpPhone());
-        dto.setEmpPost(command.getEmpPost());
+        // 2. 폼에서 넘어온 수정된 값들을 기존 정보(existingInfo)에 덮어씁니다.
+        existingInfo.setEmpName(updatedInfo.getEmpName());
+        existingInfo.setEmpJumin(updatedInfo.getEmpJumin());
+        existingInfo.setEmpPhone(updatedInfo.getEmpPhone());
+        existingInfo.setEmpEmail(updatedInfo.getEmpEmail());
+        existingInfo.setEmpAddr(updatedInfo.getEmpAddr());
+        existingInfo.setEmpAddrDetail(updatedInfo.getEmpAddrDetail());
+        existingInfo.setEmpPost(updatedInfo.getEmpPost());
+        
+        // 입사일(empHireDate)은 직원이 직접 수정할 수 없으므로,
+        // 폼에서 넘어온 값으로 덮어쓰지 않고 기존 DB 값을 그대로 유지합니다.
 
-        employeeMapper.employeeUpdate(dto);
+        // 3. 완전한 데이터가 담긴 DTO로 업데이트를 수행합니다.
+        employeeMapper.employeeUpdate(existingInfo);
     }
 }

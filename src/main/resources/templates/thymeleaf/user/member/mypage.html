@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+  <title>회원_마이페이지</title>
+  <th:block layout:fragment="css">
+    <style>
+      /* 마이페이지 레이아웃 */
+      .mypage-container { display: flex; gap: 40px; }
+      .mypage-sidebar { flex-shrink: 0; width: 200px; }
+	  
+	
+      /* 사이드바 버튼 그룹 스타일 */
+      .sidebar-group {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .sidebar-group:not(:last-child) {
+        padding-bottom: 15px; /* 그룹 내 마지막 버튼과 구분선 사이의 여백 */
+        margin-bottom: 15px;  /* 구분선과 아래 그룹 사이의 여백 */
+        border-bottom: 1px solid #e5e7eb; /* 연한 회색 구분선 */
+      }
+      .sidebar-group .btnset {
+        box-sizing: border-box;
+        justify-content: center;
+        margin: 0;
+        padding: 12px 10px;
+      }
+
+      .sidebar-group .btnset:not(.active):hover {
+        background-color: #f0f0f0;
+      }
+      .sidebar-group .btnset.active {
+        border-color: #333;
+        background-color: #333;
+        color: #fff;
+      }
+
+      /* --- 이하 기존 스타일 유지 --- */
+      .mypage-content { flex-grow: 1; }
+      .mypage-content h3 { font-size: 1.8rem; margin-bottom: 10px; }
+      .mypage-content p.desc { color: #777; margin-bottom: 30px; }
+      .mypage-table { width: 100%; border-collapse: collapse; border-top: 2px solid #333; }
+      .mypage-table th, .mypage-table td { border-bottom: 1px solid #e5e7eb; padding: 15px; vertical-align: middle; }
+      .mypage-table th { width: 160px; background: #fafafa; text-align: left; font-weight: 600; }
+      .mypage-table input[type="text"], .mypage-table input[type="email"], .mypage-table input[type="password"], .mypage-table input[type="date"] {
+        width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;
+      }
+      
+      .flex-row { 
+        display: flex; 
+        gap: 8px; 
+        align-items: center; 
+      }
+    </style>
+  </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+  <main class="th-layout-main">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="textset" style="margin-bottom: 40px;">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">마이페이지</h2>
+            <p class="textset-desc">회원님의 정보를 관리하고 주문 내역을 확인할 수 있습니다.</p>
+          </div>
+
+          <div class="mypage-container">
+      <div class="mypage-sidebar">
+              <div class="sidebar-group">
+                <a href="javascript:showSection('infoSection');" class="btnset btnset-line btnset-round">내 정보 보기</a>
+                <a href="javascript:showSection('editSection');" class="btnset btnset-line btnset-round">내 정보 수정</a>
+                <a href="javascript:showSection('passwordSection');" class="btnset btnset-line btnset-round">비밀번호 변경</a>
+              </div>
+              <div class="sidebar-group">
+                <a th:href="@{/cart/cartList}" class="btnset btnset-line btnset-round">장바구니</a>
+                <a th:href="@{/purchases/my-orders}" class="btnset btnset-line btnset-round">주문 내역</a>
+              </div>
+              <div class="sidebar-group">
+                <a th:href="@{/qna/my-qna}" class="btnset btnset-line btnset-round">상품 문의</a>
+                <a th:href="@{/member/my-reviews}" class="btnset btnset-line btnset-round">내 리뷰</a>
+              </div>
+            </div>
+
+            <div class="mypage-content">             
+             <div id="infoSection">
+                <h3>내 정보</h3>
+                <p class="desc">회원님의 정보를 확인하실 수 있습니다.</p>
+                <table class="mypage-table">
+                  <tr><th>이름</th><td th:text="${memberCommand.memberName}"></td></tr>
+                  <tr><th>아이디</th><td th:text="${memberCommand.memberId}"></td></tr>
+                  <tr><th>주소</th><td th:text="|(${memberCommand.memberPost}) ${memberCommand.memberAddr} ${memberCommand.memberAddrDetail}|"></td></tr>
+                  <tr><th>연락처</th><td th:text="${memberCommand.memberPhone1}"></td></tr>
+                  <tr><th>이메일</th><td th:text="${memberCommand.memberEmail}"></td></tr>
+                  <tr><th>생년월일</th><td th:text="${#temporals.format(memberCommand.memberBirth, 'yyyy-MM-dd')}"></td></tr>
+                  <tr><th>가입일</th><td th:text="${#temporals.format(memberCommand.memberRegist, 'yyyy-MM-dd')}"></td></tr>
+                  </table>
+                <a href="javascript:confirmWithdraw();" class="btnset btnset-line btnset-round" style="margin-top:20px; float:right; background-color: #f5f5f5;">회원 탈퇴</a>
+              </div>
+
+              <div id="editSection" style="display:none;">
+                <h3>내 정보 수정</h3>
+                <p class="desc">회원님의 정보를 수정합니다. (아이디는 변경 불가)</p>
+                <form th:action="@{/member/my-page/update}" th:object="${memberCommand}" method="post">
+                  <table class="mypage-table">
+                    <tr><th>이름</th><td><input type="text" th:field="*{memberName}"></td></tr>
+                    <tr><th>아이디</th><td><input type="text" th:field="*{memberId}" readonly style="background:#f5f5f5; color:#777;"></td></tr>
+
+                    <tr><th>생년월일</th><td><input type="date" th:field="*{memberBirth}"></td></tr>
+
+                    <input type="hidden" th:field="*{memberNum}">
+                    <tr><th>주소</th><td>
+                      <div class="flex-row">
+                        <input type="text" th:field="*{memberPost}" id="edit_postcode" placeholder="우편번호" style="width: 120px; flex-grow: 0;" readonly>
+                        <button type="button" onclick="execDaumPostcodeEdit();" class="btnset btnset-line" style="height: 36px; padding: 0 12px; font-size: 13px; flex-shrink: 0;">우편번호 찾기</button>
+                      </div>
+                      <input type="text" th:field="*{memberAddr}" id="edit_roadAddress" placeholder="도로명주소" readonly style="margin-top: 8px;">
+                      <input type="text" th:field="*{memberAddrDetail}" id="edit_detailAddress" placeholder="상세주소 입력" style="margin-top: 8px;">
+                    </td></tr>
+                    <tr><th>연락처</th><td><input type="text" th:field="*{memberPhone1}"
+                                               maxlength="11" 
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                               placeholder="'-' 없이 숫자 11자리 입력"></td></tr>
+                    <tr><th>이메일</th><td><input type="email" th:field="*{memberEmail}"></td></tr>
+                    <tr><th>비밀번호 확인</th><td>
+                      <input type="password" name="memberPw" placeholder="수정을 위해 현재 비밀번호를 입력하세요" required>
+                      <p style="font-size:12px; color:#888; margin-top:5px;">개인정보 보호를 위해, 정보 수정 시 현재 비밀번호를 다시 한번 입력해 주세요.</p>
+                    </td></tr>
+                  </table>
+                  <div style="text-align:right; margin-top:20px;">
+                    <button type="submit" class="btnset">수정 완료</button>
+                  </div>
+                </form>
+              </div>
+
+              <div id="passwordSection" style="display:none;">
+                <h3>비밀번호 변경</h3>
+                <p class="desc">새로운 비밀번호를 설정합니다.</p>
+                <form th:action="@{/member/my-page/change-password}" method="post">
+                  <table class="mypage-table">
+                    <tr><th>현재 비밀번호</th><td><input type="password" name="oldPw" required></td></tr>
+                    <tr><th>새 비밀번호</th><td><input type="password" name="newPw" required></td></tr>
+                  </table>
+                  <div style="text-align:right; margin-top:20px;">
+                    <button type="submit" class="btnset">비밀번호 변경</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<th:block layout:fragment="script">
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script th:inline="javascript">
+  /*<![CDATA[*/
+    const successMessage = /*[[${message}]]*/ null;
+    const errorMessage = /*[[${error}]]*/ null;
+
+    if (successMessage) {
+        alert(successMessage);
+    } else if (errorMessage) {
+        alert(errorMessage);
+    }
+  /*]]>*/
+  
+  	function execDaumPostcodeEdit() {
+      new daum.Postcode({
+        oncomplete: function(data) {
+          document.getElementById('edit_roadAddress').value = data.roadAddress;
+          document.getElementById('edit_postcode').value = data.zonecode;
+          document.getElementById('edit_detailAddress').focus();
+        }
+      }).open();
+    }
+    const sections = ['infoSection', 'editSection', 'passwordSection'];
+    const menuLinks = document.querySelectorAll('.mypage-sidebar a[href*="javascript:showSection"]');
+
+    function showSection(activeSectionId) {
+      sections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) section.style.display = 'none';
+      });
+      const activeSection = document.getElementById(activeSectionId);
+      if (activeSection) activeSection.style.display = 'block';
+
+      menuLinks.forEach(link => {
+        link.classList.remove('active');
+      });
+      const activeLink = document.querySelector(`a[href*="javascript:showSection('${activeSectionId}')"]`);
+      if(activeLink) activeLink.classList.add('active');
+    }
+
+    function confirmWithdraw() {
+      if (!confirm("정말 탈퇴하시겠습니까? 탈퇴 시 모든 정보가 삭제됩니다.")) return;
+      var pw = prompt("계정 삭제를 위해 비밀번호를 입력하세요.");
+      if (pw && pw.trim().length > 0) {
+        var form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/member/withdraw';
+        var hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = 'memberPw';
+        hiddenField.value = pw.trim();
+        form.appendChild(hiddenField);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // 페이지 로드 시 '내 정보 보기'를 기본 활성 탭으로 설정합니다.
+    document.addEventListener('DOMContentLoaded', function() {
+      showSection('infoSection');
+    });
+  </script>
+</th:block>
+</body>
+</html>

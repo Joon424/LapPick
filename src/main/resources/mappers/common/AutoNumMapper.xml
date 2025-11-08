@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lappick.common.mapper.AutoNumMapper">
+<select id="AutoNumSelect" parameterType="map" resultType="string">
+    SELECT
+        CONCAT(
+            #{preFix}, 
+            TO_CHAR(COALESCE(
+                MAX(TO_NUMBER(SUBSTR(
+                    ${colName}, 
+                    LENGTH(#{preFix}) + 1
+                ))),
+                100000
+            ) + 1)
+        )
+    FROM
+        ${tableName}
+    WHERE
+        REGEXP_LIKE(
+            ${colName},
+            '^' || #{preFix} || '[0-9]+$'
+        )
+</select>
+
+<delete id="numsDelete" >
+	delete from ${tableName}
+	where ${columnName} in 
+		<foreach collection="nums" item="num" open="(" close=")" index="index"
+			separator=",">
+			#{num}
+		</foreach> 
+</delete>
+</mapper>

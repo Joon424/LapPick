@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+  <title>직원_직원관리</title>
+  <th:block layout:fragment="css">
+     <style>
+        table { table-layout: fixed; border-collapse: collapse;}
+        th, td { vertical-align: middle; padding: 8px; }
+        .manage-btn {
+          display: inline-block; padding: 5px 10px; font-size: 12px;
+          text-align: center; text-decoration: none; color: #333;
+          background-color: #fff; border: 1px solid #ccc; border-radius: 4px;
+          cursor: pointer; margin: 0 2px; white-space: nowrap;
+        }
+        .manage-btn:hover { background-color: #f0f0f0; border-color: #bbb; }
+        
+        .pagination-container { 
+            display:flex; 
+            gap:6px; 
+            justify-content:center; 
+            align-items:center; 
+            margin-top:40px; 
+        }
+        .pagination-container .page-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; 
+            height: 32px;
+            padding: 0; 
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            color: #555;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .page-btn:not(.active):not(.disabled):hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        .pagination-container .page-btn.active {
+            background-color: #333;
+            color: #fff;
+            border-color: #333;
+            font-weight: bold;
+            cursor: default;
+        }
+        .pagination-container .page-btn.disabled {
+            color: #bbb;
+            border-color: #e0e0e0;
+            cursor: default;
+            background-color: #f9f9f9;
+            pointer-events: none;
+        }
+        .pagination-container .page-btn.disabled:hover {
+             background-color: #f9f9f9;
+             border-color: #e0e0e0;
+        }
+      </style>
+  </th:block>
+</head>
+<div layout:fragment="content">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+
+          <div class="textset" style="margin-bottom:14px;">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">직원 관리</h2>
+            <p class="textset-desc">직원 정보 및 권한을 관리합니다.</p>
+            
+            <div class="alert" th:if="${message != null or error != null}" th:text="${message != null ? message : error}"
+                 style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+            </div>
+
+          <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 16px;">
+           <form th:action="@{/admin/employees}" method="get" style="display:flex; gap:8px; align-items:center;">
+              <input type="text" name="searchWord" th:value="${pageData?.searchWord}" placeholder="이름 또는 아이디 검색" style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px; min-width:240px;">
+              <button type="submit" class="btnset btnset-line btnset-round">검색</button>
+              <a class="btnset btnset-line btnset-round" th:href="@{/admin/employees}">전체보기</a>
+            </form>
+            <div style="display:flex; gap:8px;">
+              <a class="btnset btnset-line btnset-round" th:href="@{/admin/employees/add}">직원등록</a>
+              <button type="button" class="btnset btnset-line btnset-round" onclick="submitBulkDelete()">선택삭제</button>
+            </div>
+          </div>
+
+<form id="bulkDeleteForm" th:action="@{/admin/employees/delete}" method="post">
+            <table border="1" width="100%" style="border-collapse:collapse; border-color:#eee;">
+              <thead>
+                <tr style="background:#f9fafb;">
+                  <th width="48" style="text-align:center;"><input type="checkbox" id="checkAll" onclick="toggleAll(this)"></th>
+                  <th width="60" style="text-align:center; padding-left: 0px;">번호</th>
+                  <th width="110" style="text-align: left; padding-left: 25px;">이름</th>
+                  <th width="110" style="padding-left: 10px;">아이디</th>
+                  <th width="220" style="padding-left: 0px;">이메일</th>
+                  <th width="150" style="padding-left: 90px;">휴대폰</th>
+                  <th width="140" style="padding-left: 80px;">입사일</th>
+                  <th width="200" style="text-align: center; padding-left: 25px">관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:if="${employees == null or #lists.isEmpty(employees)}">
+                  <td colspan="8" style="text-align:center; padding:20px; color:#666;">표시할 직원이 없습니다.</td>
+                </tr>
+                <tr th:each="emp, stat : ${employees}">
+                  <td style="text-align:center;"><input type="checkbox" name="empDels" th:value="${emp.empNum}"></td>
+                  <td style="text-align:center; padding-left: 0px;" th:text="${(pageData.page - 1) * pageData.size + stat.index + 1}">1</td>
+                  <td style="text-align: left; padding-left: 25px;" th:text="${emp.empName}">홍길동</td>
+                  <td style="padding-left: 10px;" th:text="${emp.empId}">hong</td>
+                  <td style="padding-left: 0px;" th:text="${emp.empEmail}">hong@example.com</td>
+                  <td style="padding-left: 90px;" th:text="${emp.empPhone}">010-0000-0000</td>
+                  <td style="padding-left: 80px;" th:text="${#dates.format(emp.empHireDate, 'yyyy-MM-dd')}">2024-01-01</td>
+                  <td>
+                   <div style="display: flex; justify-content: center; align-items: center; gap: 4px; padding-left: 20px">
+                      <a class="manage-btn" th:href="@{/admin/employees/{num}(num=${emp.empNum})}">상세</a>
+                      <a class="manage-btn" th:href="@{/admin/employees/{num}/edit(num=${emp.empNum})}">수정</a>
+                      <a class="manage-btn" th:href="@{/admin/employees/delete/{num}(num=${emp.empNum})}"
+                         onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+
+          <div class="pagination-container"
+               th:if="${pageData != null and pageData.total > 0}">
+               
+              <a class="page-btn"
+                 th:href="${pageData.page > 1} ? @{/admin/employees(page=1, searchWord=${pageData.searchWord})} : null"
+                 th:classappend="${pageData.page <= 1} ? 'disabled' : ''">&lt;&lt;</a>
+              
+              <a class="page-btn"
+                 th:href="${pageData.page > 1} ? @{/admin/employees(page=${pageData.page - 1}, searchWord=${pageData.searchWord})} : null"
+                 th:classappend="${pageData.page <= 1} ? 'disabled' : ''">&lt;</a>
+              
+              <a class="page-btn" th:each="p : ${#numbers.sequence(pageData.startPage, pageData.endPage)}" th:text="${p}"
+                 th:classappend="${pageData.page == p} ? 'active' : ''"
+                 th:href="@{/admin/employees(page=${p}, searchWord=${pageData.searchWord})}"></a>
+              
+              <a class="page-btn"
+                 th:href="${pageData.page < pageData.totalPages} ? @{/admin/employees(page=${pageData.page + 1}, searchWord=${pageData.searchWord})} : null"
+                 th:classappend="${pageData.page >= pageData.totalPages} ? 'disabled' : ''">&gt;</a>
+              
+              <a class="page-btn"
+                 th:href="${pageData.page < pageData.totalPages} ? @{/admin/employees(page=${pageData.totalPages}, searchWord=${pageData.searchWord})} : null"
+                 th:classappend="${pageData.page >= pageData.totalPages} ? 'disabled' : ''">&gt;&gt;</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+</div>
+<th:block layout:fragment="script">
+  <script>
+    function toggleAll(master){
+      document.querySelectorAll('input[name="empDels"]').forEach(cb => cb.checked = master.checked);
+    }
+    function submitBulkDelete(){
+      const checked = document.querySelectorAll('input[name="empDels"]:checked');
+      if(checked.length === 0){ alert('삭제할 항목을 선택하세요.'); return; }
+      if(confirm('선택한 ' + checked.length + '명의 직원을 삭제하시겠습니까?')){
+        document.getElementById('bulkDeleteForm').submit();
+      }
+    }
+  </script>
+</th:block>
+</html>

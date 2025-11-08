@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+  <title>직원_관리자페이지</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <main class="th-layout-main ">
+    <div class="basic-N33" data-bid="swm47Se1Ys" id="">
+    </div>
+    </main>
+<div class="basic-N14" data-bid="TIM47seH1N" id="">
+    <div class="contents-inner">
+      <div class="contents-container container-md">
+        <div class="textset">
+          <h2 class="textset-tit">관리자 페이지</h2>
+          <p class="textset-desc">LapPick 쇼핑몰 운영을 위한 핵심 기능을 관리합니다.</p>
+        </div>
+        <div class="contents-group">
+          <div class="cardset">
+            <a th:href="@{/admin/members}" style="display: inline-block; text-align: center; width: 100%;">
+              <figure class="cardset-figure">
+                <img class="cardset-img"  src="/resources/images/img_basic_N14_1.png" alt="회원 관리 이미지">
+              </figure>
+              <div class="cardset-body">
+                <h2 class="cardset-tit">회원 관리</h2>
+                <p class="cardset-desc"> 고객(회원) 정보를 조회, 등록, 수정, <br/> 삭제합니다. 회원 목록 검색 및 <br/> 상세 정보 확인이 가능하며, 회원 삭제 시 <br/> 관련 문의(QNA) 내역이 함께 삭제됩니다. </p>
+              </div>
+            </a>
+          </div>
+          <div class="cardset">
+            <a th:href="@{/admin/employees}" style="display: inline-block; text-align: center; width: 100%;">
+              <figure class="cardset-figure">
+                <img class="cardset-img"  src="/resources/images/img_basic_N14_2.png" alt="직원 관리 이미지">
+              </figure>
+              <div class="cardset-body">
+                <h2 class="cardset-tit">직원 관리</h2>
+                <p class="cardset-desc"> 시스템 관리자(직원) 계정을 등록하고, <br/> 상세 정보를 조회, 수정, 삭제합니다. <br/> 직원 목록 검색 및 <br/> 개인정보 변경이 가능합니다. </p>
+              </div>
+            </a>
+          </div>
+<div class="cardset">
+            <a th:href="@{/admin/goods}" style="display: inline-block; text-align: center; width: 100%;">
+              <figure class="cardset-figure">
+                <img class="cardset-img"  src="/resources/images/img_basic_N14_3.png" alt="상품 관리 이미지">
+              </figure>
+              <div class="cardset-body">
+                <h2 class="cardset-tit">상품 관리</h2>
+                <p class="cardset-desc"> 노트북 상품을 등록, 조회, 수정, <br/> 삭제합니다. 상품 상세 정보, 이미지, <br/> 가격, 스펙을 관리하며, <br/> 재고 입/출고 수동 처리 및 <br/> 재고 이력 조회가 가능합니다. </p>
+              </div>
+            </a>
+          </div>
+          <div class="cardset">
+            <a th:href="@{/admin/purchases}" style="display: inline-block; text-align: center; width: 100%;">
+              <figure class="cardset-figure">
+                <img class="cardset-img"  src="/resources/images/img_basic_N14_4.png" alt="주문 내역 이미지">
+              </figure>
+              <div class="cardset-body">
+                <h2 class="cardset-tit">주문 관리</h2> <p class="cardset-desc"> 전체 주문 내역을 조회하고 <br/> 주문 상태를 관리합니다. <br/> '결제완료' 건에 대한 송장번호 입력 및 <br/> '배송중' 처리가 가능하며, <br/> '주문취소' 시 자동으로 재고를 복원합니다. </p>
+              </div>
+            </a>
+          </div>
+         <div class="cardset">
+            <a th:href="@{/admin/qna}" style="display: inline-block; text-align: center; width: 100%;">
+              <figure class="cardset-figure">
+                <img class="cardset-img"  src="/resources/images/img_basic_N14_5.png" alt="상품 문의 이미지">
+              </figure>
+              <div class="cardset-body">
+                <h2 class="cardset-tit">상품 문의</h2>
+                <p class="cardset-desc"> 고객이 등록한 상품 문의(QNA)를 <br/> 조회하고 답변을 등록합니다. <br/> '답변대기', '답변완료' 상태별 <br/> 필터링 및 검색 기능이 제공됩니다. </p>
+              </div>
+            </a>
+          </div>
+         <div class="cardset">
+            <a th:href="@{/admin/reviews}" style="display: inline-block; text-align: center; width: 100%;">
+              <figure class="cardset-figure">
+                <img class="cardset-img"  src="/resources/images/img_basic_N14_6.png" alt="리뷰 관리 이미지">
+              </figure>
+              <div class="cardset-body">
+                <h2 class="cardset-tit">리뷰 관리</h2>
+                <p class="cardset-desc"> 고객이 작성한 모든 리뷰를 <br/> 조회하고 관리합니다. <br/> 부적절한 리뷰를 '숨김(HIDDEN)' <br/> 또는 '삭제' 처리할 수 있으며, <br/> 일괄 작업이 가능합니다. </T>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

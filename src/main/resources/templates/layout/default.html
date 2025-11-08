@@ -25,21 +25,21 @@
     <th:block layout:fragment="css"></th:block>
 </head>
 <body>
-    <div th:replace="~{fragments/header :: headerFragment}"></div>
+    <div th:replace="~{../fragments/header :: headerFragment}"></div>
 
     <th:block layout:fragment="content"></th:block>
 
-    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+    <div th:replace="~{../fragments/footer :: footerFragment}"></div>
     
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
     <script src="/resources/js/setting.js"></script>
     <script src="/resources/js/plugin.js"></script>
     <script src="/resources/js/template.js"></script>
     <script src="/resources/js/common.js"></script>
     <script src="/resources/js/script.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     
     <script th:inline="javascript">
-        // 뱃지 스타일을 강제로 적용하는 함수
         function forceCenterCartBadge(count) {
             const cartCountSpan = $('#cart-item-count');
             if (count > 0) {
@@ -49,17 +49,17 @@
                     'justify-content': 'center',
                     'align-items': 'center',
                     
-                    /* [수정] 1. 위치를 아이콘의 '우측 하단'으로 재조정 */
+                    /* 뱃지 위치: 아이콘 기준 우측 하단 */
                     'position': 'absolute',
-                    'top': 'auto',      /* top 속성 초기화 */
-                    'bottom': '-4px',   /* 아래쪽 기준으로 위치 */
-                    'left': 'auto',     /* left 속성 초기화 */
-                    'right': '-5px',    /* 오른쪽 기준으로 위치 (살짝 왼쪽으로 이동) */
+                    'top': 'auto',
+                    'bottom': '-4px',
+                    'left': 'auto',
+                    'right': '-5px',
 
-                    /* [수정] 2. 폰트 위치 미세 조정 (살짝 아래로) */
+                    /* 폰트 위치 미세 조정 (수직 중앙 정렬) */
                     'padding-top': '3px',
 
-                    /* --- 나머지 필수 스타일 유지 --- */
+                    /* 뱃지 기본 스타일 */
                     'height': '18px',
                     'min-width': '18px',
                     'padding-left': '3px', 
@@ -86,24 +86,37 @@
                     });
                 }, 100);
             }
-         // ▼▼▼▼▼ [추가] 장바구니 아이콘 클릭 이벤트 처리 ▼▼▼▼▼
+
             $('#header-cart-icon').on('click', function() {
-                // Thymeleaf Security Expression을 사용하여 현재 사용자 권한 확인
                 if (/*[[${#authorization.expression('isAnonymous()')}]]*/) {
                     if (confirm('장바구니를 이용하시려면 로그인 하셔야 합니다.\n로그인 페이지로 이동하시겠습니까?')) {
                         window.location.href = '/login/item.login';
                     }
-                } else if (/*[[${#authorization.expression('hasRole(''ROLE_EMP'')')}]]*/) {
+                } else if (/*[[${#authorization.expression('hasRole(''ROLE_EMPLOYEE'')')}]]*/) {
                     alert('직원은 장바구니 이용이 불가합니다.');
                 } else {
-                    // 일반 회원(ROLE_MEM)은 장바구니 페이지로 이동
                     window.location.href = '/cart/cartList';
                 }
             });
-            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
         });
+    </script> 
+<script th:inline="javascript">
+      /*<![CDATA[*/
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const msgParam = urlParams.get('message');
+        
+        if (msgParam === 'withdrawSuccess') {
+            alert("회원 탈퇴가 정상적으로 처리되었습니다.\n그동안 LapPick을 이용해주셔서 감사합니다.");
+            // 메시지 중복 알림 방지를 위해 URL에서 파라미터를 제거합니다.
+            window.history.replaceState({}, document.title, "/");
+        }
+
+        const flashMessage = /*[[${message}]]*/ null;
+        
+      
+      /*]]>*/
     </script>
-    
     <th:block layout:fragment="script"></th:block>
 </body>
 </html>

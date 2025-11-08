@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+
+<head>
+  <title>직원_직원등록</title>
+  <th:block layout:fragment="css">
+    <style>
+      .write-table { table-layout: fixed; border-collapse: collapse; width:600px; margin: 0; }
+      .write-table th, .write-table td { border:1px solid #e5e7eb; padding:10px; vertical-align:top; }
+      .write-table th { width:160px; background:#fafafa; text-align:left; }
+      .row { display:flex; gap:8px; align-items:center; }
+      .btn-bar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; flex-wrap:wrap; width: 600px; margin-left: 0; }
+      .write-table input[type="text"], .write-table input[type="date"], .write-table input[type="email"], .write-table input[type="password"], .write-table select {
+        width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px;
+      }
+      .w-120 { width:120px; }
+      .hint { color:#777; font-size:12px; margin-top:4px; }
+      .alert { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:10px 12px; border-radius:6px; margin-bottom:12px; }
+      
+      .flex-row { 
+        display: flex; 
+        gap: 8px; 
+        align-items: center; 
+      }
+    </style>
+  </th:block>
+</head>
+
+<div layout:fragment="content">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+
+          <div class="textset" style="margin-bottom: 30px;">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">직원 등록</h2>
+            <p class="textset-desc">새로운 직원을 등록하는 페이지입니다.</p>
+          </div>
+
+         <form id="employeeNewForm" th:action="@{/admin/employees/add}" th:object="${employeeCommand}" method="post" autocomplete="off" onsubmit="return combineJumin();">
+            
+            <input type="hidden" th:field="*{empNum}">
+            <table class="write-table">
+              <tbody>
+                <tr>
+                  <th>직원번호</th>
+                  <td th:text="*{empNum}" style="padding-top: 12px; padding-bottom: 12px;">emp_auto_num</td>
+                  </tr>
+                <tr>
+                  <th>아이디</th>
+                  <td>
+                    <input type="text" th:field="*{empId}" placeholder="아이디 (5~12자 영문, 숫자)" required>
+                    <div th:if="${#fields.hasErrors('empId')}" th:errors="*{empId}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>비밀번호</th>
+                  <td>
+                    <input type="password" th:field="*{empPw}" placeholder="비밀번호 (8자 이상)" required>
+                    <div class="hint">등록 시 암호화되어 저장됩니다.</div>
+                    <div th:if="${#fields.hasErrors('empPw')}" th:errors="*{empPw}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>비밀번호 확인</th>
+                  <td>
+                    <input type="password" th:field="*{empPwCon}" placeholder="비밀번호 확인" required>
+                    <div th:if="${#fields.hasErrors('empPwCon')}" th:errors="*{empPwCon}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>이름</th>
+                  <td>
+                    <input type="text" th:field="*{empName}" placeholder="이름 (예: 홍길동)" required>
+                    <div th:if="${#fields.hasErrors('empName')}" th:errors="*{empName}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>           
+			      <tr>
+                  <th>주민번호</th>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                      <input type="text" id="jumin1" maxlength="6" placeholder="앞 6자리" style="width: 180px;">
+                      <span>-</span>
+                      <input type="password" id="jumin2" maxlength="7" placeholder="뒤 7자리" style="flex-grow: 1;">
+                    </div>
+                    
+                    <input type="hidden" th:field="*{empJumin}" />
+                    <div th:if="${#fields.hasErrors('empJumin')}" th:errors="*{empJumin}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+                  <th>연락처</th>
+                  <td>
+                    <input type="text" th:field="*{empPhone}" 
+                           placeholder="'-' 없이 숫자 11자리 입력 (010...)" 
+                           maxlength="11" 
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                           required>
+                    <div th:if="${#fields.hasErrors('empPhone')}" th:errors="*{empPhone}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>이메일</th>
+                  <td>
+                    <input type="email" th:field="*{empEmail}" placeholder="user@example.com" required>
+                    <div th:if="${#fields.hasErrors('empEmail')}" th:errors="*{empEmail}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>주소</th>
+                  <td>
+                    <div class="flex-row">
+                      <input type="text" th:field="*{empPost}" id="sample4_postcode" placeholder="우편번호" style="width: 120px; flex-grow: 0;" readonly>
+                      <button type="button" onclick="execDaumPostcode();" class="btnset btnset-line" style="height: 36px; padding: 0 12px; font-size: 13px; flex-shrink: 0;">우편번호 찾기</button>
+                    </div>
+                    <input type="text" th:field="*{empAddr}" id="sample4_roadAddress" placeholder="도로명주소" readonly style="margin-top: 8px;">
+                    <input type="text" th:field="*{empAddrDetail}" placeholder="상세주소 입력" style="margin-top: 8px;">
+                    
+                    <div th:if="${#fields.hasErrors('empAddr')}" th:errors="*{empAddr}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>입사일</th>
+                  <td>
+                    <input type="date" th:field="*{empHireDate}">
+                    <div th:if="${#fields.hasErrors('empHireDate')}" th:errors="*{empHireDate}" class="hint" style="color:red;"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+
+          <div class="btn-bar">
+            <a class="btnset btnset-line btnset-round" th:href="@{/admin/employees}">목록으로</a>
+            <button form="employeeNewForm" type="submit" class="btnset btnset-line btnset-round">등록완료</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+   <script>
+    function combineJumin() {
+      const jumin1 = document.getElementById('jumin1').value;
+      const jumin2 = document.getElementById('jumin2').value;
+      const empJuminInput = document.getElementById('empJumin');
+      empJuminInput.value = jumin1 + '-' + jumin2;
+      return true;
+    }
+    
+    function execDaumPostcode() {
+      new daum.Postcode({
+        oncomplete: function(data) {
+          document.getElementById('sample4_roadAddress').value = data.roadAddress;
+          document.getElementById('sample4_postcode').value = data.zonecode;
+        }
+      }).open();
+    }
+  </script>
+</th:block>
+</html>

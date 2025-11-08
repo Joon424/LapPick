@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+  <title>직원_회원수정</title>
+
+ <th:block layout:fragment="css">
+    <style>
+      /* memInfo와 형태 유지 */
+      table { table-layout: fixed; border-collapse: collapse; width:600px; }
+      th, td { border:1px solid #e5e7eb; padding:10px; vertical-align:top; }
+      th { width:160px; background:#fafafa; text-align:left; }
+      .row { display:flex; gap:8px; align-items:center; }
+      .btnbar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-start; flex-wrap:wrap; }
+      input[type="text"], input[type="date"], input[type="email"], select, input[type="password"] {
+        width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px;
+      }
+      .w-120 { width:120px; }
+      .hint { color:#777; font-size:12px; margin-top:4px; }
+      .alert { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:10px 12px; border-radius:6px; margin-bottom:12px; }
+      
+      .flex-row { 
+        display: flex; 
+        gap: 8px; 
+        align-items: center; 
+      }
+    </style>
+  </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+  <main class="th-layout-main">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+
+          <div class="textset">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지" th:hoverbox="true">
+            <h2 class="textset-tit">회원 수정</h2>
+            <p class="textset-desc">회원 정보를 수정하는 페이지입니다.</p>
+            <div class="alert" th:if="${message}" th:text="${message}"></div>
+          </div>
+
+          <form id="memberEditForm"
+                th:action="@{/admin/members/update}"
+                th:object="${memberCommand}"
+                method="post">
+
+            <input type="hidden" th:field="*{memberNum}">
+            <input type="hidden" th:field="*{memberId}">
+
+           <table>
+             <tbody>
+              <tr><th>회원번호</th><td th:text="*{memberNum}">...</td></tr>
+              <tr><th>아이디</th><td th:text="*{memberId}">...</td></tr>
+              <tr>
+                <th>이름</th>
+                <td>
+                  <input type="text" th:field="*{memberName}" placeholder="이름 (예: 홍길동)" required>
+                </td>
+              </tr>
+              <tr>
+                <th>성별</th>
+                <td>
+                  <div class="row">
+                    <label><input type="radio" th:field="*{gender}" value="M"> 남</label>
+                    <label><input type="radio" th:field="*{gender}" value="F"> 여</label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>휴대폰 번호</th>
+                <td>
+                  <input type="text" th:field="*{memberPhone1}" 
+                         placeholder="'-' 없이 숫자 11자리 입력 (010...)" 
+                         maxlength="11" 
+                         oninput="this.value = this.value.replace(/[^0-9]/g, '');" 
+                         required>
+                </td>
+              </tr>
+              <tr>
+                <th>추가 연락처 (선택)</th>
+                <td>
+                  <input type="text" th:field="*{memberPhone2}"
+                         placeholder="'-' 없이 숫자만 입력 (선택)"
+                         maxlength="11"
+                         oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                  <div class="hint">미입력 가능</div>
+                </td>
+              </tr>
+              <tr>
+                <th>이메일</th>
+                <td>
+                  <input type="email" th:field="*{memberEmail}" placeholder="user@example.com" required>
+                </td>
+              </tr>
+              <tr>
+                <th>주소</th>
+                <td>
+                    <div class="flex-row">
+                      <input type="text" th:field="*{memberPost}" id="sample4_postcode" placeholder="우편번호" style="width: 120px; flex-grow: 0;" readonly>
+                      <button type="button" onclick="execDaumPostcode();" class="btnset btnset-line" style="height: 36px; padding: 0 12px; font-size: 13px; flex-shrink: 0;">우편번호 찾기</button>
+                    </div>
+                    <input type="text" th:field="*{memberAddr}" id="sample4_roadAddress" placeholder="도로명주소" readonly style="margin-top: 8px;">
+                    <input type="text" th:field="*{memberAddrDetail}" placeholder="상세주소 입력" style="margin-top: 8px;">
+                </td>
+              </tr>
+
+              <tr>
+                <th>생년월일</th>
+                <td>
+                  <input type="date" th:field="*{memberBirth}" required>
+                </td>
+              </tr>
+
+              <tr>
+                <th>가입일</th>
+                <td th:text="${#temporals.format(memberCommand.memberRegist, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+                </tr>
+
+              </tbody>
+            </table>
+          </form>
+
+          <div class="btnbar">
+            <a class="btnset btnset-line btnset-round"
+               th:href="@{/admin/members}">목록으로</a>
+            <button form="memberEditForm" type="submit" class="btnset btnset-line btnset-round">수정완료</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<th:block layout:fragment="script">
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script>
+    function execDaumPostcode() {
+      new daum.Postcode({
+        oncomplete: function(data) {
+          document.getElementById('sample4_roadAddress').value = data.roadAddress;
+          document.getElementById('sample4_postcode').value = data.zonecode;
+        }
+      }).open();
+    }
+  </script>
+  </th:block>
+</body>
+</html>

@@ -27,19 +27,21 @@
         insert into employees( <include refid="employeeColumns" />)
         values( #{empNum},#{empId} ,#{empPw} ,#{empName} ,#{empAddr} 
                 ,#{empAddrDetail} ,#{empPost} 
-                ,sysdate ,#{empPhone} ,#{empEmail},#{empJumin})
+                ,#{empHireDate} ,#{empPhone} ,#{empEmail},#{empJumin})
     </insert>
     
     <update id="employeeUpdate" parameterType="lappick.admin.employee.dto.EmployeeResponse">
         update employees
-        set   EMP_NAME = #{empName}
-            , EMP_ADDR =#{empAddr}
-            , EMP_ADDR_detail = #{empAddrDetail, jdbcType=VARCHAR}
-            , EMP_POST =#{empPost}
-            , EMP_PHONE = #{empPhone}
-            , emp_jumin = #{empJumin}
-            , EMP_HIRE_DATE = #{empHireDate}
-            , EMP_EMAIL = #{empEmail}
+        <set>
+            <if test="empName != null and empName != ''">EMP_NAME = #{empName},</if>
+            <if test="empAddr != null and empAddr != ''">EMP_ADDR = #{empAddr},</if>
+            <if test="empAddrDetail != null">EMP_ADDR_detail = #{empAddrDetail, jdbcType=VARCHAR},</if>
+            <if test="empPost != null">EMP_POST = #{empPost},</if>
+            <if test="empPhone != null and empPhone != ''">EMP_PHONE = #{empPhone},</if>
+            <if test="empJumin != null and empJumin != ''">emp_jumin = #{empJumin},</if>
+            <if test="empHireDate != null">EMP_HIRE_DATE = #{empHireDate},</if>
+            <if test="empEmail != null and empEmail != ''">EMP_EMAIL = #{empEmail},</if>
+        </set>
         where EMP_NUM = #{empNum}
     </update>
 
@@ -56,7 +58,7 @@
         </foreach>
     </delete>
 
-    <select id="employeeAllSelect" parameterType="lappick.domain.StartEndPageDTO" resultMap="employeeResultMap" >
+    <select id="employeeAllSelect" parameterType="lappick.common.dto.StartEndPageDTO" resultMap="employeeResultMap" >
         select * from (
             select ROW_NUMBER() over (order by emp_hire_date DESC) as rn, 
                     <include refid="employeeColumns" />

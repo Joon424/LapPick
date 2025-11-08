@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+    <title>주문 상세 정보</title>
+    <th:block layout:fragment="css">
+        <style>
+            .section { margin-bottom: 40px; }
+            .section-title { font-size: 1.5rem; font-weight: 600; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 0; }
+            .info-table { width: 100%; border-collapse: collapse; }
+            .info-table th, .info-table td { padding: 15px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+            .info-table th { width: 180px; background-color: #fafafa; text-align: left; }
+            .item-table { width: 100%; text-align: center; }
+            .item-table thead { background-color: #fafafa; }
+            .item-table th, .item-table td { padding: 15px; border-bottom: 1px solid #e5e7eb; }
+            .item-info { display: flex; align-items: center; gap: 15px; text-align: left; }
+            .item-info img { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; }
+            .btn-bar { display: flex; justify-content: center; gap: 10px; margin-top: 30px; }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="basic-N23">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="textset" style="margin-bottom: 40px;">
+                        <h2 class="textset-tit">주문 상세 정보</h2>
+                        <p class="textset-desc" th:text="|주문번호: ${order.purchaseNum}|"></p>
+                    </div>
+
+                     <div class="section">
+                        <h3 class="section-title">주문 상품</h3>
+                        <table class="item-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">이미지</th>
+                                    <th style="width: 40%;">상품 정보</th>
+                                    <th style="width: 15%;">수량</th>
+                                    <th style="width: 15%;">상품 금액</th>
+                                    <th style="width: 15%;">주문 상태</th>
+                                </tr>
+                            </thead>
+                         <tbody>
+    <tr th:each="item : ${order.purchaseItems}">
+        <td>
+            <img th:src="@{|/upload/${item.goods.goodsMainStoreImage}|}" alt="상품 이미지" style="width: 70px; height: 70px; object-fit: cover; border-radius: 4px;">
+        </td>
+        <td>
+            <p style="font-weight: bold;" th:text="${item.goods.goodsName}"></p>
+            <small style="color: #777;" th:text="${item.goods.goodsContents}"></small>
+        </td>
+        <td th:text="${item.purchaseQty} + '개'"></td>
+        <td th:text="${#numbers.formatInteger(item.purchasePrice * item.purchaseQty, 0, 'COMMA')} + '원'"></td>
+        <td th:text="${order.purchaseStatus}"></td>
+    </tr>
+</tbody>
+                        </table>
+                    </div>
+
+                   <div class="section">
+                       <h3 class="section-title">결제 정보</h3>
+                        <table class="info-table">
+                            <tr><th>총 상품 금액</th><td th:text="${#numbers.formatInteger(order.purchaseTotal, 0, 'COMMA')} + '원'"></td></tr>
+                            <tr><th>배송비</th><td>0원</td></tr>
+                            <tr><th>최종 결제 금액</th><td th:text="${#numbers.formatInteger(order.purchaseTotal, 0, 'COMMA')} + '원'"></td></tr>
+                            <tr><th>결제 수단</th><td th:text="${order.paymentMethod}"></td></tr>
+                            <tr th:if="${order.paymentMethod == '신용카드'}">
+                                <th>카드 정보</th>
+                                <td th:text="|${order.cardCompany} / ${order.cardNumber}|"></td>
+                            </tr>
+                            <tr th:if="${order.paymentMethod == '무통장입금'}">
+                                <th>입금 정보</th>
+                                <td th:text="|${order.bankName} / 입금자: ${order.depositorName}|"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h3 class="section-title">배송지 정보</h3>
+                        <table class="info-table">
+                            <tr><th>받으시는 분</th><td th:text="${order.receiverName}"></td></tr>
+                            <tr><th>연락처</th><td th:text="${order.receiverPhone}"></td></tr>
+                            <tr><th>주소</th><td th:text="${order.purchaseAddr}"></td></tr>
+                            <tr><th>배송 메시지</th><td th:text="${order.purchaseMsg} ?: ' '"></td></tr>
+                        </table>
+                    </div>
+                    
+                   <div class="btn-bar">
+    <a th:href="@{/purchases/my-orders}" class="btnset">목록으로</a>
+    <th:block th:if="${order.purchaseStatus == '결제완료' or order.purchaseStatus == '상품준비중'}">
+        <form th:action="@{/purchases/{num}/cancel(num=${order.purchaseNum})}" method="post" onsubmit="return confirm('정말로 주문 취소를 요청하시겠습니까?');" style="display:inline;">
+            <button type="submit" class="btnset btnset-line">주문 취소 요청</button>
+        </form>
+    </th:block>
+    <th:block th:if="${order.purchaseStatus == '취소요청' or order.purchaseStatus == '주문취소'}">
+        <button type="button" class="btnset btnset-line" disabled style="cursor: not-allowed; background-color: #eee;">취소 처리됨</button>
+    </th:block>
+    <th:block th:if="${order.purchaseStatus == '배송중' or order.purchaseStatus == '배송완료'}">
+        <button type="button" class="btnset btnset-line" disabled style="cursor: not-allowed; background-color: #eee;" title="배송이 시작되어 취소가 불가합니다.">취소 불가</button>
+    </th:block>
+</div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

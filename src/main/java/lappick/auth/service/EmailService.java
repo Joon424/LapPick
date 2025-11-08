@@ -1,4 +1,4 @@
-package lappick.auth.service; // 패키지 경로 변경
+package lappick.auth.service;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

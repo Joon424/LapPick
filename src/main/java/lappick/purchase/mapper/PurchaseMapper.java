@@ -1,0 +1,23 @@
+package lappick.purchase.mapper;
+
+import java.util.List;
+import java.util.Map;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import lappick.purchase.dto.DeliveryRequest;
+import lappick.purchase.dto.PurchaseItemResponse;
+import lappick.purchase.dto.PurchaseResponse;
+
+@Mapper
+public interface PurchaseMapper {
+    void insertPurchase(PurchaseResponse dto);
+    void insertPurchaseItem(PurchaseItemResponse dto);
+    List<PurchaseResponse> selectMyPurchases(Map<String, Object> params);
+    int countMyPurchases(Map<String, Object> params);
+    List<PurchaseResponse> selectAllPurchases(Map<String, Object> params);
+    int countAllPurchases(Map<String, Object> params);
+    void updatePurchaseStatus(@Param("purchaseNum") String purchaseNum, @Param("status") String status);
+    void insertDelivery(DeliveryRequest dto);
+    PurchaseResponse selectPurchaseDetail(String purchaseNum);
+    List<PurchaseItemResponse> selectPurchasedItemsByMemberNum(String memberNum);
+}

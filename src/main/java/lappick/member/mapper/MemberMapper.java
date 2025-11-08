@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import lappick.domain.StartEndPageDTO;
+import lappick.common.dto.StartEndPageDTO;
 import lappick.member.dto.MemberResponse;
 
 @Mapper
@@ -16,14 +16,12 @@ public interface MemberMapper {
     public List<MemberResponse> memberSelectList(StartEndPageDTO sepDTO); 
     public Integer memberCountBySearch(@Param("searchWord") String searchWord);
     public MemberResponse memberSelectOneByNum(String memberNum);
-    public void adminMemberUpdate(MemberResponse dto); // DTO 타입 변경
+    public void adminMemberUpdate(MemberResponse dto);
     public int memberDelete(List<String> memberNums);
     
     // ===== 사용자(MyPage) 기능 =====
     public MemberResponse selectMemberById(String memberId);
-    public void memberUpdate(MemberResponse dto); // DTO 타입 변경
-    public void memberPwUpdate(MemberResponse dto); // DTO 타입 변경
-    public String selectPwById(String memberId);
+    public void memberUpdate(MemberResponse dto);
     public void deleteMemberById(String memberId);
 
     // ===== 기타 (다른 서비스에서 사용) =====

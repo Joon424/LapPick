@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+  <title>로그인</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <main class="th-layout-main ">
+    <div class="personal-jPM46ggXUc" data-bid="YvM46gI0mn" id="">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="contents-top">
+            <div class="textset">
+              <h2 class="textset-tit" style="font-size: 50px;">로그인</h2>
+            </div>
+            <div th:if="${errorMessage}" class="error-message" style="color: red; font-weight: bold;">
+              <p th:text="${errorMessage}"></p>
+            </div>
+
+           <form th:action="@{/auth/login}" method="post">
+              <input type="hidden" name="returnUrl" th:value="${param.returnUrl}">
+              <div class="inputset">
+                <input type="text" id="userId" name="id" class="inputset-input form-control" aria-label="아이디" placeholder="아이디를 입력해주세요." required>
+              </div>
+              <div class="inputset">
+                <input type="password" name="pw" class="inputset-input form-control" aria-label="비밀번호" placeholder="비밀번호를 입력해주세요." required>
+              </div>
+              <div class="checkset">
+                <input id="checkset-a-1-1" class="checkset-input input-fill" type="checkbox" name="rememberId">
+                <label class="checkset-label" for="checkset-a-1-1"></label>
+                <label class="checkset-text" for="checkset-a-1-1">아이디 저장</label>
+                &nbsp;&nbsp;&nbsp;
+                <input id="checkset-a-1-2" class="checkset-input input-fill" type="checkbox" name="remember-me">
+                <label class="checkset-label" for="checkset-a-1-2"></label>
+                <label class="checkset-text" for="checkset-a-1-2">자동 로그인</label>
+              </div>
+              <th:block th:if="${_csrf != null}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              </th:block>
+              <div th:if="${param.error}" style="color: red; margin-top: 10px;">
+                아이디 또는 비밀번호가 올바르지 않습니다.
+              </div>
+              <button type="submit" class="btnset">로그인</button>
+              <div th:if="${errorMessage}" class="text-danger" th:text="${errorMessage}"></div>
+            </form>
+
+           <ul class="contents-list">
+              <li class="contents-item"><a th:href="@{/auth/find-id}">아이디 찾기</a></li>
+              <li class="contents-item"><a th:href="@{/auth/find-pw}">비밀번호 찾기</a></li>
+              <li class="contents-item"><a th:href="@{/auth/register/write}">회원가입</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  </div>
+
+<th:block layout:fragment="script">
+  <span id="flash-msg" th:if="${flashMsg}" th:text="${flashMsg}" style="display:none"></span>
+  <script th:if="${message}" th:inline="javascript">
+    /*<![CDATA[*/
+    alert([[${message}]]);
+    /*]]>*/
+  </script>
+  <script>
+    (function(){
+      var el = document.getElementById('flash-msg');
+      if (el) { alert(el.textContent); el.remove(); }
+    })();
+  </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const userIdInput = document.getElementById('userId');
+      const rememberIdChk = document.getElementById('checkset-a-1-1'); // '아이디 저장' 체크박스
+      const loginForm = document.querySelector('form');
+      
+      // 페이지 로드 시, 저장된 '아이디 저장' 쿠키를 불러옵니다.
+      const savedId = getCookie("savedUserId");
+      if (savedId) {
+          userIdInput.value = savedId;
+          rememberIdChk.checked = true;
+      }
+
+      // 폼 제출 시, '아이디 저장' 체크박스 상태에 따라 쿠키를 저장하거나 삭제합니다.
+      if(loginForm) {
+          loginForm.addEventListener('submit', function() {
+              if (rememberIdChk.checked) {
+                  setCookie("savedUserId", userIdInput.value, 30);
+              } else {
+                  deleteCookie("savedUserId");
+              }
+          });
+      }
+      
+      // '아이디 저장' 텍스트 라벨 클릭 이벤트 핸들러
+      // (템플릿 JS와의 충돌로 인해 텍스트 라벨이 정상 작동하지 않는 문제를 보정합니다.)
+      const rememberIdLabel = document.querySelector('label.checkset-text[for="checkset-a-1-1"]');
+      if (rememberIdLabel) {
+          rememberIdLabel.addEventListener('click', function(e) {
+              // 1. 텍스트 라벨의 기본 (비정상) 동작을 막습니다.
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // 2. 정상 작동하는 스타일 라벨(checkset-label)을 대신 클릭하여 이벤트를 위임합니다.
+              const styledLabel = document.querySelector('label.checkset-label[for="checkset-a-1-1"]');
+              if (styledLabel) {
+                  styledLabel.click();
+              }
+          });
+      }
+
+      // --- 쿠키 헬퍼 함수 ---
+      function setCookie(name, value, days) {
+          let expires = "";
+          if (days) {
+              const date = new Date();
+              date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+              expires = "; expires=" + date.toUTCString();
+          }
+          document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+      }
+
+      function getCookie(name) {
+          const nameEQ = name + "=";
+          const ca = document.cookie.split(';');
+          for(let i = 0; i < ca.length; i++) {
+              let c = ca[i];
+              while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+              if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+          }
+          return null;
+      }
+
+      function deleteCookie(name) {
+          document.cookie = name + '=; Max-Age=-99999999; path=/;';
+      }
+  });
+  </script>
+</th:block>
+
+</body>
+</html>

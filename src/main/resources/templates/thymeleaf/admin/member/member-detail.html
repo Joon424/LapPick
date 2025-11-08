@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+  <title>직원_회원상세</title>
+  <th:block layout:fragment="css">
+    <style>
+      .info-table { table-layout: fixed; border-collapse: collapse; width:600px; margin: 0; }
+      .info-table th, .info-table td { border:1px solid #e5e7eb; padding:10px; vertical-align:top; }
+      .info-table th { width:160px; background:#fafafa; text-align:left; }
+      .btn-bar { display: flex; gap: 10px; width: 600px; margin: 20px 0 0 0; }
+    </style>
+  </th:block>
+</head>
+<div layout:fragment="content">
+    <div class="basic-N23" data-bid="wWM47SwZLN">
+      <div class="contents-inner">
+        <div class="contents-container container-md">
+          <div class="textset" style="margin-bottom: 30px;">
+            <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+            <h2 class="textset-tit">회원 상세 정보</h2>
+            <p class="textset-desc">회원의 상세 정보를 보여주는 페이지입니다.</p>
+            <div class="alert" th:if="${message != null or error != null}" th:text="${message != null ? message : error}"
+                 style="background:#e0f7fa;color:#00796b;border:1px solid #b2ebf2;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+            </div>
+
+          <table class="info-table">
+            <tbody>
+              <tr>
+                <th>회원번호</th>
+                <td th:text="${memberCommand.memberNum}">mem_xxxxxx</td>
+              </tr>
+              <tr>
+                <th>아이디</th>
+                <td th:text="${memberCommand.memberId}">userid</td>
+              </tr>
+              <tr>
+                <th>이름</th>
+                <td th:text="${memberCommand.memberName}">홍길동</td>
+              </tr>
+              <tr>
+                <th>성별</th>
+                <td th:text="${memberCommand.gender}">M</td>
+              </tr>
+              <tr>
+                <th>연락처1</th>
+                <td th:text="${memberCommand.memberPhone1}">010-0000-0000</td>
+              </tr>
+              <tr>
+                <th>연락처2</th>
+                <td>
+                  <span th:if="${!#strings.isEmpty(memberCommand.memberPhone2)}" th:text="${memberCommand.memberPhone2}">02-000-0000</span>
+                  <span th:if="${#strings.isEmpty(memberCommand.memberPhone2)}" style="color:#777">(미입력)</span>
+                </td>
+              </tr>
+              <tr>
+                <th>이메일</th>
+                <td th:text="${memberCommand.memberEmail}">test@example.com</td>
+              </tr>
+              <tr>
+                <th>주소</th>
+                <td>
+                  <ul style="margin:0; padding-left:0; list-style:none;">
+                    <li th:text="${memberCommand.memberAddr}">경기 남양주시 와부읍 석실로 28</li>
+                    <li th:text="${memberCommand.memberAddrDetail}">상세주소</li>
+                    <li>우편번호: <span th:text="${memberCommand.memberPost}">12345</span></li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <th>생년월일</th>
+                <td th:text="${#temporals.format(memberCommand.memberBirth, 'yyyy-MM-dd')}">1990-01-01</td>
+                </tr>
+              <tr>
+                <th>가입일</th>
+                <td th:text="${#temporals.format(memberCommand.memberRegist, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+                </tr>
+            </tbody>
+          </table>
+
+          <div class="btn-bar">
+            <a th:href="@{/admin/members}" class="btnset btnset-line btnset-round">목록으로</a>
+            <a th:href="@{/admin/members/{num}/edit(num=${memberCommand.memberNum})}" class="btnset btnset-line btnset-round">회원 수정</a>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+</div>
+</html>

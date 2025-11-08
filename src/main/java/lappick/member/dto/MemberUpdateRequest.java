@@ -1,18 +1,19 @@
 package lappick.member.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class MemberUpdateRequest { // MemberCommand -> MemberUpdateRequest
+public class MemberUpdateRequest {
     String memberNum;
     String memberId;
-    String memberPw; // 비밀번호 확인용
+    String memberPw;
     String memberPwCon;
 
     @NotEmpty(message = "이름을 입력해주세요")
@@ -24,8 +25,8 @@ public class MemberUpdateRequest { // MemberCommand -> MemberUpdateRequest
     String memberAddrDetail;
     String memberPost;
 
-    @NotBlank(message = "연락처을 입력하여 주세요.")
-    @Size(min = 11, max = 23)
+    @NotBlank(message = "휴대폰 번호를 입력하여 주세요.")
+    @Pattern(regexp = "^010[0-9]{8}$", message = "휴대폰 번호 11자리(010...)를 정확히 입력해주세요.")
     String memberPhone1;
 
     String memberPhone2;
@@ -33,13 +34,10 @@ public class MemberUpdateRequest { // MemberCommand -> MemberUpdateRequest
 
     @NotNull(message="생년월일을 입력해주세요.")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    Date memberBirth;
+    LocalDate memberBirth;
 
     @NotBlank(message = "이메일을 입력하여 주세요.")
     String memberEmail;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    Date memberRegist;
 
     public boolean isMemberPwEqualMemberPwCon() {
         if (memberPw == null || memberPwCon == null) {

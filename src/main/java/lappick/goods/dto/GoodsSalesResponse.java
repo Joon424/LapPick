@@ -9,8 +9,8 @@ public class GoodsSalesResponse {
     private String goodsName;
 
     // 판매 현황 정보
-    private int totalSoldQty;    // 총 판매량
-    private long totalSalesAmount; // 총 판매액
-    private int reviewCount;     // 리뷰 개수
-    private double avgRating;        // 평균 평점
+    private int totalSoldQty;
+    private long totalSalesAmount;
+    private int reviewCount;
+    private double avgRating;
 }

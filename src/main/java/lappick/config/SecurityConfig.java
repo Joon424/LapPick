@@ -2,14 +2,18 @@ package lappick.config;
 
 import javax.sql.DataSource;
 
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.core.Authentication;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod; // HttpMethod import 추가
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,31 +36,50 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-
             .authorizeHttpRequests(auth -> auth
-                // ▼▼▼▼▼ [수정] /register/userAgree 를 허용 목록에 명시적으로 추가 ▼▼▼▼▼
                 .requestMatchers(
-                    "/", "/login", "/login/action", "/register/**", "/banner/**", "/goods/goodsFullList",
-                    "/userIdCheck", "/register/userAgree" // 내용보기 페이지 URL 추가
+                    PathRequest.toStaticResources().atCommonLocations() 
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/goods/detail/**", "/find-id", "/find-pw").permitAll()
-                .requestMatchers(HttpMethod.POST, "/find-id", "/find-pw").permitAll()
-                // ▲▲▲▲▲ [수정] /register/userAgree 를 허용 목록에 명시적으로 추가 ▲▲▲▲▲
+                .requestMatchers(
+                    "/resources/**", 
+                    "/static/**", 
+                    "/upload/**"
+                ).permitAll()
+                .requestMatchers(
+                    "/",
+                    "/error",
+                    "/auth/login",
+                    "/auth/register/**",
+                    "/auth/find-id",
+                    "/auth/find-pw",
+                    "/auth/userIdCheck",
+                    "/goods/goodsFullList",
+                    "/goods/detail/**",
+                    "/banner/**"
+                ).permitAll()
+
+                .requestMatchers(
+                    "/cart/**",
+                    "/purchases/**",
+                    "/member/**",
+                    "/qna/**",
+                    "/review/**"
+                ).hasAuthority("ROLE_MEMBER")
                 
                 .requestMatchers(
-                    "/goods/list", "/goods/add", "/goods/update", "/goods/delete",
-                    "/goods/{goodsNum}", "/goods/{goodsNum}/edit",
+                    "/admin/**",
                     "/employee/**"
-                ).hasAuthority("ROLE_EMP")
+                ).hasAuthority("ROLE_EMPLOYEE")
+                
                 .anyRequest().authenticated()
             )
             .formLogin(login -> login
-                .loginPage("/login")
-                .loginProcessingUrl("/login/action")
-                .usernameParameter("userId")
-                .passwordParameter("userPw")
+                .loginPage("/auth/login")
+                .loginProcessingUrl("/auth/login")
+                .usernameParameter("id")
+                .passwordParameter("pw")
                 .defaultSuccessUrl("/", true)
-                .failureUrl("/login?error=true")
+                .failureUrl("/auth/login?error=true")
                 .permitAll()
             )
             .rememberMe(remember -> remember
@@ -66,15 +89,15 @@ public class SecurityConfig {
                 .userDetailsService(userDetailsService)
             )
             .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID", "remember-me")
-            );
+                    .logoutUrl("/auth/logout")
+                    .logoutSuccessHandler(customLogoutSuccessHandler())
+                    .invalidateHttpSession(true) // 로그아웃 시 세션을 반드시 파괴
+                    .deleteCookies("JSESSIONID", "remember-me")
+                );
 
         return http.build();
     }
-
+    
     @Bean
     public PersistentTokenRepository persistentTokenRepository() {
         JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
@@ -82,15 +105,32 @@ public class SecurityConfig {
         return repo;
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                .requestMatchers("/resources/**", "/static/**", "/upload/**");
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
+    public LogoutSuccessHandler customLogoutSuccessHandler() {
+        return new LogoutSuccessHandler() {
+            @Override
+            public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException {
+                
+                String targetUrl = "/"; // 기본 리다이렉트 URL
+                
+                // 1. /auth/logout?withdraw=success 파라미터가 있는지 확인
+                String withdrawParam = request.getParameter("withdraw");
+                if ("success".equals(withdrawParam)) {
+                    // 2. 메인 페이지로 보낼 파라미터 추가
+                    targetUrl = "/?message=withdrawSuccess";
+                }
+                
+                // 3. 최종 목적지로 리다이렉트
+                // (세션과 쿠키는 이미 .invalidateHttpSession(true)와 .deleteCookies()에 의해 처리됨)
+                response.sendRedirect(request.getContextPath() + targetUrl);
+            }
+        };
     }
 }

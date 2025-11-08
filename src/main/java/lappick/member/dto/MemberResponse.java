@@ -1,13 +1,15 @@
 package lappick.member.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.apache.ibatis.type.Alias;
 import org.springframework.format.annotation.DateTimeFormat;
 import lombok.Data;
 
-@Alias("MemberResponse") // memberDTO -> MemberResponse
+@Alias("MemberResponse")
 @Data
-public class MemberResponse { // MemberDTO -> MemberResponse
+public class MemberResponse { 
     String memberNum;
     String memberId;
     String memberPw;
@@ -21,8 +23,10 @@ public class MemberResponse { // MemberDTO -> MemberResponse
     String memberEmail;
     
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    Date memberBirth;
-    Date memberRegist;
+    LocalDate memberBirth; 
+    
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    LocalDateTime memberRegist; 
     
     String memberEmailConf;
 }

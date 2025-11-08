@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="lappick.goods.GoodsMapper">
+<mapper namespace="lappick.goods.mapper.GoodsMapper">
 
 <resultMap id="goodsResultMap" type="lappick.goods.dto.GoodsResponse">
     <id property="goodsNum" column="GOODS_NUM" />
@@ -48,17 +48,20 @@
 
 <sql id="filterConditions">
     <where>
-        <if test="searchWord != null and searchWord != ''">(UPPER(GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%' OR UPPER(GOODS_CONTENTS) LIKE '%' || UPPER(#{searchWord}) || '%')</if>
-        <if test="goodsBrand != null and !goodsBrand.isEmpty()">AND UPPER(GOODS_BRAND) IN <foreach item="brand" collection="goodsBrand" open="(" separator="," close=")">UPPER(#{brand})</foreach></if>
+        <if test="searchWord != null and searchWord != ''">
+            (UPPER(G.GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%' OR 
+             UPPER(G.GOODS_NUM) LIKE '%' || UPPER(#{searchWord}) || '%')
+        </if>
+        <if test="goodsBrand != null and !goodsBrand.isEmpty()">AND UPPER(G.GOODS_BRAND) IN <foreach item="brand" collection="goodsBrand" open="(" separator="," close=")">UPPER(#{brand})</foreach></if>
         
-        <if test="minPrice != null">AND GOODS_PRICE &gt;= #{minPrice} * 10000</if>
-        <if test="maxPrice != null">AND GOODS_PRICE &lt;= #{maxPrice} * 10000</if>
+        <if test="minPrice != null">AND G.GOODS_PRICE &gt;= #{minPrice} * 10000</if>
+        <if test="maxPrice != null">AND G.GOODS_PRICE &lt;= #{maxPrice} * 10000</if>
 
-        <if test="goodsPurpose != null and !goodsPurpose.isEmpty()">AND UPPER(GOODS_PURPOSE) IN <foreach item="purpose" collection="goodsPurpose" open="(" separator="," close=")">UPPER(#{purpose})</foreach></if>
-        <if test="minScreenSize != null">AND GOODS_SCREEN_SIZE >= #{minScreenSize}</if>
-        <if test="maxScreenSize != null">AND GOODS_SCREEN_SIZE &lt;= #{maxScreenSize}</if>
-        <if test="minWeight != null">AND GOODS_WEIGHT >= #{minWeight}</if>
-        <if test="maxWeight != null">AND GOODS_WEIGHT &lt;= #{maxWeight}</if>
+        <if test="goodsPurpose != null and !goodsPurpose.isEmpty()">AND UPPER(G.GOODS_PURPOSE) IN <foreach item="purpose" collection="goodsPurpose" open="(" separator="," close=")">UPPER(#{purpose})</foreach></if>
+        <if test="minScreenSize != null">AND G.GOODS_SCREEN_SIZE >= #{minScreenSize}</if>
+        <if test="maxScreenSize != null">AND G.GOODS_SCREEN_SIZE &lt;= #{maxScreenSize}</if>
+        <if test="minWeight != null">AND G.GOODS_WEIGHT >= #{minWeight}</if>
+        <if test="maxWeight != null">AND G.GOODS_WEIGHT &lt;= #{maxWeight}</if>
     </where>
 </sql>
 
@@ -94,10 +97,10 @@
                     <when test='sortBy == "reviews"'>REVIEW_COUNT DESC</when>
                     <when test='sortBy == "priceHigh"'>G.GOODS_PRICE DESC</when>
                     <when test='sortBy == "priceLow"'>G.GOODS_PRICE ASC</when>
-                    <otherwise> -- 인기순 (기본값)
+                    <otherwise>
+                        G.GOODS_DATE DESC, 
                         TOTAL_SOLD DESC,
-                        LATEST_PURCHASE_DATE DESC NULLS LAST,
-                        G.GOODS_DATE DESC
+                        LATEST_PURCHASE_DATE DESC NULLS LAST
                     </otherwise>
                 </choose>
                 , G.GOODS_NAME ASC
@@ -106,7 +109,7 @@
 </select>
     
     <select id="goodsCount" parameterType="lappick.goods.dto.GoodsFilterRequest" resultType="int">
-        SELECT COUNT(*) FROM GOODS <include refid="filterConditions"/>
+        SELECT COUNT(*) FROM GOODS G <include refid="filterConditions"/>
     </select>
     
     <select id="selectOne" parameterType="string" resultMap="goodsResultMap">
@@ -130,12 +133,20 @@
     </update>
     
 <delete id="goodsDelete" parameterType="java.util.List">
-    DELETE FROM GOODS
-    WHERE GOODS_NUM IN
-    <foreach item="num" collection="list" open="(" separator="," close=")">
-        #{num}
-    </foreach>
-</delete>
+        DELETE FROM GOODS
+        WHERE GOODS_NUM IN
+        <foreach item="num" collection="list" open="(" separator="," close=")">
+            #{num}
+        </foreach>
+    </delete>
+
+<delete id="deleteGoodsIpgo" parameterType="java.util.List">
+        DELETE FROM GOODS_IPGO
+        WHERE GOODS_NUM IN
+        <foreach item="num" collection="list" open="(" separator="," close=")">
+            #{num}
+        </foreach>
+    </delete>
 
 <select id="selectGoodsByNumList" parameterType="java.util.List" resultType="lappick.goods.dto.GoodsResponse">
     SELECT
@@ -250,8 +261,8 @@
     FROM GOODS G
     <where>
         <if test="searchWord != null and searchWord != ''">
-            G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
-        </if>
+            UPPER(G.GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%'
+            </if>
     </where>
 </select>
 
@@ -283,8 +294,8 @@
                  GROUP BY PL.GOODS_NUM) P_DATE ON G.GOODS_NUM = P_DATE.GOODS_NUM
             <where>
                 <if test="searchWord != null and searchWord != ''">
-                    G.GOODS_NAME LIKE '%' || #{searchWord} || '%'
-                </if>
+                    UPPER(G.GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%'
+                    </if>
             </where>
             ORDER BY
                 <choose>

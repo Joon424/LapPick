@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper = true) // 상속받은 클래스의 필드도 equals/hashCode에 포함
+@EqualsAndHashCode(callSuper = true)
 @Alias("goodsStock")
-public class GoodsStockResponse extends GoodsResponse { // [수정] GoodsDTO를 상속받습니다.
+public class GoodsStockResponse extends GoodsResponse {
     Integer stockQty;
 }

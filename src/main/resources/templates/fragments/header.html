@@ -20,7 +20,7 @@
               <li class="header-gnbitem"><a class="header-gnblink" href="/banner/notice"><span>NOTICE</span></a></li>
               <li class="header-gnbitem"><a class="header-gnblink" href="/banner/faq"><span>FAQ</span></a></li>
               <li class="header-gnbitem">
-                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/logout} : @{/login/item.login}">
+                <a class="header-gnblink" th:href="${isLoggedIn} ? @{/auth/logout} : @{/auth/login}">
                   <span th:text="${isLoggedIn} ? 'LOGOUT' : 'LOGIN'" th:style="${isLoggedIn} ? 'color: red;' : ''">LOGIN</span>
                 </a>
               </li>
@@ -33,15 +33,15 @@
             <button class="header-btn btn-seach"><img src="/resources/icons/ico_seach_black.svg" alt="검색 아이콘"></button>
             
             <a class="header-btn btn-user" id="user-icon"
-               th:href="${#authorization.expression('isAnonymous()')} ? '/login/item.login' : (${#authorization.expression('hasAuthority(''ROLE_EMP'')')} ? '/employee/my-page' : '/member/my-page')">
+               th:href="${#authorization.expression('isAnonymous()')} ? @{/auth/login} : (${#authorization.expression('hasAuthority(''ROLE_EMPLOYEE'')')} ? @{/employee/my-page} : @{/member/my-page})">
               <img src="/resources/icons/ico_user_black.svg" alt="유저 아이콘">
             </a>
 
-            <a sec:authorize="!hasAuthority('ROLE_EMP')" href="javascript:void(0);" id="header-cart-icon" class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
+            <a sec:authorize="!hasAuthority('ROLE_EMPLOYEE')" href="javascript:void(0);" id="header-cart-icon" class="header-btn btn-cart badgeset badgeset-circle badgeset-position badgeset-bottom-right">
               <img src="/resources/icons/ico_cart_black.svg" alt="쇼핑백 아이콘">
               <span class="badgeset-text" id="cart-item-count" style="display: none;">0</span>
             </a>
-           <a sec:authorize="hasAuthority('ROLE_EMP')" class="header-btn" th:href="@{/admin/employees/hub}">
+           <a sec:authorize="hasAuthority('ROLE_EMPLOYEE')" class="header-btn" th:href="@{/admin/employees/hub}">
                 <img src="/resources/icons/gear_options_preferences_settings_icon.svg" alt="관리자 허브 아이콘"
                      style="width: 26px; height: 26px; position: relative; top: 3px;">
             </a>

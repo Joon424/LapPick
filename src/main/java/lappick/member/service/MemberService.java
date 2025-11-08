@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lappick.auth.mapper.AuthMapper;
 import lappick.member.dto.MemberResponse;
 import lappick.member.dto.MemberUpdateRequest;
 import lappick.member.mapper.MemberMapper;
@@ -16,17 +17,16 @@ public class MemberService {
 
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AuthMapper authMapper;
 
-    // MemberMyInfoService의 로직 통합
     @Transactional(readOnly = true)
     public MemberResponse getMemberInfo(String memberId) {
         return memberMapper.selectMemberById(memberId);
     }
 
-    // MemberMyUpdateService의 로직 통합
     public void updateMyInfo(MemberUpdateRequest request, String memberId) {
         // 현재 비밀번호 확인
-        String encodedPassword = memberMapper.selectPwById(memberId);
+        String encodedPassword = authMapper.selectPwById(memberId);
         if (encodedPassword == null || !passwordEncoder.matches(request.getMemberPw(), encodedPassword)) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
@@ -46,24 +46,10 @@ public class MemberService {
 
         memberMapper.memberUpdate(dto);
     }
-
-    // MemberPwUpdateService의 로직 통합
-    public void changePassword(String memberId, String oldPw, String newPw) {
-        String encodedPassword = memberMapper.selectPwById(memberId);
-        if (encodedPassword == null || !passwordEncoder.matches(oldPw, encodedPassword)) {
-            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
-        }
-        
-        MemberResponse dto = new MemberResponse();
-        dto.setMemberId(memberId);
-        dto.setMemberPw(passwordEncoder.encode(newPw));
-        
-        memberMapper.memberPwUpdate(dto); 
-    }
     
-    // MemberDropService의 로직 통합
     public void withdrawMember(String memberId, String rawPassword) {
-        String encodedPassword = memberMapper.selectPwById(memberId);
+        // 현재 비밀번호 확인
+        String encodedPassword = authMapper.selectPwById(memberId);
 
         if (encodedPassword == null || !passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");

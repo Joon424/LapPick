@@ -38,13 +38,13 @@ public class AuthService {
         authMapper.userInsert(dto);
     }
     
-    // ▼▼▼▼▼ [추가] 아이디 찾기 기능 (기존 MemberService에서 이동) ▼▼▼▼▼
+    // 아이디 찾기 기능 (기존 MemberService에서 이동)
     @Transactional(readOnly = true)
     public String findIdByNameAndEmail(String memberName, String memberEmail) {
         return authMapper.findIdByNameAndEmail(memberName, memberEmail);
     }
 
-    // ▼▼▼▼▼ [추가] 비밀번호 재설정 기능 (기존 MemberService에서 이동) ▼▼▼▼▼
+    // 비밀번호 재설정 기능 (기존 MemberService에서 이동)
     public String resetPassword(String memberId, String memberEmail) {
         MemberResponse member = authMapper.findByIdAndEmail(memberId, memberEmail);
         if (member == null) {
@@ -61,5 +61,19 @@ public class AuthService {
         emailService.sendSimpleMessage(member.getMemberEmail(), subject, text);
         */
         return tempPassword;
+    }
+
+    // 비밀번호 변경 (기존 MemberService에서 이동)
+    public void changePassword(String memberId, String oldPw, String newPw) {
+        String encodedPassword = authMapper.selectPwById(memberId); 
+        if (encodedPassword == null || !passwordEncoder.matches(oldPw, encodedPassword)) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+        
+        MemberResponse dto = new MemberResponse();
+        dto.setMemberId(memberId);
+        dto.setMemberPw(passwordEncoder.encode(newPw));
+        
+        authMapper.memberPwUpdate(dto); 
     }
 }

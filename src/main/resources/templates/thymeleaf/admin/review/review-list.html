@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+    <title>관리자 - 리뷰 관리</title>
+    <th:block layout:fragment="css">
+        <style>
+            .item-table { table-layout: fixed; width: 100%; border-collapse: collapse; }
+            .item-table th, .item-table td { vertical-align: middle; padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; }
+            .item-table thead tr { background: #f9fafb; }
+
+            .review-title-row { cursor: pointer; }
+            .review-title-row:hover { background-color: #f5f5f5; }
+            .review-content-row { display: none; }
+            .review-content-cell {
+                padding: 17px 30px 25px 30px !important; text-align: left;
+                background-color: #f8f9fa; border-left: 3px solid #dee2e6;
+            }
+            .review-detail-box { display: flex; gap: 20px; text-align: left; }
+            .review-detail-main { flex-grow: 1; }
+            .review-meta { font-size: 14px; color: #6c757d; margin-bottom: 12px; }
+            .review-meta .author { font-weight: 600; color: #343a40; }
+            .review-full-content { font-size: 16px; line-height: 1.7; white-space: pre-wrap; margin: 0; }
+            .review-images-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd;}
+            
+            .review-images-container img { 
+                max-width: 150px; 
+                max-height: 150px; 
+                border-radius: 4px; 
+                border: 1px solid #eee; 
+                object-fit: cover; 
+                cursor: pointer; 
+                transition: opacity 0.2s;
+            }
+            .review-images-container img:hover { opacity: 0.8; }
+
+            .manage-btn-group a, .manage-btn-group button { display: inline-block; padding: 5px 10px; font-size: 12px; text-align: center; text-decoration: none; border-radius: 4px; cursor: pointer; margin: 0 2px; white-space: nowrap; border: 1px solid transparent;}
+            .btn-delete { color: #fff; background-color: #dc3545; border-color: #dc3545; }
+            .btn-hide { color: #fff; background-color: #6c757d; border-color: #6c757d; }
+            .btn-publish { color: #fff; background-color: #28a745; border-color: #28a745; }
+
+            .status-badge { display: inline-block; padding: 4px 10px; font-size: 12px; border-radius: 12px; color: #fff; }
+            .status-published { background-color: #007bff; }
+            .status-hidden { background-color: #6c757d; }
+            
+            .pagination-container { 
+                display:flex; 
+                gap:6px; 
+                justify-content:center; 
+                align-items:center; 
+                margin-top:40px; 
+            }
+            .pagination-container .page-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px; 
+                height: 32px;
+                padding: 0; 
+                font-size: 13px;
+                font-weight: 500;
+                text-align: center;
+                text-decoration: none;
+                color: #555;
+                background-color: #fff;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                cursor: pointer;
+                box-sizing: border-box;
+                transition: background-color 0.2s, border-color 0.2s;
+            }
+            .page-btn:not(.active):not(.disabled):hover {
+                background-color: #f0f0f0;
+                border-color: #bbb;
+            }
+            .pagination-container .page-btn.active {
+                background-color: #333;
+                color: #fff;
+                border-color: #333;
+                font-weight: bold;
+                cursor: default;
+            }
+            .pagination-container .page-btn.disabled {
+                color: #bbb;
+                border-color: #e0e0e0;
+                cursor: default;
+                background-color: #f9f9f9;
+                pointer-events: none;
+            }
+            .pagination-container .page-btn.disabled:hover {
+                 background-color: #f9f9f9;
+                 border-color: #e0e0e0;
+            }
+            
+            .content-cell { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+            
+            #imageLightbox {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background-color: rgba(0,0,0,0.8);
+                display: none; /* 기본 숨김 */
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+                cursor: pointer;
+            }
+            #imageLightbox .lightbox-content {
+                max-width: 90%;
+                max-height: 90%;
+                object-fit: contain;
+            }
+            #imageLightbox .lightbox-close {
+                position: absolute;
+                top: 20px;
+                right: 30px;
+                font-size: 3rem;
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <main class="th-layout-main">
+        <div class="basic-N23" data-bid="empReviewList">
+            <div class="contents-inner">
+                <div class="contents-container container-md">
+                    <div class="textset" style="margin-bottom:14px;">
+                        <img class="imageset-img" src="/resources/images/img_basic_N23_1.png" alt="이미지">
+                        <h2 class="textset-tit">리뷰 관리</h2>
+                        <p class="textset-desc">고객들이 작성한 리뷰를 조회하고 관리합니다.</p>
+                        <div class="alert" th:if="${message}" th:text="${message}" style="background:#e0f7fa;color:#00796b;border:1px solid #b2ebf2;padding:10px 12px;border-radius:6px;margin-top:10px;"></div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin:10px 0 16px; gap:10px;">
+                        <form th:action="@{/admin/reviews}" method="get" style="display:flex; gap:8px; align-items:center;">
+                            <select name="rating" onchange="this.form.submit()" style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                <option value="">전체 평점</option>
+                                <option th:each="r : ${#numbers.sequence(5, 1)}" th:value="${r}" th:text="${r} + '점'" th:selected="${r == rating}"></option>
+                            </select>
+                            <input type="text" name="searchWord" th:value="${searchWord}" placeholder="내용, 작성자ID 검색" style="height:36px; padding:0 10px; border:1px solid #cbd5e1; border-radius:6px; min-width:200px;">
+                            <button type="submit" class="btnset btnset-line btnset-round">검색</button>
+                           <a class="btnset btnset-line btnset-round" th:href="@{/admin/reviews}">전체보기</a>
+                        </form>
+                        <div>
+                            <button type="button" class="btnset btnset-line btnset-round" onclick="submitBulkDelete()">선택 삭제</button>
+                        </div>
+                    </div>
+                    
+                   <form id="bulkActionForm" th:action="@{/admin/reviews/bulk-action}" method="post">
+                        <input type="hidden" name="action" id="bulkActionType" />
+                        <table class="item-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;"><input type="checkbox" id="checkAll"></th>
+                                    <th style="width: 6%;">번호</th>
+                                    <th style="width: 8%;">상태</th>
+                                    <th style="width: 15%;">상품명</th>
+                                    <th>내용</th>
+                                    <th style="width: 10%;">작성자 ID</th>
+                                    <th style="width: 8%;">평점</th>
+                                    <th style="width: 10%;">작성일</th>
+                                    <th style="width: 12%;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${#lists.isEmpty(reviewList)}"><td colspan="9" style="padding:40px 0;">조건에 맞는 리뷰가 없습니다.</td></tr>
+                                <th:block th:each="review, stat : ${reviewList}">
+                                    <tr class="review-title-row" th:data-review-num="${review.reviewNum}">
+                                        <td><input type="checkbox" name="reviewNums" th:value="${review.reviewNum}" onclick="event.stopPropagation();"></td>
+                                        <td th:text="${pageData.total - ((pageData.page - 1) * pageData.size) - stat.index}"></td>
+                                        <td>
+                                            <span class="status-badge" th:text="${review.reviewStatus == 'PUBLISHED' ? '게시' : '숨김'}"
+                                                  th:classappend="${review.reviewStatus == 'PUBLISHED' ? 'status-published' : 'status-hidden'}"></span>
+                                        </td>
+                                        <td class="text-start" th:text="${review.goodsName}"></td>
+                                        <td class="content-cell" th:text="${review.reviewContent}"></td>
+                                        <td th:text="${review.memberId}"></td>
+                                        <td th:text="${'⭐'.repeat(review.reviewRating)}"></td>
+                                        <td th:text="${#dates.format(review.reviewDate, 'yyyy-MM-dd')}"></td>
+                                        <td class="manage-btn-group">
+    <a th:href="@{/admin/reviews/toggle-status/{num}(num=${review.reviewNum}, currentStatus=${review.reviewStatus})}"
+       th:text="${review.reviewStatus == 'PUBLISHED' ? '숨김' : '게시'}"
+       th:classappend="${review.reviewStatus == 'PUBLISHED' ? 'btn-hide' : 'btn-publish'}"
+       th:data-action-text="${review.reviewStatus == 'PUBLISHED' ? '숨김' : '게시'}"
+       onclick="return confirmToggle(event, this);"></a>
+    <a th:href="@{/admin/reviews/delete/{num}(num=${review.reviewNum})}" class="btn-delete"
+       onclick="event.stopPropagation(); return confirm('정말로 이 리뷰를 삭제하시겠습니까?');">삭제</a>
+</td>
+                                    </tr>
+                                    <tr class="review-content-row" th:id="'review-content-' + ${review.reviewNum}">
+                                        <td colspan="9" class="review-content-cell">
+                                            <div class="review-detail-box">
+                                                <div class="review-detail-main">
+                                                    <div class="review-meta">
+                                                        <span class="author" th:text="${review.memberId}"></span> | 
+                                                        <span th:text="${#dates.format(review.reviewDate, 'yyyy.MM.dd HH:mm')}"></span>
+                                                    </div>
+                                                    <p class="review-full-content" th:text="${review.reviewContent}"></p>
+                                                </div>
+                                            </div>
+                                            <div class="review-images-container" th:if="${review.reviewImage != null and !#strings.isEmpty(review.reviewImage)}">
+                                                <th:block th:each="image : ${#strings.arraySplit(review.reviewImage, '/')}">
+                                                    <img th:if="${!#strings.isEmpty(image)}" th:src="@{/upload/{imageName}(imageName=${image})}" alt="리뷰 이미지">
+                                                </th:block>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                            </tbody>
+                        </table>
+                    </form>
+                   <div class="pagination-container" th:if="${pageData != null and pageData.total > 0}">
+    
+                        <a class="page-btn"
+                           th:href="${pageData.page > 1} ? @{/admin/reviews(page=1, searchWord=${searchWord}, rating=${rating}, goodsNum=${goodsNum})} : null"
+                           th:classappend="${pageData.page <= 1} ? 'disabled' : ''">&lt;&lt;</a>
+                           
+                        <a class="page-btn"
+                           th:href="${pageData.page > 1} ? @{/admin/reviews(page=${pageData.page - 1}, searchWord=${searchWord}, rating=${rating}, goodsNum=${goodsNum})} : null"
+                           th:classappend="${pageData.page <= 1} ? 'disabled' : ''">&lt;</a>
+                    
+                        <a class="page-btn" th:each="p : ${#numbers.sequence(pageData.startPage, pageData.endPage)}" th:text="${p}"
+                           th:classappend="${pageData.page == p} ? 'active' : ''"
+                           th:href="@{/admin/reviews(page=${p}, searchWord=${searchWord}, rating=${rating}, goodsNum=${goodsNum})}"></a>
+                        
+                        <a class="page-btn"
+                           th:href="${pageData.page < pageData.totalPages} ? @{/admin/reviews(page=${pageData.page + 1}, searchWord=${searchWord}, rating=${rating}, goodsNum=${goodsNum})} : null"
+                           th:classappend="${pageData.page >= pageData.totalPages} ? 'disabled' : ''">&gt;</a>
+                           
+                        <a class="page-btn"
+                           th:href="${pageData.page < pageData.totalPages} ? @{/admin/reviews(page=${pageData.totalPages}, searchWord=${searchWord}, rating=${rating}, goodsNum=${goodsNum})} : null"
+                           th:classappend="${pageData.page >= pageData.totalPages} ? 'disabled' : ''">&gt;&gt;</a>
+                   </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="imageLightbox">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightboxImage">
+    </div>
+</div>
+<th:block layout:fragment="script">
+    <script>
+    $(function() {
+        // 아코디언 기능 (하나만 열리도록)
+        $('.review-title-row').on('click', function() {
+            const targetContent = $('#review-content-' + $(this).data('review-num'));
+            const alreadyOpenContent = $('.review-content-row:visible');
+
+            if (alreadyOpenContent.length > 0) {
+                // 이미 열려있는 항목이 있을 경우
+                if (alreadyOpenContent.is(targetContent)) {
+                    // 내가 클릭한 항목이 이미 열려있었다면 닫습니다.
+                    targetContent.slideUp(150);
+                } else {
+                    // 다른 항목이 열려있었다면, 그것을 닫고 새 항목을 엽니다.
+                    alreadyOpenContent.slideUp(150, function() {
+                        targetContent.slideDown(150);
+                    });
+                }
+            } else {
+                // 아무것도 열려있지 않으면 클릭한 항목을 엽니다.
+                targetContent.slideDown(150);
+            }
+        });
+
+        $('#checkAll').on('click', function() {
+            $('input[name="reviewNums"]').prop('checked', $(this).is(':checked'));
+        });
+    });
+
+    function submitBulkDelete() {
+        const checked = $('input[name="reviewNums"]:checked');
+        if (checked.length === 0) {
+            alert('삭제할 리뷰를 선택하세요.');
+            return;
+        }
+        
+        if (confirm('선택한 ' + checked.length + '개의 리뷰를 영구 삭제하시겠습니까?')) {
+            $('#bulkActionType').val('delete');
+            $('#bulkActionForm').submit();
+        }
+    }
+    
+    function confirmToggle(event, element) {
+        event.stopPropagation();
+        const actionText = element.getAttribute('data-action-text');
+        return confirm(`정말로 이 리뷰를 '${actionText}' 처리하시겠습니까?`);
+    }
+    
+    // --- 이미지 확대(라이트박스) 스크립트 ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const lightbox = document.getElementById('imageLightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxClose = document.querySelector('.lightbox-close');
+        
+        // .review-images-container 내부의 img 클릭 시 라이트박스 열기
+        document.body.addEventListener('click', function(event) {
+            if (event.target.tagName === 'IMG' && event.target.closest('.review-images-container')) {
+                lightbox.style.display = 'flex';
+                lightboxImage.src = event.target.src;
+            }
+        });
+
+        function closeLightbox() { 
+            lightbox.style.display = 'none'; 
+        }
+        
+        lightboxClose.addEventListener('click', closeLightbox);
+        
+        // 라이트박스 배경 클릭 시 닫기 (클릭 대상이 라이트박스 자신일 때만)
+        lightbox.addEventListener('click', function(event) { 
+            if (event.target === lightbox) { 
+                closeLightbox(); 
+            } 
+        });
+    });
+    </script>
+</th:block>
+</body>
+</html>

@@ -23,7 +23,6 @@ public class GoodsResponse {
     String goodsPurpose;
     Double goodsScreenSize;
     
-    // ▼▼▼▼▼ [수정] String -> Double로 타입 변경 ▼▼▼▼▼
     Double goodsWeight;
     
     String goodsDetail;
@@ -36,10 +35,8 @@ public class GoodsResponse {
     String updateEmpNum;
     Date updateDate;
     
-    // [추가] 현재 재고 수량을 담을 필드
     private Integer stockQty;
     
- // [추가] 리뷰 요약 정보를 담을 필드
     private Integer reviewCount;
     private Double avgRating;
 }

@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import lappick.admin.employee.dto.EmployeeResponse;
-import lappick.domain.StartEndPageDTO;
+import lappick.common.dto.StartEndPageDTO;
 
 @Mapper
 @Repository
@@ -23,7 +23,7 @@ public interface EmployeeMapper {
     // Read (Select)
     public List<EmployeeResponse> employeeAllSelect(StartEndPageDTO sepDTO);
     public int employeeCount(String searchWord);
-    public EmployeeResponse selectByEmpNum(String empNum); // employeeOneSelect -> selectByEmpNum
-    public EmployeeResponse selectByEmpId(String empId); // employeeSelectOne -> selectByEmpId
+    public EmployeeResponse selectByEmpNum(String empNum);
+    public EmployeeResponse selectByEmpId(String empId);
     public String getEmpNum(String empId);
 }

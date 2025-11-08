@@ -1,0 +1,792 @@
+﻿<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{../layout/default}">
+<head>
+    <title th:text="${goods.goodsName}">상품 상세</title>
+<th:block layout:fragment="css">
+   <style>
+    .section-title { font-size: 1.5rem; font-weight: 600; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+    .item-table { width: 100%; text-align: center; border-collapse: collapse; border-top: 2px solid #333; }
+    .item-table thead { background-color: #fafafa; }
+    .item-table th, .item-table td { padding: 15px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
+    .qna-title-row { cursor: pointer; }
+    .qna-title-row:hover { background-color: #f9f9f9; }
+    .qna-content-row { display: none; }
+    .qna-content-cell {
+        padding: 25px 30px;
+        text-align: left;
+        background-color: #f8f9fa;
+        line-height: 1.6;
+        border-left: 3px solid #dee2e6;
+    }
+    .qna-box, .answer-box {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+    .answer-box {
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px dashed #ced4da;
+    }
+    .qa-icon {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fff;
+    }
+    .qa-icon.question { background-color: #495057; }
+    .qa-icon.answer { background-color: #0056b3; }
+    .qa-main { flex-grow: 1; }
+    .qa-meta {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 12px;
+    }
+    .qa-meta .author { font-weight: 600; color: #343a40; }
+    .qa-text {
+        font-size: 16px;
+        white-space: pre-wrap;
+        margin: 0;
+        color: #212529;
+    }
+    
+    .answer-form { 
+        margin-top: 25px; 
+    }
+    .answer-form textarea { 
+        width: 100%; 
+        min-height: 120px; 
+        padding: 10px; 
+        border: 1px solid #ccc; 
+        border-radius: 4px; 
+        resize: vertical; 
+    }
+    .answer-form .btn-bar { 
+        text-align: right; 
+        margin-top: 10px; 
+    }
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background-color: #fff; padding: 25px 30px; border-radius: 8px; width: 90%; max-width: 680px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h3 { font-size: 1.6rem; font-weight: 600; margin: 0; }
+    .close-btn { font-size: 2rem; font-weight: bold; color: #888; cursor: pointer; border: none; background: none; }
+    .form-table { table-layout: fixed; border-collapse: collapse; width: 100%; border-top: 2px solid #333; }
+    .form-table th, .form-table td { border-bottom:1px solid #e5e7eb; padding:12px 15px; vertical-align: top; }
+    .form-table th { width:150px; background:#fafafa; text-align:left; font-weight: 600; }
+    .form-table input[type="text"], .form-table select, .form-table textarea { width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; }
+    .form-table textarea { resize: vertical; min-height: 150px; }
+    .btn-bar { display:flex; align-items:center; gap:10px; margin-top:16px; justify-content:flex-end; }
+    
+	.info-panel {
+	    text-align: left;
+	    padding: 20px 10px;
+	    line-height: 1.7;
+	    color: #333;
+	    font-size: 15px;
+	}
+	.info-panel h4 {
+	    font-size: 1.4rem;
+	    font-weight: 600;
+	    margin-bottom: 15px;
+	    padding-bottom: 10px;
+	    border-bottom: 1px solid #ddd;
+	}
+	.info-panel h4:not(:first-child) {
+	    margin-top: 40px;
+	}
+	.info-panel dl {
+	    display: grid;
+	    grid-template-columns: 150px 1fr;
+	    margin-bottom: 20px;
+	}
+	.info-panel dt {
+	    font-weight: 500;
+	    color: #555;
+	    padding: 8px 0;
+	}
+	.info-panel dd {
+	    margin: 0;
+	    padding: 8px 0;
+	    color: #777;
+	}
+	.info-panel .notice-list {
+	    list-style-type: decimal;
+	    list-style-position: inside;
+	    padding-left: 0;
+	    color: #777;
+	    font-size: 15px;
+	}
+	.info-panel .notice-list li {
+	    margin-bottom: 5px;
+	    line-height: 1.8;
+	}
+	
+    .stock-info { font-size: 1.3rem; font-weight: 600; margin-top: 20px; padding: 15px; border-radius: 6px; text-align: center; }
+    .stock-info.out-of-stock { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; }
+    .stock-info.low-stock { color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; margin-top:10px; padding: 10px; font-size: 1.3rem; }
+    .btnset:disabled {
+        background-color: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        color: #adb5bd !important;
+        cursor: not-allowed !important;
+    }
+    
+    .review-summary { display: flex; align-items: center; gap: 15px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; margin-bottom: 30px; }
+    .star-rating { font-size: 2rem; color: #f59e0b; }
+    .star-rating .empty { color: #e4e5e9; }
+    .summary-text { font-size: 1.1rem; }
+    .summary-text strong { font-size: 1.5rem; font-weight: 600; }
+
+    .review-item { border-bottom: 1px solid #e5e7eb; padding: 25px 0; text-align: left; }
+    .review-item:last-child { border-bottom: none; }
+    .review-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; color: #6c757d; }
+    .review-goods-name { font-size: 1.2rem; font-weight: 600; color: #333; margin: 15px 0 10px; padding-left: 10px; border-left: 3px solid #767676;}
+    .review-content { margin: 15px 0; line-height: 1.7; white-space: pre-wrap; }
+    .review-images { display: flex; gap: 10px; margin-top: 15px; }
+    .review-images img { width: 100px; height: 100px; object-fit: cover; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+    .review-images img:hover { opacity: 0.8; }
+    
+    #imageLightbox {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        cursor: pointer;
+    }
+    #imageLightbox .lightbox-content {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    }
+    #imageLightbox .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 3rem;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .pagination-container { display:flex; gap:6px; justify-content:center; align-items:center; margin-top:30px; }
+    .page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        font-size: 13px;
+        font-weight: 500;
+        text-align: center;
+        text-decoration: none;
+        color: #555;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        box-sizing: border-box;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    .page-btn:not(.active):not(.disabled):hover {
+        background-color: #f0f0f0;
+        border-color: #bbb;
+    }
+    .page-btn.active {
+        background-color: #333;
+        color: #fff;
+        border-color: #333;
+        font-weight: bold;
+        cursor: default;
+    }
+	.page-btn.disabled {
+        color: #bbb;
+        border-color: #e0e0e0;
+        cursor: default;
+        background-color: #f9f9f9;
+        pointer-events: none;
+    }
+    .page-btn.disabled:hover {
+         background-color: #f9f9f9;
+         border-color: #e0e0e0;
+    }
+    .page-btn.prev, .page-btn.next { font-weight: bold; }
+</style>
+</th:block>
+</head>
+<body>
+<div layout:fragment="content">
+   <main class="th-layout-main">
+    <div class="basic-N51" data-bid="Wkm3qv4x0r">
+        <div class="contents-inner">
+            <div class="contents-container container-md">
+                <div class="contents-left">
+                    <div class="contents-thumbnail">
+                        <img th:src="@{/upload/{img}(img=${goods.goodsMainStoreImage})}" class="contents-thumbimg" alt="대표이미지" />
+                    </div>
+                    <ul class="contents-thumblist" style="margin-bottom: 20px;">
+                        <li class="contents-thumbitem" th:each="image : ${#strings.listSplit(goods.goodsDetailStoreImage, '/')}">
+                            <img th:if="${!image.isEmpty()}" th:src="@{/upload/{imgName}(imgName=${image})}" class="contents-thumbimg" alt="썸네일" />
+                        </li>
+                    </ul>
+                </div>
+				<div class="contents-right">
+                    <div class="contents-right-group" style="padding-bottom: 15px;">
+                        <div class="contents-brand"><a href="javascript:void(0);" th:text="${goods.goodsBrand}">브랜드</a></div>
+                        
+                        <div class="textset" style="margin-bottom: 0;">
+                            <h2 class="textset-tit" th:text="${goods.goodsName}">상품명</h2>
+                            <p class="textset-desc" style="margin-top: 8px; margin-bottom: 5px;" th:text="${goods.goodsContents}"></p>
+                            <p class="textset-desc" th:if="${goods.goodsWeight != null}" th:text="|${goods.goodsWeight}kg|"></p>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <p class="contents-price" style="margin: 0;" th:text="${#numbers.formatInteger(goods.goodsPrice, 0, 'COMMA')} + '원'">가격</p>
+                            <div class="contents-keywords" style="display: flex; gap: 8px;">
+                                <span th:if="${goods.goodsKeyword1 != null and !goods.goodsKeyword1.isEmpty()}" th:text="'#' + ${goods.goodsKeyword1}" style="background: #f1f3f5; color: #495057; padding: 5px 10px; border-radius: 15px; font-size: 13px; font-weight: 500;"></span>
+                                <span th:if="${goods.goodsKeyword2 != null and !goods.goodsKeyword2.isEmpty()}" th:text="'#' + ${goods.goodsKeyword2}" style="background: #f1f3f5; color: #495057; padding: 5px 10px; border-radius: 15px; font-size: 13px; font-weight: 500;"></span>
+                                <span th:if="${goods.goodsKeyword3 != null and !goods.goodsKeyword3.isEmpty()}" th:text="'#' + ${goods.goodsKeyword3}" style="background: #f1f3f5; color: #495057; padding: 5px 10px; border-radius: 15px; font-size: 13px; font-weight: 500;"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contents-right-group">
+                        <ul class="contents-right-list">
+                            <li class="contents-right-item"><strong>포인트적립</strong><span>구매금액의 1% 적립</span></li>
+                            <li class="contents-right-item"><strong>배송정보</strong><span th:text="${goods.goodsShippingInfo}">무료배송</span></li>
+                            <li class="contents-right-item"><strong>판매자정보</strong><span th:text="${goods.goodsSellerInfo}">판매자</span></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="contents-right-group">
+                        
+                        <div th:if="${goods.stockQty <= 0}" class="stock-info out-of-stock" style="padding: 12px; font-size: 1.4rem; margin-bottom: 30px; margin-top: 10px;">
+                            <p style="margin:0;">현재 품절된 상품입니다.</p>
+                        </div>
+                        <div th:if="${goods.stockQty > 0 and goods.stockQty < 4}" class="stock-info low-stock" style="padding: 12px; font-size: 1.3rem; margin-bottom: 30px;">
+                            <p style="margin:0;" th:text="|남은 수량: ${goods.stockQty}개 (재고가 얼마 남지 않았어요!)|"></p>
+                        </div>
+                        
+                        <div class="contents-btn-group" style="margin-top: 30px;">
+                            <button id="cartBtn" class="btnset btnset-line" th:disabled="${goods.stockQty <= 0}">장바구니</button>
+                            <button id="buyItem" class="btnset" th:disabled="${goods.stockQty <= 0}">구매하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="basic-N52" data-bid="QrM3qv56nc" style="margin-top: -130px;">
+        <div class="contents-inner">
+            <div class="tabset tabset-fluid">
+                <ul class="tabset-list container-md">
+    <li class="tabset-item"><a class="tabset-link active" href="javascript:void(0)"><span>상세정보</span></a></li>
+    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>리뷰</span></a></li>
+    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>상품문의</span></a></li>
+    <li class="tabset-item"><a class="tabset-link" href="javascript:void(0)"><span>배송/교환/반품안내</span></a></li>
+</ul>
+            </div>
+           <div class="contents-container container-md">
+    <div id="detailContent" class="image" align="center" th:if="${goods.goodsDetailStore != null and goods.goodsDetailStore != ''}">
+        <img th:each="img : ${#strings.listSplit(goods.goodsDetailStore, '/')}"
+             th:if="${!img.isEmpty()}"
+             th:src="@{/upload/{imgName}(imgName=${img})}"
+             alt="상세 설명 이미지" style="max-width: 100%; display: block;" />
+    </div>
+<div id="reviewContent" style="display:none; padding: 20px 0;">
+    <h3 class="section-title" style="text-align:left; margin-bottom: 20px;">리뷰</h3>
+
+    <div th:if="${reviewSummary != null and reviewSummary.reviewCount > 0}" class="review-summary">
+    <div class="star-rating">
+        <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+            <span th:if="${i <= reviewSummary.avgRating}">★</span>
+            <span th:if="${i > reviewSummary.avgRating}" class="empty">★</span>
+        </th:block>
+    </div>
+    <div class="summary-text">
+        <strong th:text="${#numbers.formatDecimal(reviewSummary.avgRating, 1, 1)}"></strong> / 5.0
+        <span th:text="'(' + ${reviewSummary.reviewCount} + '개 리뷰)'"></span>
+    </div>
+</div>
+
+    <div th:if="${reviewPageData == null or #lists.isEmpty(reviewPageData.items)}" style="padding: 60px 0; text-align: center; color: #888;">
+    <p>아직 작성된 리뷰가 없습니다.</p>
+</div>
+
+<div th:unless="${reviewPageData == null or #lists.isEmpty(reviewPageData.items)}" class="review-list">
+    <div th:each="review : ${reviewPageData.items}" class="review-item">
+        <div class="review-meta">
+            <span class="star-rating" style="font-size: 1rem;">
+                <th:block th:each="i : ${#numbers.sequence(1, 5)}">
+                    <span th:if="${i <= review.reviewRating}">★</span>
+                    <span th:if="${i > review.reviewRating}" class="empty">★</span>
+                </th:block>
+            </span>
+            <span th:text="${#strings.substring(review.memberId, 0, 3)} + '***'"></span>
+            
+            <span>
+                <span th:text="${#dates.format(review.reviewDate, 'yyyy.MM.dd')}"></span>
+                <span th:if="${review.reviewModDate != null}" style="font-size: 12px; color: #888; margin-left: 3px; vertical-align: 1px;">(수정됨)</span>
+            </span>
+            
+        </div>
+        <p class="review-goods-name" th:text="${review.goodsName}"></p>
+        <p class="review-content" th:text="${review.reviewContent}"></p>
+        <div class="review-images" th:if="${review.reviewImage != null and !review.reviewImage.isEmpty()}">
+            <img class="review-thumbnail" th:each="img : ${#strings.listSplit(review.reviewImage, '/')}"
+                 th:if="${!img.isEmpty()}"
+                 th:src="@{/upload/{imgName}(imgName=${img})}"
+                 alt="리뷰 이미지" />
+        </div>
+    </div>
+</div>
+
+<div class="pagination-container" th:if="${reviewPageData != null and reviewPageData.total > 0}">
+                        <a class="page-btn prev"
+                           th:href="${reviewPageData.page > 1} ? @{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=1)} : null"
+                           th:classappend="${reviewPageData.page <= 1} ? 'disabled' : ''">&lt;&lt;</a>
+                        <a class="page-btn prev"
+                           th:href="${reviewPageData.page > 1} ? @{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.page - 1})} : null"
+                           th:classappend="${reviewPageData.page <= 1} ? 'disabled' : ''">&lt;</a>
+                        
+                        <a class="page-btn" th:each="p : ${#numbers.sequence(reviewStartPage, reviewEndPage)}" th:text="${p}"
+                           th:classappend="${reviewPageData.page == p} ? 'active' : ''"
+                           th:href="@{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=${p})}"></a>
+                        
+                        <a class="page-btn next"
+                           th:href="${reviewPageData.page < reviewPageData.totalPages} ? @{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.page + 1})} : null"
+                           th:classappend="${reviewPageData.page >= reviewPageData.totalPages} ? 'disabled' : ''">&gt;</a>
+                           
+                        <a class="page-btn next"
+                           th:href="${reviewPageData.page < reviewPageData.totalPages} ? @{/goods/detail/{num}(num=${goods.goodsNum}, reviewPage=${reviewPageData.totalPages})} : null"
+                           th:classappend="${reviewPageData.page >= reviewPageData.totalPages} ? 'disabled' : ''">&gt;&gt;</a>
+                        </div>
+                        </div>
+       <div id="qnaTabContent" style="display:none; padding-top: 0px; margin-top: -5px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 0;">
+                        <h3 style="margin: 0; font-size: 1.5rem; font-weight: 600; padding-top: 20px;">상품 문의</h3>
+                        <button type="button" class="btnset btnset-line btnset-round" onclick="openQnaModal()">문의하기</button>
+                    </div>
+       <table class="item-table" style="border-top: none;">
+                        <thead>
+                            <tr>
+                                <th style="width:10%;">상태</th>
+                                <th style="width:15%;">유형</th>
+                                <th style="width:50%;">제목</th>
+                                <th style="width:10%;">작성자</th>
+                                <th style="width:15%;">작성일</th>
+                            </tr>
+                        </thead>
+                        <tbody th:if="${qnaPageData == null or #lists.isEmpty(qnaPageData.items)}">
+                            <tr><td colspan="5" style="padding:40px 0;">등록된 문의가 없습니다.</td></tr>
+                        </tbody>
+                        <tbody th:unless="${qnaPageData == null or #lists.isEmpty(qnaPageData.items)}">
+                            <th:block th:each="qna : ${qnaPageData.items}">
+                                <tr class="qna-title-row" th:data-qna-num="${qna.qnaNum}" th:data-author-num="${qna.memberNum}">
+                                    <td th:text="${qna.qnaStatus}">답변대기</td>
+                                    <td th:text="${qna.qnaType}">상품문의</td>
+                                    <td style="text-align:left;">
+                                        <span th:if="${!isEmployee and (loginMemberNum == null or qna.memberNum != loginMemberNum)}">🔒 </span>
+                                        <span th:text="${qna.qnaTitle}"></span>
+                                    </td>
+                                    <td th:text="${#strings.substring(qna.memberId, 0, 3)} + '***'">mem***</td>
+                                    <td th:text="${#temporals.format(qna.qnaDate, 'yyyy-MM-dd')}">2025-09-25</td>
+                                    </tr>
+                                <tr class="qna-content-row" th:id="'qna-content-' + ${qna.qnaNum}">
+                                    <td colspan="5" class="qna-content-cell">
+                                        <div class="qna-box">
+                                            <div class="qa-icon question">Q</div>
+                                            <div class="qa-main">
+                                                <div class="qa-meta">
+                                                    <span class="author" th:text="${#strings.substring(qna.memberId, 0, 3)} + '***'"></span>
+                                                    <span class="date" th:text="${#temporals.format(qna.qnaDate, 'yyyy.MM.dd HH:mm')}"></span>
+                                                    </div>
+                                                <p class="qa-text" th:text="${qna.qnaContent}"></p>
+                                            </div>
+                                        </div>
+                                        <div class="answer-box" th:if="${qna.answerContent != null}">
+                                            <div class="qa-icon answer">A</div>
+                                            <div class="qa-main">
+                                                <div class="qa-meta">
+                                                    <span class="author">LapPick 답변</span>
+                                                    <span class="date" th:text="${#temporals.format(qna.answerDate, 'yyyy.MM.dd HH:mm')}"></span>
+                                                    </div>
+                                                <p class="qa-text" th:text="${qna.answerContent}"></p>
+                                            </div>
+                                        </div>
+                                        <form th:if="${isEmployee and qna.answerContent == null}" class="answer-form" th:action="@{/admin/qna/answer}" method="post">
+                                             <input type="hidden" name="qnaNum" th:value="${qna.qnaNum}" />
+                                             <input type="hidden" name="returnUrl" th:value="@{/goods/detail/{num}(num=${goods.goodsNum})}" />
+                                             <textarea name="answerContent" placeholder="답변을 입력하세요." required></textarea>
+                                             <div class="btn-bar">
+                                                 <button type="submit" class="btnset btnset-sm">답변 등록</button>
+                                             </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </th:block>
+                        </tbody>
+                        </table>
+                       <div class="pagination-container" th:if="${qnaPageData != null and qnaPageData.total > 0}">
+                        <a class="page-btn prev"
+                           th:href="${qnaPageData.page > 1} ? @{/goods/detail/{num}(num=${goods.goodsNum}, qnaPage=1)} : null"
+                           th:classappend="${qnaPageData.page <= 1} ? 'disabled' : ''">&lt;&lt;</a>
+                        <a class="page-btn prev"
+                           th:href="${qnaPageData.page > 1} ? @{/goods/detail/{num}(num=${goods.goodsNum}, qnaPage=${qnaPageData.page - 1})} : null"
+                           th:classappend="${qnaPageData.page <= 1} ? 'disabled' : ''">&lt;</a>
+                        
+                        <a class="page-btn" th:each="p : ${#numbers.sequence(qnaStartPage, qnaEndPage)}" th:text="${p}"
+                           th:classappend="${qnaPageData.page == p} ? 'active' : ''"
+                           th:href="@{/goods/detail/{num}(num=${goods.goodsNum}, qnaPage=${p})}"></a>
+                        
+                        <a class="page-btn next"
+                           th:href="${qnaPageData.page < qnaPageData.totalPages} ? @{/goods/detail/{num}(num=${goods.goodsNum}, qnaPage=${qnaPageData.page + 1})} : null"
+                           th:classappend="${qnaPageData.page >= qnaPageData.totalPages} ? 'disabled' : ''">&gt;</a>
+                           
+                        <a class="page-btn next"
+                           th:href="${qnaPageData.page < qnaPageData.totalPages} ? @{/goods/detail/{num}(num=${goods.goodsNum}, qnaPage=${qnaPageData.totalPages})} : null"
+                           th:classappend="${qnaPageData.page >= qnaPageData.totalPages} ? 'disabled' : ''">&gt;&gt;</a>
+                        </div>
+    </div>
+    <div id="shippingContent" style="display:none;">
+        <div class="info-panel">
+            <h4>배송 안내</h4>
+            <dl>
+                <dt>배송사</dt>
+                <dd>CJ대한통운</dd>
+                <dt>배송 지역</dt>
+                <dd>전국</dd>
+                <dt>배송비</dt>
+                <dd>3,000원 (50,000원 이상 구매 시 무료배송)</dd>
+                <dt>배송 기간</dt>
+                <dd>결제 완료 후 2~5일 이내 출고 (주말/공휴일 제외)</dd>
+            </dl>
+
+            <h4>교환 및 반품 안내</h4>
+            <dl>
+                <dt>신청 방법</dt>
+                <dd>마이페이지 > 주문내역 > 주문상세보기에서 '교환' 또는 '반품' 신청</dd>
+                <dt>신청 기간</dt>
+                <dd>상품을 공급 받으신 날로부터 7일 이내</dd>
+                <dt>반품 배송비</dt>
+                <dd>단순 변심의 경우 왕복 배송비 6,000원 (최초 배송비 무료인 경우 포함)</dd>
+            </dl>
+
+            <h4>교환 및 반품 불가 사유</h4>
+            <ol class="notice-list">
+                <li>신청 기간이 경과한 경우</li>
+                <li>고객님의 책임 있는 사유로 상품 등이 멸실 또는 훼손된 경우</li>
+                <li>포장을 개봉하였거나 포장이 훼손되어 상품가치가 상실된 경우</li>
+                <li>고객님의 사용 또는 일부 소비에 의하여 상품의 가치가 현저히 감소한 경우</li>
+                <li>시간의 경과에 의하여 재판매가 곤란할 정도로 상품 등의 가치가 현저히 감소한 경우</li>
+            </ol>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</main>
+
+<div id="qnaModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>새 문의 작성</h3>
+            <button type="button" class="close-btn" onclick="closeQnaModal()">×</button>
+        </div>
+      <form th:action="@{/qna/write/product}" method="post" th:object="${qnaWriteRequest}">
+           <input type="hidden" name="goodsNum" th:value="${goods.goodsNum}" /> <table class="form-table">
+        <tr>
+            <th>문의 상품</th>
+            <td>
+               <p style="padding: 8px 0; margin:0; font-weight:600;" th:text="${goods.goodsName}"></p>
+            </td>
+        </tr>
+        <tr>
+            <th>문의 유형</th>
+            <td>
+                <select name="qnaType" required th:field="*{qnaType}">
+                    <option value="상품">상품</option>
+                    <option value="재입고">재입고</option>
+                    <option value="기타">기타</option>
+                </select>
+                <div th:if="${qnaValidationError != null and #fields.hasErrors('qnaType')}" th:errors="*{qnaType}" style="color:red; font-size:12px;"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>제목</th>
+            <td>
+                <input type="text" name="qnaTitle" required th:field="*{qnaTitle}">
+                <div th:if="${qnaValidation  != null and #fields.hasErrors('qnaTitle')}" th:errors="*{qnaTitle}" style="color:red; font-size:12px;"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>내용</th>
+            <td>
+                <textarea name="qnaContent" rows="8" required th:field="*{qnaContent}"></textarea>
+                <div th:if="${qnaValidationError != null and #fields.hasErrors('qnaContent')}" th:errors="*{qnaContent}" style="color:red; font-size:12px;"></div>
+            </td>
+        </tr>
+    </table>
+    <div class="btn-bar">
+        <button type="button" class="btnset btnset-line" onclick="closeQnaModal()">취소</button>
+        <button type="submit" class="btnset">문의 등록</button>
+    </div>
+</form>
+    </div>
+</div>
+
+<div id="imageLightbox">
+    <span class="lightbox-close">&times;</span>
+    <img class="lightbox-content" id="lightboxImage">
+</div>
+
+</div>
+<th:block layout:fragment="script">
+   <script th:inline="javascript">
+   /*<![CDATA[*/
+   const isLoggedIn = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+   const loginMemberNum = /*[[${loginMemberNum}]]*/ null;
+   const goodsNumForJs = /*[[${goods != null && goods.goodsNum != null ? goods.goodsNum : ''}]]*/ 'default_fallback';
+   const isEmployee = /*[[${isEmployee}]]*/ false;
+   const qnaValidationError = /*[[${qnaValidationError}]]*/ null;
+   const openQnaModalParam = /*[[${param.openQnaModal}]]*/ null;
+   const qnaSuccessMessage = /*[[${message}]]*/ null;
+   const qnaErrorMessage = /*[[${error}]]*/ null;
+   /*]]>*/
+
+   const qnaModal = document.getElementById('qnaModal');
+   function openQnaModal() {
+       if (!isLoggedIn) {
+           if (confirm("로그인 후 문의를 작성할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?")) {
+               window.location.href = /*[[@{/auth/login}]]*/ '/auth/login';
+           }
+           return;
+       }
+       if (isEmployee) {
+           alert("직원은 이 서비스를 이용할 수 없습니다.");
+           return;
+       }
+       qnaModal.style.display = 'flex';
+   }
+   function closeQnaModal() { qnaModal.style.display = 'none'; }
+   window.onclick = function(event) { if (event.target == qnaModal) { closeQnaModal(); } }
+
+   $(function () {
+	   if (qnaSuccessMessage) {
+           alert(qnaSuccessMessage);
+       } else if (qnaErrorMessage) {
+           alert(qnaErrorMessage);
+       }
+	   
+       const TABS = {
+           '상세정보': '#detailContent',
+           '리뷰': '#reviewContent',
+           '상품문의': '#qnaTabContent',
+           '배송/교환/반품안내': '#shippingContent'
+       };
+       const DEFAULT_TAB_ID = '#detailContent';
+       const SESSION_STORAGE_KEY_TAB = 'activeGoodsDetailTab';
+       const SESSION_STORAGE_KEY_SCROLL = 'goodsDetailScrollPos';
+
+       function activateTabAndRestoreScroll() {
+           const savedScrollPos = sessionStorage.getItem(SESSION_STORAGE_KEY_SCROLL);
+           let targetTabId = DEFAULT_TAB_ID; 
+
+           if (savedScrollPos) {
+               const savedTabId = sessionStorage.getItem(SESSION_STORAGE_KEY_TAB);
+               if (savedTabId && $(savedTabId).length) {
+                   targetTabId = savedTabId;
+               }
+               window.scrollTo(0, parseInt(savedScrollPos, 10));
+               sessionStorage.removeItem(SESSION_STORAGE_KEY_SCROLL);
+               sessionStorage.removeItem(SESSION_STORAGE_KEY_TAB);
+           }
+           
+           Object.values(TABS).forEach(id => $(id).hide());
+           $(targetTabId).show();
+           $('.tabset-link').removeClass('active');
+           $('.tabset-link').each(function() {
+               const tabText = $(this).find('span').text();
+               if (TABS[tabText] === targetTabId) {
+                   $(this).addClass('active');
+                   return false;
+               }
+           });
+       }
+       
+       $('.tabset-link').on('click', function(e) {
+           e.preventDefault();
+           const tabText = $(this).find('span').text();
+           const targetContentId = TABS[tabText];
+
+           if (targetContentId) {
+               $('.tabset-link').removeClass('active');
+               Object.values(TABS).forEach(id => $(id).hide());
+               $(this).addClass('active');
+               $(targetContentId).show();
+           }
+       });
+
+       $('.pagination-container a').on('click', function(e) {
+           if ($(this).hasClass('disabled')) {
+               e.preventDefault();
+               return;
+           }
+           sessionStorage.setItem(SESSION_STORAGE_KEY_SCROLL, window.scrollY);
+           
+           const activeTabText = $('.tabset-link.active span').text();
+           const activeTabId = TABS[activeTabText];
+           if (activeTabId) {
+               sessionStorage.setItem(SESSION_STORAGE_KEY_TAB, activeTabId);
+           }
+       });
+
+       $('form[action="/qna/write/product"]').on('submit', function() {
+           // 페이지네이션 클릭과 동일하게, 폼 제출 시 현재 탭과 스크롤 상태를 저장합니다.
+           sessionStorage.setItem(SESSION_STORAGE_KEY_SCROLL, window.scrollY);
+           sessionStorage.setItem(SESSION_STORAGE_KEY_TAB, TABS['상품문의']);
+       });
+
+       activateTabAndRestoreScroll(); 
+
+       if (openQnaModalParam === 'true' || qnaValidationError) {
+           openQnaModal();
+           if(qnaValidationError){
+              $('.tabset-link').each(function() {
+                 const tabText = $(this).find('span').text();
+                 if (tabText === '상품문의') {
+                     $('.tabset-link').removeClass('active');
+                     $(this).addClass('active');
+                     Object.values(TABS).forEach(id => $(id).hide());
+                     $('#qnaTabContent').show();
+                     sessionStorage.setItem(SESSION_STORAGE_KEY_TAB, '#qnaTabContent');
+                     return false;
+                 }
+              });
+           }
+       }
+
+       $('.qna-title-row').on('click', function() {
+           const targetContent = $('#qna-content-' + $(this).data('qna-num'));
+           const authorNum = $(this).data('author-num');
+
+           if (!isLoggedIn) {
+               alert("로그인 후 확인 가능합니다.");
+               return;
+           }
+
+           if (!isEmployee && String(authorNum) !== String(loginMemberNum)) {
+               alert("본인이 작성한 문의만 볼 수 있습니다.");
+               return;
+           }
+
+           const openContent = $('.qna-content-row:visible');
+           if (openContent.length > 0) {
+               if (openContent.is(targetContent)) {
+                   targetContent.slideUp(150);
+               } else {
+                   openContent.slideUp(150, function() {
+                       targetContent.slideDown(150);
+                   });
+               }
+           } else {
+               targetContent.slideDown(150);
+           }
+       });
+
+       $("#cartBtn").on("click", function() {
+            if (!isLoggedIn) {
+                if(confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+                    window.location.href = /*[[@{/auth/login}]]*/ "/auth/login";
+                }
+                return;
+            }
+            if (isEmployee) {
+                alert("직원은 이 서비스를 이용할 수 없습니다.");
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: /*[[@{/cart/cartAdd}]]*/ "/cart/cartAdd",
+                contentType: "application/json",
+                data: JSON.stringify({ goodsNum: goodsNumForJs, qty: 1 }),
+                success: function (response) {
+                    if (response === "200") {
+                        if (confirm("장바구니에 상품을 담았습니다. 장바구니로 이동하시겠습니까?")) {
+                            location.href = /*[[@{/cart/cartList}]]*/ "/cart/cartList";
+                        }
+                    } else if (response === "401") {
+                         alert("상품의 재고가 부족합니다.");
+                    } else {
+                         alert("장바구니 담기에 실패했습니다. (Code: " + response + ")");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Cart Add Error:", status, error, xhr.responseText);
+                    alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                }
+            });
+        });
+
+       $("#buyItem").on("click", function() {
+           if (!isLoggedIn) {
+               if(confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+                   window.location.href = /*[[@{/auth/login}]]*/ "/auth/login";
+               }
+               return;
+           }
+           if (isEmployee) {
+               alert("직원은 이 서비스를 이용할 수 없습니다.");
+               return;
+           }
+           if (!goodsNumForJs || goodsNumForJs === 'default_fallback') {
+               console.error("구매할 상품 번호(goodsNumForJs)가 유효하지 않습니다:", goodsNumForJs);
+               alert("상품 정보를 가져오지 못했습니다. 페이지를 새로고침 후 다시 시도해주세요.");
+               return;
+           }
+           const qty = 1;
+           const targetUrl = /*[[@{/purchases/order-direct}]]*/ '/purchases/order-direct'
+                           + `?goodsNum=${encodeURIComponent(goodsNumForJs)}&qty=${qty}`;
+           console.log("구매하기 URL:", targetUrl);
+           location.href = targetUrl;
+       });
+
+       const lightbox = document.getElementById('imageLightbox');
+       const lightboxImage = document.getElementById('lightboxImage');
+       const lightboxClose = document.querySelector('.lightbox-close');
+       document.body.addEventListener('click', function(event) {
+           if (event.target.classList.contains('review-thumbnail')) {
+               lightbox.style.display = 'flex';
+               lightboxImage.src = event.target.src;
+           }
+       });
+       function closeLightbox() { lightbox.style.display = 'none'; }
+       lightboxClose.addEventListener('click', closeLightbox);
+       
+       // 라이트박스 배경 클릭 시 닫기 (클릭 대상이 라이트박스 자신일 때만)
+       lightbox.addEventListener('click', function(event) { 
+           if (event.target === lightbox) { 
+               closeLightbox(); 
+           } 
+       });
+
+   });
+</script>
+</th:block>
+</body>
+</html>

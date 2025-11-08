@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lappick.qna.mapper.QnaMapper">
+
+    <resultMap id="qnaResultMap" type="lappick.qna.dto.QnaResponse">
+        <id property="qnaNum" column="QNA_NUM"/>
+        <result property="memberNum" column="MEMBER_NUM"/>
+        <result property="goodsNum" column="GOODS_NUM"/>
+        <result property="qnaType" column="QNA_TYPE"/>
+        <result property="qnaTitle" column="QNA_TITLE"/>
+        <result property="qnaContent" column="QNA_CONTENT"/>
+        <result property="qnaDate" column="QNA_DATE"/>
+        <result property="answerContent" column="ANSWER_CONTENT"/>
+        <result property="answerDate" column="ANSWER_DATE"/>
+        <result property="qnaStatus" column="QNA_STATUS"/>
+        <result property="goodsName" column="GOODS_NAME"/>
+        <result property="memberId" column="MEMBER_ID"/>
+    </resultMap>
+
+    <insert id="insertQna" parameterType="lappick.qna.domain.Qna">
+        <selectKey keyProperty="qnaNum" resultType="int" order="BEFORE">
+            select QNA_SEQ.NEXTVAL from dual
+        </selectKey>
+        INSERT INTO QNA (
+            QNA_NUM, MEMBER_NUM, GOODS_NUM, QNA_TYPE, QNA_TITLE, QNA_CONTENT, QNA_STATUS
+        ) VALUES (
+            #{qnaNum}, #{memberNum}, #{goodsNum}, #{qnaType}, #{qnaTitle}, #{qnaContent}, '답변대기' )
+    </insert>
+
+<select id="selectQnaByGoodsNum" parameterType="map" resultMap="qnaResultMap">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.*
+            FROM (
+                SELECT Q.*, M.MEMBER_ID, G.GOODS_NAME
+                FROM QNA Q
+                JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM
+                JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+                WHERE Q.GOODS_NUM = #{goodsNum}
+                ORDER BY Q.QNA_DATE DESC
+            ) T
+        )
+        WHERE RN BETWEEN #{startRow} AND #{endRow}
+    </select>
+
+    <select id="selectQnaByMemberNum" parameterType="map" resultMap="qnaResultMap">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.*
+            FROM (
+                SELECT
+                    Q.QNA_NUM, Q.MEMBER_NUM, Q.GOODS_NUM, Q.QNA_TYPE, Q.QNA_TITLE, Q.QNA_CONTENT, Q.QNA_DATE,
+                    Q.ANSWER_CONTENT, Q.ANSWER_DATE, Q.QNA_STATUS,
+                    G.GOODS_NAME, M.MEMBER_ID
+                FROM QNA Q
+                JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+                JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM
+                WHERE Q.MEMBER_NUM = #{memberNum}
+                <if test="status != null and status != ''">
+                    AND Q.QNA_STATUS = #{status}
+                </if>
+                <if test="searchWord != null and searchWord != ''">
+                    AND UPPER(Q.QNA_TITLE) LIKE '%' || UPPER(#{searchWord}) || '%' </if>
+                ORDER BY Q.QNA_DATE DESC
+            ) T
+        )
+        WHERE RN BETWEEN #{startRow} AND #{endRow}
+    </select>
+
+    <select id="countMyQna" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM QNA
+        WHERE MEMBER_NUM = #{memberNum}
+        <if test="status != null and status != ''">
+            AND QNA_STATUS = #{status}
+        </if>
+        <if test="searchWord != null and searchWord != ''">
+            AND UPPER(QNA_TITLE) LIKE '%' || UPPER(#{searchWord}) || '%'
+        </if>
+    </select>
+
+    <select id="selectAllQna" parameterType="map" resultMap="qnaResultMap">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.*
+            FROM (
+                SELECT
+                    Q.QNA_NUM, Q.MEMBER_NUM, Q.GOODS_NUM, Q.QNA_TYPE, Q.QNA_TITLE, Q.QNA_CONTENT, Q.QNA_DATE,
+                    Q.ANSWER_CONTENT, Q.ANSWER_DATE, Q.QNA_STATUS,
+                    G.GOODS_NAME, M.MEMBER_ID
+                FROM QNA Q
+                JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+                JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM
+                <where>
+                    <if test="status != null and status != ''">
+                        AND Q.QNA_STATUS = #{status}
+                    </if>
+                    <if test="searchWord != null and searchWord != ''">
+                        AND (UPPER(Q.QNA_TITLE) LIKE '%' || UPPER(#{searchWord}) || '%'
+                        OR UPPER(G.GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%'
+                        OR UPPER(M.MEMBER_ID) LIKE '%' || UPPER(#{searchWord}) || '%')
+                    </if>
+                </where>
+                ORDER BY Q.QNA_STATUS ASC, Q.QNA_DATE DESC
+            ) T
+        )
+        WHERE RN BETWEEN #{startRow} AND #{endRow}
+    </select>
+
+    <select id="countAllQna" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM QNA Q
+        JOIN GOODS G ON Q.GOODS_NUM = G.GOODS_NUM
+        JOIN MEMBERS M ON Q.MEMBER_NUM = M.MEMBER_NUM
+        <where>
+            <if test="status != null and status != ''">
+                AND Q.QNA_STATUS = #{status}
+            </if>
+            <if test="searchWord != null and searchWord != ''">
+                AND (UPPER(Q.QNA_TITLE) LIKE '%' || UPPER(#{searchWord}) || '%'
+                OR UPPER(G.GOODS_NAME) LIKE '%' || UPPER(#{searchWord}) || '%'
+                OR UPPER(M.MEMBER_ID) LIKE '%' || UPPER(#{searchWord}) || '%')
+            </if>
+        </where>
+    </select>
+
+    <update id="updateAnswer" parameterType="lappick.qna.domain.Qna">
+        UPDATE QNA
+        SET
+            ANSWER_CONTENT = #{answerContent},
+            ANSWER_DATE = SYSDATE,
+            QNA_STATUS = '답변완료'
+        WHERE QNA_NUM = #{qnaNum}
+    </update>
+
+    <select id="selectQnaByNum" parameterType="int" resultType="lappick.qna.domain.Qna">
+        SELECT * FROM QNA WHERE QNA_NUM = #{qnaNum}
+    </select>
+
+<delete id="deleteQnaByMemberNums" parameterType="list">
+        DELETE FROM QNA
+        WHERE MEMBER_NUM IN
+        <foreach collection="list" item="num" open="(" separator="," close=")">
+            #{num}
+        </foreach>
+    </delete>
+
+<select id="countQnaByGoodsNum" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM QNA WHERE GOODS_NUM = #{goodsNum}
+    </select>
+    
+    <delete id="deleteQnaByQnaNums" parameterType="list">
+        DELETE FROM QNA
+        WHERE QNA_NUM IN
+        <foreach collection="list" item="num" open="(" separator="," close=")">
+            #{num}
+        </foreach>
+    </delete>
+    
+</mapper>

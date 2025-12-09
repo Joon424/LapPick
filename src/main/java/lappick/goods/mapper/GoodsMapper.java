@@ -27,6 +27,9 @@ public interface GoodsMapper {
     GoodsStockResponse selectOneWithStock(String goodsNum);
     List<GoodsResponse> selectGoodsByNumList(List<String> nums);
     
+    // 비관적 락을 위한 메서드 선언
+    String selectGoodsForUpdate(String goodsNum);
+    
     // 재고(GoodsIpgo) 관련 메서드
     void insertGoodsIpgo(@Param("goodsNum") String goodsNum, @Param("ipgoQty") int ipgoQty, @Param("memo") String memo);
     int countIpgoHistory(String goodsNum);

@@ -53,15 +53,17 @@ public class AdminMemberController {
     @GetMapping("/{memberNum}/edit")
     public String editForm(@PathVariable String memberNum, Model model) {
         // DB에서 조회 (타입: MemberResponse)
-        MemberResponse responseDto = adminMemberService.getMemberDetail(memberNum);
+        MemberResponse responseDto = adminMemberService.getMemberDetail(memberNum); //
         
         // 폼 전용 DTO 생성 (타입: MemberUpdateRequest)
-        MemberUpdateRequest requestDto = new MemberUpdateRequest();
+        MemberUpdateRequest requestDto = new MemberUpdateRequest(); //
 
         // 조회한 데이터를 폼 DTO로 복사
-        BeanUtils.copyProperties(responseDto, requestDto);
+        BeanUtils.copyProperties(responseDto, requestDto); //
         
         model.addAttribute("memberCommand", requestDto);
+        model.addAttribute("memberInfo", responseDto);
+        
         return "admin/member/member-edit";
     }
 

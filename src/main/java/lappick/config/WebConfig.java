@@ -4,12 +4,17 @@ package lappick.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+	private static final Logger log = LoggerFactory.getLogger(WebConfig.class);
 
     @Value("${file.upload.dir}")
     private String uploadDir;
@@ -33,7 +38,7 @@ public class WebConfig implements WebMvcConfigurer {
         String resourcePath = "file:///" + uploadDir.replace("\\", "/");
         
         // (디버깅용) 서버 시작 시 실제 매핑된 파일 경로를 콘솔에 출력
-        System.out.println(">>> [WebConfig] 파일 리소스 경로 확인: " + resourcePath); 
+        log.info(">>> [WebConfig] 파일 리소스 경로 확인:{}", resourcePath);
         
         registry.addResourceHandler("/upload/**")
                 .addResourceLocations(resourcePath)

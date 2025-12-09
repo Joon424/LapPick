@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lappick.common.dto.PageData;
 import lappick.goods.dto.GoodsFilterRequest;
 import lappick.goods.dto.GoodsPageResponse;
@@ -61,13 +59,11 @@ public class GoodsController {
             @PathVariable("goodsNum") String goodsNum,
             @RequestParam(name = "reviewPage", defaultValue = "1") int reviewPage,
             @RequestParam(name = "qnaPage", defaultValue = "1") int qnaPage,
-            Model model,
-            HttpServletRequest request, HttpServletResponse response,
-            Principal principal) {
+            Model model, Principal principal) {
 
-        GoodsStockResponse dto = goodsService.getGoodsDetailForView(goodsNum, request, response);
+        GoodsStockResponse dto = goodsService.getGoodsDetailWithStock(goodsNum);
+        
         if (dto == null) {
-            // 상품 없을 시 예외 처리 또는 리다이렉트
         }
 
         // QnA 목록 조회 (페이징)

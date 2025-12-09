@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lappick.admin.employee.mapper.EmployeeMapper;
 import lappick.common.dto.FileDTO;
 import lappick.common.dto.PageData;
@@ -35,15 +35,18 @@ import lappick.goods.dto.GoodsRequest;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
+@Transactional(timeout = 10)
 @RequiredArgsConstructor
 public class GoodsService {
+
+	private static final Logger log = LoggerFactory.getLogger(GoodsService.class);
 
     @Value("${file.upload.dir}")
     private String fileDir;
 	
     private final GoodsMapper goodsMapper;
     private final EmployeeMapper employeeMapper;
+    
 
     @Transactional(readOnly = true)
     public GoodsPageResponse getGoodsListPage(GoodsFilterRequest filter, int limit) {
@@ -185,10 +188,10 @@ public class GoodsService {
         
         // 3. 소수점 자동 변환 (Integer -> Double)
         if (command.getGoodsScreenSize() != null) {
-        dto.setGoodsScreenSize(command.getGoodsScreenSize() / 10.0); // 156 -> 15.6
+        	dto.setGoodsScreenSize(command.getGoodsScreenSize() / 10.0); // 156 -> 15.6
         }
         if (command.getGoodsWeight() != null) {
-        dto.setGoodsWeight(command.getGoodsWeight() / 100.0); // 125 -> 1.25
+        	dto.setGoodsWeight(command.getGoodsWeight() / 100.0); // 125 -> 1.25
         }
         
         dto.setGoodsKeyword1(command.getGoodsKeyword1());
@@ -364,12 +367,16 @@ public class GoodsService {
             multipartFile.transferTo(file);
             return new FileDTO(originalFile, storeFileName);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("파일 업로드 중 오류 발생: {}", originalFile, e);
             return null;
         }
     }
     
-    @Transactional
+    @Transactional(
+            propagation = Propagation.REQUIRED,  // 기존 트랜잭션에 참여
+            timeout = 5,                         // 5초 타임아웃
+            rollbackFor = Exception.class        // 모든 예외 시 롤백
+        )
     public void changeStock(String goodsNum, int quantity, String memo) {
         if (quantity == 0) {
             throw new IllegalArgumentException("변경 수량은 0이 될 수 없습니다.");
@@ -389,7 +396,7 @@ public class GoodsService {
         goodsMapper.insertGoodsIpgo(goodsNum, quantity, finalMemo);
     }
     
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, timeout = 3)
     public GoodsStockResponse getGoodsDetailWithStock(String goodsNum) {
         return goodsMapper.selectOneWithStock(goodsNum);
     }
@@ -470,40 +477,5 @@ public class GoodsService {
         List<GoodsSalesResponse> items = goodsMapper.findGoodsSalesStatusPaginated(params);
         
         return new PageData<>(items, page, size, total, searchWord);
-    }
-    
-    public GoodsStockResponse getGoodsDetailForView(String goodsNum, HttpServletRequest request, HttpServletResponse response) {
-        // 조회수 증가 로직 (쿠키 기반)
-        Cookie goodsCookie = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie c : cookies) {
-                if (c.getName().equals("viewGoods")) {
-                    goodsCookie = c;
-                }
-            }
-        }
-
-        boolean shouldIncreaseViewCount = false;
-        if (goodsCookie != null) {
-            if (!goodsCookie.getValue().contains("[" + goodsNum + "]")) {
-                goodsCookie.setValue(goodsCookie.getValue() + "_[" + goodsNum + "]");
-                shouldIncreaseViewCount = true;
-            }
-        } else {
-            goodsCookie = new Cookie("viewGoods", "[" + goodsNum + "]");
-            shouldIncreaseViewCount = true;
-        }
-
-        if (shouldIncreaseViewCount) {
-            // 여기에 조회수 업데이트 DB 로직을 추가할 수 있습니다. (예: goodsMapper.updateViewCount(goodsNum);)
-            // 현재는 쿠키만 처리하므로 그대로 둡니다.
-            goodsCookie.setPath("/");
-            goodsCookie.setMaxAge(60 * 60 * 24 * 30); // 30일
-            response.addCookie(goodsCookie);
-        }
-
-        // DB에서 모든 상품 정보와 재고를 조회하여 반환
-        return goodsMapper.selectOneWithStock(goodsNum); 
     }
 }

@@ -1,6 +1,8 @@
 package lappick.purchase.controller;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -173,5 +175,23 @@ public class PurchaseController {
         purchaseService.updateOrderStatus(purchaseNum, status);
         ra.addFlashAttribute("message", "주문 상태가 '" + status + "'(으)로 성공적으로 변경되었습니다.");
         return "redirect:/admin/purchases";
+    }
+    
+    @PostMapping("/test/purchase")
+    @ResponseBody
+    public ResponseEntity<?> testPurchase(@RequestBody PurchaseRequest request) {
+        try {
+            // 고정 회원으로 주문 (인증 우회)
+            String purchaseNum = purchaseService.placeOrder(request, "mem_100041");
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("purchaseNum", purchaseNum);
+            return ResponseEntity.ok(result);
+        } catch (IllegalStateException e) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            return ResponseEntity.ok(result);
+        }
     }
 }

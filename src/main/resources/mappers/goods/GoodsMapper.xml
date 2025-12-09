@@ -310,4 +310,11 @@
     ) WHERE RN BETWEEN #{startRow} AND #{endRow}
 </select>
 
+<select id="selectGoodsForUpdate" parameterType="string" resultType="string">
+    SELECT GOODS_NUM 
+    FROM GOODS 
+    WHERE GOODS_NUM = #{goodsNum} 
+    FOR UPDATE WAIT 5
+</select>
+
 </mapper>

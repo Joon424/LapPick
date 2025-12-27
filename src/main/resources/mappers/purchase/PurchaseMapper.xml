@@ -148,6 +148,17 @@
         WHERE P.PURCHASE_NUM = #{purchaseNum}
     </select>
     
+    <select id="countDeliveredPurchaseItemByMember" resultType="int">
+    	SELECT COUNT(*)
+    	FROM PURCHASE P
+    	JOIN PURCHASE_LIST PL ON P.PURCHASE_NUM = PL.PURCHASE_NUM
+    	WHERE P.PURCHASE_NUM = #{purchaseNum}
+      		AND P.MEMBER_NUM = #{memberNum}
+      		AND P.PURCHASE_STATUS = '배송완료'
+      		AND PL.GOODS_NUM = #{goodsNum}
+	</select>
+    
+    
     <update id="updatePurchaseStatus">
         UPDATE PURCHASE SET PURCHASE_STATUS = #{status} WHERE PURCHASE_NUM = #{purchaseNum}
     </update>

@@ -59,6 +59,15 @@
         WHERE MEMBER_NUM = #{memberNum}
     </select>
 
+ 	<select id="countReviewsByPurchaseGoodsMember" resultType="int">
+    	SELECT COUNT(*)
+    	FROM REVIEWS
+    	WHERE PURCHASE_NUM = #{purchaseNum}
+      	AND GOODS_NUM = #{goodsNum}
+      	AND MEMBER_NUM = #{memberNum}
+    </select>
+ 	
+
     <select id="selectReviewsByMemberNum" parameterType="map" resultMap="reviewResultMap">
         SELECT * FROM (
             SELECT ROWNUM AS RN, T.* FROM (

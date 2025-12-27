@@ -78,18 +78,17 @@ public class ReviewController {
 
         // 유효성 검사 실패 시 폼으로 복귀
         if (result.hasErrors()) {
-             log.warn("리뷰 작성 유효성 검사 실패: {}", result.getAllErrors());
-             try {
+            log.warn("리뷰 작성 유효성 검사 실패: {}", result.getAllErrors());
+            try {
                 GoodsResponse goods = goodsMapper.selectOne(command.getGoodsNum());
                 model.addAttribute("goods", goods);
-                // 폼을 다시 보여줄 때 'isEditMode'가 false임을 명시합니다.
                 model.addAttribute("isEditMode", false);
                 return "user/review/review-form";
-             } catch (Exception e) {
-                 log.error("리뷰 작성 유효성 검사 실패 후 상품 정보 로딩 중 오류", e);
-                 ra.addFlashAttribute("error", "상품 정보를 불러오는 데 실패했습니다.");
-                 return "redirect:/";
-             }
+            } catch (Exception e) {
+                log.error("리뷰 작성 유효성 검사 실패 후 상품 정보 로딩 중 오류", e);
+                ra.addFlashAttribute("error", "상품 정보를 불러오는 데 실패했습니다.");
+                return "redirect:/";
+            }
         }
 
         try {
@@ -97,33 +96,42 @@ public class ReviewController {
                 log.warn("리뷰 작성 시도: 인증되지 않은 사용자");
                 throw new SecurityException("로그인이 필요합니다.");
             }
+
             String userId = authentication.getName();
             reviewService.writeReview(command, userId);
+
             ra.addFlashAttribute("message", "리뷰가 성공적으로 등록되었습니다.");
-            
-            return "redirect:/member/my-reviews"; 
-            
+            return "redirect:/member/my-reviews";
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            // 배송완료/구매자/중복 등 “리뷰 작성 제약” 위반 케이스
+            log.warn("리뷰 작성 제약 위반: purchaseNum={}, goodsNum={}, message={}",
+                    command.getPurchaseNum(), command.getGoodsNum(), e.getMessage());
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/purchases/my-orders";
+
         } catch (SecurityException e) {
-             log.error("리뷰 작성 권한 오류", e);
-             ra.addFlashAttribute("error", e.getMessage());
-             return "redirect:/auth/login";
+            log.error("리뷰 작성 권한 오류", e);
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/auth/login";
+
         } catch (Exception e) {
             log.error("리뷰 등록 중 오류 발생", e);
             // 서비스 로직 수행 중 예외 발생 시, 에러 메시지와 함께 폼을 다시 보여줍니다.
             try {
                 GoodsResponse goods = goodsMapper.selectOne(command.getGoodsNum());
                 model.addAttribute("goods", goods);
-                // 폼 재전송 시 'isEditMode' 플래그를 다시 설정합니다.
                 model.addAttribute("isEditMode", false);
-                model.addAttribute("errorMessage", "리뷰 등록 중 오류가 '발생했습니다: " + e.getMessage());
+                model.addAttribute("errorMessage", "리뷰 등록 중 오류가 발생했습니다: " + e.getMessage());
                 return "user/review/review-form";
             } catch (Exception goodsEx) {
-                 log.error("리뷰 등록 오류 후 상품 정보 로딩 중 추가 오류", goodsEx);
-                 ra.addFlashAttribute("error", "리뷰 등록 및 상품 정보 로딩 중 오류가 발생했습니다.");
-                 return "redirect:/";
+                log.error("리뷰 등록 오류 후 상품 정보 로딩 중 추가 오류", goodsEx);
+                ra.addFlashAttribute("error", "리뷰 등록 및 상품 정보 로딩 중 오류가 발생했습니다.");
+                return "redirect:/";
             }
         }
     }
+
 
     /**
      * 리뷰 삭제 처리 POST

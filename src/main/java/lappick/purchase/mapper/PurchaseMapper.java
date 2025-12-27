@@ -20,4 +20,9 @@ public interface PurchaseMapper {
     void insertDelivery(DeliveryRequest dto);
     PurchaseResponse selectPurchaseDetail(String purchaseNum);
     List<PurchaseItemResponse> selectPurchasedItemsByMemberNum(String memberNum);
+    int countDeliveredPurchaseItemByMember(
+            @Param("purchaseNum") String purchaseNum,
+            @Param("goodsNum") String goodsNum,
+            @Param("memberNum") String memberNum
+    );
 }

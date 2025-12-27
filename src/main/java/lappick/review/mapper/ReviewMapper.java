@@ -3,6 +3,7 @@ package lappick.review.mapper;
 import java.util.List;
 import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import lappick.review.domain.Review;
@@ -29,6 +30,12 @@ public interface ReviewMapper {
 
     void updateReview(Review dto);
 
+    int countReviewsByPurchaseGoodsMember(
+            @Param("purchaseNum") String purchaseNum,
+            @Param("goodsNum") String goodsNum,
+            @Param("memberNum") String memberNum
+    );
+    
     // ===== 관리자 기능 =====
     int countReviewsForAdmin(Map<String, Object> params);
     List<Review> findReviewsForAdminPaginated(Map<String, Object> params);

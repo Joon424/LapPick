@@ -47,153 +47,96 @@ CPU 종류, RAM 용량, SSD 용량, GPU 모델, 화면 해상도, 주사율...
    kg 단위 (예: 1.0 ~ 1.7)  
    편의 기능: 125 입력 → 1.25 자동 변환
 
-자동 변환 기능:
+**자동 변환 기능:**
 
-상품을 등록하다 보니 소수점 입력이 생각보다 번거롭다는 것을 
-깨닫고 사용자 편의를 위해 간편 입력 기능을 만들었습니다.
+"156" → 15.6, "125" → 1.25 자동 변환으로 입력 편의성 개선
 
-"156" 입력 → 15.6으로 자동 변환  
-"125" 입력 → 1.25로 자동 변환
+**동적 쿼리:**
 
-서버에서 처리:
-```java
-// 156 → 15.6
-if (command.getGoodsScreenSize() != null) {
-    dto.setGoodsScreenSize(command.getGoodsScreenSize() / 10.0);
-}
-
-// 125 → 1.25
-if (command.getGoodsWeight() != null) {
-    dto.setGoodsWeight(command.getGoodsWeight() / 100.0);
-}
-```
+MyBatis 동적 쿼리로 사용자가 선택한 필터만 WHERE 조건에 추가.  
+5가지 필터의 모든 조합을 하나의 쿼리로 처리.
 
 ---
 
 ### 2. 수불부 기반 재고 관리
 
-GOODS 테이블에 STOCK 컬럼을 두려고 했는데, 만약
-"재고가 왜 마이너스가 됐지?" 같은 문제가 생기면 원인을 알 수 없을 것 같았습니다.
+회계의 수불부 방식을 적용하여 모든 재고 변동을 INSERT로만 기록:
+- 입고 +100, 주문 -1, 취소 +1 형태로 이력 누적
+- SUM(IPGO_QTY)로 현재 재고 계산
+- 복합 인덱스 (GOODS_NUM, IPGO_QTY)로 성능 보장 (Cost 66.1% 개선)
 
-그래서 회계에서 쓰는 수불부 방식을 적용했습니다.
+장점:
+- 재고 변동 이력 완전 추적
+- UPDATE 없어 동시성 충돌 감소
+- 문제 발생 시 원인 추적 가능
 
-GOODS_IPGO 테이블에 모든 재고 변동을 INSERT로만 기록하고,  
-SUM(IPGO_QTY)으로 현재 재고를 계산합니다.
-
-```
-입고: +100
-주문: -1
-취소: +1
-```
-
-이렇게 하면:
-- 재고가 언제 어떻게 바뀌었는지 다 남음
-- UPDATE 없이 INSERT만 써서 동시성 충돌도 줄어듦
-- 나중에 문제가 생겨도 이력을 추적할 수 있음
-
-대신 매번 SUM을 계산해야 해서 느릴 수 있는데,  
-복합 인덱스 (GOODS_NUM, IPGO_QTY)로 해결했습니다.
+상세 설계: [어려웠던 점 - 수불부 설계](#2-수불부-설계-결정) 참고
 
 ---
 
 ### 3. 장바구니
 
-```sql
-MERGE INTO CART C
-USING (SELECT GOODS_NUM FROM GOODS WHERE GOODS_NUM = #{goodsNum}) G
-ON (C.GOODS_NUM = G.GOODS_NUM AND C.MEMBER_NUM = #{memberNum})
-WHEN MATCHED THEN
-    UPDATE SET CART_QTY = CART_QTY + #{cartQty}
-WHEN NOT MATCHED THEN
-    INSERT (CART_NUM, MEMBER_NUM, GOODS_NUM, CART_DATE, CART_QTY)
-    VALUES ((SELECT COALESCE(MAX(CART_NUM), 0) + 1 FROM CART),
-            #{memberNum}, #{goodsNum}, SYSDATE, #{cartQty})
-```
-
-이미 담긴 상품이면 수량만 증가시키고, 없으면 새로 추가합니다.
-
-"있는지 확인 → 있으면 UPDATE / 없으면 INSERT" 방식으로 구현하다가,
-Oracle의 MERGE 문으로 이를 하나의 쿼리로 처리할 수 있다는 걸 알게 됐습니다.
+Oracle MERGE 문으로 "있으면 수량 증가 / 없으면 추가"를 한 쿼리로 처리.
+- 2번의 DB 호출(SELECT + INSERT/UPDATE)을 1번으로 감소
 
 ---
 
-### 4. 주문 프로세스
+### 4. 통합 인증 시스템
 
-```java
-@Transactional(
-    propagation = Propagation.REQUIRED,
-    isolation = Isolation.READ_COMMITTED,
-    timeout = 10,
-    rollbackFor = Exception.class
-)
-public String placeOrder(...) {
-    // 1. 상품 락 획득
-    try {
-        goodsMapper.selectGoodsForUpdate(goodsNum);
-    } catch (Exception e) {
-        throw new CannotAcquireLockException(
-            "다른 사용자가 주문 중입니다. 잠시 후 다시 시도해주세요.", e
-        );
-    }
-    
-    // 2. 재고 확인
-    if (stock < quantity) {
-        throw new IllegalStateException(
-            String.format("상품명: '%s' 재고가 부족합니다.", goodsName)
-        );
-    }
-    
-    // 3. 주문 생성
-    purchaseMapper.insertPurchase(...);
-    
-    // 4. 주문 상품 삽입
-    purchaseMapper.insertPurchaseItem(...);
-    
-    // 5. 재고 차감
-    goodsService.changeStock(goodsNum, -quantity, "주문");
-    
-    // 6. 장바구니 삭제
-    cartMapper.goodsNumsDelete(...);
-}
-```
+UNION ALL로 회원/관리자 테이블을 병합하여 단일 인증 플로우로 처리.
+- grade 필드로 권한 자동 부여 (ROLE_MEMBER / ROLE_EMPLOYEE)
+- Spring Security URL 기반 접근 제어
+- 타입 선택 불필요 (UX 개선)
+- 인증 로직 중복 제거
 
-주문 상태:
-```
-결제완료 → 상품준비중 → 배송중 → 배송완료
-```
-
-주문 취소하면 재고 복구:
-```java
-goodsService.changeStock(goodsNum, +quantity, "주문 취소로 인한 재고 복구");
-```
+상세 구현: [기술적 의사결정 - 통합 인증](#회원관리자-통합-인증) 참고
 
 ---
 
-### 5. 리뷰 시스템
+### 5. 주문 프로세스
+
+FOR UPDATE 비관적 락으로 동시성 제어:
+1. 상품 락 획득 (FOR UPDATE WAIT 5)
+2. 재고 확인 → 주문 생성 → 재고 차감 → 장바구니 삭제
+3. 트랜잭션으로 원자성 보장
+
+주문 상태: 결제완료 → 상품준비중 → 배송중 → 배송완료  
+주문 취소 시 재고 자동 복구
+
+상세 해결 과정: [어려웠던 점 - 동시성 문제](#1-동시성-문제-발견-및-해결) 참고
+
+---
+
+### 6. 리뷰 시스템
 
 - 배송완료 상태에서만 작성 가능
-- 1개 주문당 1개 리뷰
-- 별점 1~5점
-- 이미지 여러 장 업로드
-- 관리자는 부적절한 리뷰를 숨김/삭제 가능
+- 1개 주문당 1개 리뷰만 작성 가능
+- 별점 1~5점, 이미지 여러 장 업로드
+- 관리자 리뷰 숨김/삭제 기능
 
-페이지네이션 클릭 시 스크롤 위치를 유지하는 기능을 추가했습니다.
+**중복 리뷰 방지 (2단계):**
+1. 서버: COUNT 검증으로 사전 차단
+2. DB: UNIQUE 제약 (PURCHASE_NUM, GOODS_NUM)으로 Race Condition 차단
 
-처음에는 페이지를 넘길 때마다 맨 위로 올라가서 불편했는데,  
-sessionStorage로 스크롤 위치를 저장해두고 복원하도록 만들었습니다.
-
-```javascript
-$('.pagination-container a').on('click', function(e) {
-    sessionStorage.setItem('goodsDetailScrollPos', window.scrollY);
-});
-
-const savedScrollPos = sessionStorage.getItem('goodsDetailScrollPos');
-if (savedScrollPos) {
-    window.scrollTo(0, parseInt(savedScrollPos, 10));
-}
-```
+배송완료 + 본인 구매 + 중복 방지 로직은 서버와 DB 양쪽에서 보장.
 
 ---
+
+### 7. 판매 통계 (관리자)
+
+상품별 판매 현황 집계:
+- 총 판매 수량 / 매출액 / 리뷰 수 / 평균 별점
+- 판매량/매출액/리뷰/평점 정렬
+
+재입고 결정, 프로모션 선정 등에 활용.
+
+### 8. 공통 UX 개선
+
+- 페이지 이동 시 스크롤 위치 유지 (상품 목록, 리뷰, 주문 내역 등 - sessionStorage)
+
+---
+
+
 
 ## 기술 스택
 
@@ -212,6 +155,46 @@ Testing
 - JMeter 5.6.3
 - Eclipse Debugger
 - EXPLAIN PLAN
+
+---
+
+## 프로젝트 구조
+```
+LapPick/
+├── src/main/java/lappick/
+│   ├── purchase/
+│   │   └── PurchaseService.java     # 비관적 락 주문 처리
+│   ├── goods/
+│   │   └── GoodsService.java        # 수불부 재고 관리
+│   ├── auth/
+│   │   └── AuthService.java         # UNION ALL 통합 인증
+│   ├── config/
+│   │   ├── SecurityConfig.java      # Spring Security 설정
+│   │   └── WebConfig.java
+│   ├── cart/, review/, member/, admin/
+│   ├── qna/                         # 1:1 문의
+│   └── common/
+├── src/main/resources/
+│   ├── mappers/
+│   │   ├── GoodsMapper.xml          # FOR UPDATE, 동적 필터
+│   │   ├── CartMapper.xml           # MERGE 문
+│   │   ├── AuthMapper.xml           # UNION ALL
+│   │   └── PurchaseMapper.xml
+│   ├── static/
+│   └── templates/
+├── docs/
+│   ├── images/                      # README 이미지
+│   ├── 비관적_락_동시성_테스트.pdf
+│   ├── 복합_인덱스_성능_테스트.pdf
+│   └── Eclipse_Blocking_검증.pdf
+└── pom.xml
+```
+
+**핵심 파일:**
+- `PurchaseService.java`: 비관적 락 기반 주문 처리
+- `GoodsMapper.xml`: SELECT FOR UPDATE + 동적 필터
+- `CartMapper.xml`: Oracle MERGE 문 활용
+- `AuthMapper.xml`: UNION ALL 통합 인증
 
 ---
 
@@ -262,7 +245,7 @@ http://localhost:8080
 
 상세 테스트: [비관적_락_동시성_테스트.pdf](docs/비관적_락_동시성_테스트.pdf)
 
-성능은 약 4배 느려졌지만, 쇼핑몰에서 오버셀링과 같은 금전적인 오류는 
+성능은 약 4.3배 느려졌지만, 쇼핑몰에서 오버셀링과 같은 금전적인 오류는 
 치명적이므로 허용 가능한 범위 내에서 정합성을 택했습니다.
 
 ---
@@ -289,28 +272,14 @@ http://localhost:8080
 
 ## 어려웠던 점과 해결 과정
 
-### 1. 동시성 문제 발견
+### 1. 동시성 문제 발견 및 해결
 
-쇼핑몰 기능 구현을 완료하고 부하 테스트를 하기 전까지는  
-동시성 문제를 예상하지 못했습니다.
+#### 문제 상황
 
-"100명이 동시에 주문하면 어떻게 될까?" 궁금해서  
-JMeter로 부하 테스트를 돌려봤습니다.
-
-테스트를 돌려보고 나서 DB를 확인해봤더니,  
-재고가 -10으로 나와서 "이건 큰 문제다"라고 생각했습니다.
-
-결과:
-- 재고 1개 상품에 100명 동시 주문
-- 11명이 주문 성공
-- 재고가 -10이 됨
-
-이게 바로 오버셀링 문제였습니다.
-
-원인:
-
+쇼핑몰 기능 구현을 완료하고 JMeter로 부하 테스트를 했을 때  
+동시성 문제를 발견했습니다.
 ```java
-// 기존 코드 (문제 있음)
+// 비관적 락 없이 재고 처리 (문제 코드)
 int stock = goodsMapper.getStock(goodsNum);  // 1. 재고 조회
 if (stock > 0) {
     purchaseMapper.insert(...);              // 2. 주문 생성
@@ -318,54 +287,99 @@ if (stock > 0) {
 }
 ```
 
-1번과 3번 사이에 다른 요청이 끼어들 수 있어서,  
-여러 명이 동시에 재고 1을 읽고 주문하는 문제였습니다.
+**문제점:** 1번과 3번 사이에 다른 요청이 끼어들 수 있음
 
-| 시간 | Thread A | Thread B | 재고 |
-|------|----------|----------|------|
-| t1 | stock = 1 조회 | | 1 |
-| t2 | | stock = 1 조회 | 1 |
-| t3 | 주문 생성 | | 1 |
-| t4 | | 주문 생성 | 1 |
-| t5 | 재고 차감 (1→0) | | 0 |
-| t6 | | 재고 차감 (0→-1) | -1 |
+**JMeter 테스트 결과 (비관적 락 X):**
+- 재고 1개 상품에 100명 동시 주문
+- 결과: 11명 주문 성공, 재고 -10
 
-해결:
+---
 
-비관적 락(FOR UPDATE)을 찾아서 적용했습니다.
+#### 해결 방법
 
+FOR UPDATE 비관적 락을 적용했습니다.
 ```java
-// 개선된 코드
-goodsMapper.selectGoodsForUpdate(goodsNum);  // 1. 락 획득
-int stock = goodsMapper.getStock(goodsNum);  // 2. 재고 조회
-if (stock > 0) {
-    purchaseMapper.insert(...);              // 3. 주문 생성
-    goodsMapper.updateStock(goodsNum, -1);   // 4. 재고 차감
+@Transactional(
+    propagation = Propagation.REQUIRED,
+    isolation = Isolation.READ_COMMITTED,
+    timeout = 10,
+    rollbackFor = Exception.class
+)
+public String placeOrder(...) {
+    // 1. 락 획득
+    try {
+        goodsMapper.selectGoodsForUpdate(goodsNum);
+        log.debug("락 획득 성공: {}", goodsNum);
+    } catch (Exception e) {
+        throw new CannotAcquireLockException(
+            "다른 사용자가 주문 중입니다. 잠시 후 다시 시도해주세요.", e
+        );
+    }
+    
+    // 2. 안전하게 재고 확인 및 차감
+    int stock = goodsMapper.getStock(goodsNum);
+    if (stock < quantity) {
+        throw new IllegalStateException("재고 부족");
+    }
+    
+    // 3. 주문 생성 및 재고 차감
+    purchaseMapper.insert(...);
+    goodsService.changeStock(goodsNum, -quantity, "주문");
 }
-// COMMIT 시 락 해제
 ```
 
+`changeStock()` 메서드도 `Propagation.REQUIRED`로 설정되어 있어,  
+`placeOrder()`의 트랜잭션에 참여합니다.
+
+```java
+@Transactional(propagation = Propagation.REQUIRED)
+public void changeStock(String goodsNum, int qty, String memo) {
+    // placeOrder 트랜잭션과 통합 실행
+}
+```
+
+**효과:**
+- 주문 생성 실패 시 → 재고 차감도 롤백
+- 재고 차감 실패 시 → 주문 생성도 롤백
+- 데이터 정합성 보장
+
 ```sql
+-- GoodsMapper.xml
 SELECT GOODS_NUM FROM GOODS 
 WHERE GOODS_NUM = #{goodsNum} 
 FOR UPDATE WAIT 5
 ```
 
-검증 과정:
+**JMeter 테스트 결과 (비관적 락 O):**
+- 재고 1개 상품에 100명 동시 주문
+- 결과: 1명 주문 성공, 재고 0
+
+**트레이드오프:**
+- 성능: 88ms → 380ms (4.3배 저하)
+- 정합성: 재고 -10 → 0 (오버셀링 완전 차단)
+
+→ 쇼핑몰에서 오버셀링은 금전적 손실로 이어지므로 성능 저하를 감수하고 비관적 락 선택
+
+상세 검증: [비관적_락_동시성_테스트.pdf](docs/비관적_락_동시성_테스트.pdf)
+
+---
+
+#### Eclipse Debugger 검증
 
 처음에는 "이게 정말 동작하나?" 확신이 안 섰습니다.  
-그래서 Eclipse Debugger로 직접 확인해봤습니다.
+그래서 Eclipse Debugger로 직접 확인했습니다.
 
+**검증 시나리오:**
 1. User A가 주문 시작 (Breakpoint로 멈춤)
 2. User B가 같은 상품 주문 시도
-3. User B 브라우저가 무한 로딩 → Lock 대기 중
+3. User B 브라우저가 무한 로딩 → Lock 대기 중 ✅
 4. User A Resume → 주문 완료
-5. User B 진행 → 재고 부족으로 실패
+5. User B 진행 → 재고 부족으로 실패 ✅
+
+실제로 Lock이 동작하는 것을 눈으로 확인하고 나서야 확신할 수 있었습니다.
 
 ![Eclipse Blocking 검증](docs/images/eclipse_blocking.png)
 *User A Breakpoint 실행 → User B Lock 대기 → User A 완료 → User B 진행*
-
-실제로 검증하고 나서야 "Lock이 진짜 동작하는구나" 확신이 들었습니다.
 
 상세 검증: [Eclipse_Blocking_검증.pdf](docs/Eclipse_Blocking_검증.pdf)
 
@@ -475,8 +489,8 @@ if (stock < quantity) {
 상황:  
 이 프로젝트는 복잡한 쿼리가 많았습니다.
 - 재고 수불부 SUM 집계
-- 주문 내역 3-4개 테이블 조인
-- 9가지 필터 조건 동적 조합
+- 주문 내역 4-5개 테이블 조인
+- 5가지 필터 조건 동적 조합 (브랜드는 9개 옵션 중 복수 선택)
 
 결정:  
 JPA로도 할 수 있지만 JPQL이나 Criteria API가 복잡해질 것 같아서  
@@ -531,6 +545,40 @@ WHERE EMP_ID = #{userId}
 이렇게 하니 Spring Security 설정을 하나만 만들면 됐고,  
 인증 로직 수정도 한 곳에서만 하면 됐습니다.
 
+
+---
+
+### LEFT JOIN으로 N+1 해결
+
+상황:  
+상품 목록을 조회할 때 상품마다 재고, 리뷰, 판매량을 개별 조회하면 N+1 문제가 발생합니다.
+- 상품 100개 → 쿼리 301회 (1 + 100 + 100 + 100)
+
+해결:  
+LEFT JOIN과 서브쿼리로 모든 정보를 한 번에 조회합니다.
+
+```sql
+SELECT G.*, 
+       COALESCE(S.STOCK_QTY, 0) AS STOCK_QTY,
+       COALESCE(R.REVIEW_COUNT, 0) AS REVIEW_COUNT,
+       COALESCE(PL.TOTAL_SOLD, 0) AS TOTAL_SOLD
+FROM GOODS G
+LEFT JOIN (SELECT GOODS_NUM, SUM(IPGO_QTY) AS STOCK_QTY 
+           FROM GOODS_IPGO GROUP BY GOODS_NUM) S 
+    ON G.GOODS_NUM = S.GOODS_NUM
+LEFT JOIN (SELECT GOODS_NUM, COUNT(*) AS REVIEW_COUNT 
+           FROM REVIEWS WHERE REVIEW_STATUS = 'PUBLISHED' 
+           GROUP BY GOODS_NUM) R 
+    ON G.GOODS_NUM = R.GOODS_NUM
+LEFT JOIN (SELECT GOODS_NUM, SUM(PURCHASE_QTY) AS TOTAL_SOLD 
+           FROM PURCHASE_LIST GROUP BY GOODS_NUM) PL
+    ON G.GOODS_NUM = PL.GOODS_NUM
+```
+
+결과:
+- 상품 100개 → 쿼리 1회
+- N+1 문제 사전 방지
+
 ---
 
 ## 배운 점
@@ -538,7 +586,7 @@ WHERE EMP_ID = #{userId}
 ### 1. 성능 측정의 중요성
 
 "비관적 락을 쓰면 느려지겠지"라고 생각했는데,  
-실제로 측정해보니 88ms → 380ms로 약 4배 정도 느려졌습니다.
+실제로 측정해보니 88ms → 380ms로 약 4.3배 정도 느려졌습니다.
 
 예상보다는 느렸지만 허용 가능한 범위였습니다.
 
@@ -561,7 +609,7 @@ SELECT SUM(IPGO_QTY) FROM GOODS_IPGO WHERE GOODS_NUM = ?
 ```
 
 이 쿼리는 인덱스만으로 처리가 가능해서 테이블 접근이 필요 없습니다.  
-GOODS_NUM으로 찾고, IPGO_QTY는 이미 인덱스에 포함되어 있으니까요.
+(GOODS_NUM으로 찾고, IPGO_QTY는 이미 인덱스에 포함되어 있기 때문)
 
 EXPLAIN PLAN으로 확인해보니 Cost가 310 → 105로 떨어졌습니다.
 
@@ -586,6 +634,32 @@ System.out은 왜 안 쓰는지 궁금해서 찾아봤습니다.
 구현할 때는 "돌아가게" 만드는 데 급급했다면,  
 리팩토링하면서 "왜"를 이해하게 됐습니다.
 
+
+---
+
+### 4. 읽기 전용 트랜잭션 분리
+
+조회 메서드 32개에 `@Transactional(readOnly = true)` 적용.
+
+**효과:**
+- DB가 읽기 전용으로 인식하여 최적화 수행
+- 불필요한 쓰기 락 방지
+- 트랜잭션 플러시 없이 성능 향상
+
+**예시:**
+```java
+@Transactional(readOnly = true)
+public GoodsPageResponse getGoodsListPage(GoodsFilterRequest filter, int limit) {
+    return goodsMapper.allSelect(filter);
+}
+```
+
+**적용 범위:**
+- 상품 목록/상세 조회: `getGoodsListPage()`, `getGoodsDetail()`
+- 주문 내역 조회: `getMyOrderListPage()`, `getOrderDetail()`
+- 리뷰 조회: `getReviewList()`, `getReviewDetail()`
+- (총 32개 메서드)
+
 ---
 
 ## 개선하고 싶은 부분
@@ -597,6 +671,23 @@ System.out은 왜 안 쓰는지 궁금해서 찾아봤습니다.
 테스트 코드로 검증하는 게 맞다고 생각합니다.
 
 ---
+
+### 정량적 개선
+
+| 지표 | 개선 |
+|------|------|
+| Logger 도입 | System.out 제거 (WebConfig, StartEndPageService) |
+| 동시성 제어 | FOR UPDATE WAIT 5 적용 |
+| 예외 세분화 | CannotAcquireLockException, IllegalStateException 구분 |
+| 복합 인덱스 | (GOODS_NUM, IPGO_QTY) Cost 66.1% 개선 |
+| 리뷰 제약 | UNIQUE (PURCHASE_NUM, GOODS_NUM) 추가 |
+| DB 정규화 | 수불부 설계로 재고 이력 추적 |
+| 성능 테스트 | JMeter 100명 동시성 테스트 완료 |
+| 실행 계획 | EXPLAIN PLAN으로 Cost 검증 (310 → 105) |
+| 통합 인증 | UNION ALL로 회원/관리자 인증 통합 |
+
+---
+
 
 ## 연락처
 

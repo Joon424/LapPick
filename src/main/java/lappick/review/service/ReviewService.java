@@ -23,6 +23,7 @@ import lappick.common.dto.PageData;
 import lappick.goods.dto.GoodsResponse;
 import lappick.goods.service.GoodsService;
 import lappick.member.mapper.MemberMapper;
+import lappick.purchase.mapper.PurchaseMapper;
 import lappick.review.domain.Review;
 import lappick.review.dto.ReviewPageResponse;
 import lappick.review.dto.ReviewSummaryResponse;
@@ -40,27 +41,50 @@ public class ReviewService {
     private final ReviewMapper reviewMapper;
     private final MemberMapper memberMapper;
     private final GoodsService goodsService;
+    private final PurchaseMapper purchaseMapper;
 
     @Value("${file.upload.dir}")
     private String fileDir;
 
     public void writeReview(ReviewWriteRequest command, String userId) {
-        Review dto = new Review();
 
+        // 0) 인증 사용자 → memberNum 조회
         String memberNum = memberMapper.memberNumSelect(userId);
-        // memberNum이 없으면, 유효하지 않은 접근으로 간주하여 예외 처리합니다.
         if (memberNum == null) {
-             throw new SecurityException("사용자를 찾을 수 없거나 인증 정보가 올바르지 않습니다.");
+            throw new SecurityException("사용자를 찾을 수 없거나 인증 정보가 올바르지 않습니다.");
         }
 
-        dto.setPurchaseNum(command.getPurchaseNum());
-        dto.setGoodsNum(command.getGoodsNum());
+        // 1) 필수 파라미터 방어 (DTO에 @NotBlank가 없으므로 서버에서 1차 방어)
+        String purchaseNum = command.getPurchaseNum();
+        String goodsNum = command.getGoodsNum();
+
+        if (purchaseNum == null || purchaseNum.isBlank() || goodsNum == null || goodsNum.isBlank()) {
+            throw new IllegalArgumentException("주문번호 또는 상품번호가 올바르지 않습니다.");
+        }
+
+        // 2) 배송완료 + 구매자 본인 + 해당 주문에 해당 상품 포함 검증
+        // (2차에서 추가한 purchaseMapper.countDeliveredPurchaseItemByMember(...) 사용)
+        int eligibleCount = purchaseMapper.countDeliveredPurchaseItemByMember(purchaseNum, goodsNum, memberNum);
+        if (eligibleCount <= 0) {
+            throw new IllegalStateException("배송완료된 구매 항목만 리뷰 작성이 가능합니다.");
+        }
+
+        // 3) 중복 리뷰 검증 (1차에서 추가한 reviewMapper.countReviewsByPurchaseGoodsMember(...) 사용)
+        int duplicateCount = reviewMapper.countReviewsByPurchaseGoodsMember(purchaseNum, goodsNum, memberNum);
+        if (duplicateCount > 0) {
+            throw new IllegalStateException("이미 작성한 리뷰입니다.");
+        }
+
+        // 4) 여기까지 통과하면 실제 리뷰 저장 진행
+        Review dto = new Review();
+        dto.setPurchaseNum(purchaseNum);
+        dto.setGoodsNum(goodsNum);
         dto.setMemberNum(memberNum);
         dto.setReviewRating(command.getReviewRating());
         dto.setReviewContent(command.getReviewContent());
-        // 리뷰 등록 시 기본 상태는 '게시됨(PUBLISHED)'으로 설정합니다.
-        dto.setReviewStatus("PUBLISHED");
+        dto.setReviewStatus("PUBLISHED"); // 기존 정책 유지
 
+        // 이미지 업로드(검증 통과 후에만 수행 → 불필요 업로드 방지)
         if (command.getReviewImages() != null && command.getReviewImages().length > 0) {
             String storeFileNames = Arrays.stream(command.getReviewImages())
                 .filter(mf -> mf != null && !mf.isEmpty())
@@ -74,10 +98,10 @@ public class ReviewService {
         }
 
         reviewMapper.insertReview(dto);
-        // TODO: 필요시 구매 항목의 리뷰 작성 상태 업데이트 로직 추가
-        // 예: purchaseMapper.updateReviewWrittenStatus(command.getPurchaseNum(), command.getGoodsNum(), true);
+
         log.info("리뷰 저장 완료: reviewNum={}, goodsNum={}, memberNum={}", dto.getReviewNum(), dto.getGoodsNum(), dto.getMemberNum());
     }
+
 
     // ===== 파일 처리 헬퍼 =====
 

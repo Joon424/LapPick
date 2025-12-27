@@ -167,6 +167,11 @@
               <p class="textset-desc">선택하신 상품들을 한눈에 확인하고 수량을 조정하거나 구매할 수 있습니다.</p>
             </div>
 
+			<div th:if="${error}" class="alert alert-danger" role="alert" style="margin-bottom: 30px; padding: 20px; border-radius: 8px; background-color: #fee; border: 1px solid #fcc; color: #c33;">
+   			 	<strong style="font-size: 1.1em;">⚠️ 주문 실패!</strong>
+   				 <p style="margin: 8px 0 0 0; font-size: 1em;" th:text="${error}"></p>
+			</div>
+
             <div class="page-actions">
               <form class="search-form" th:action="@{/cart/cartList}" method="get">
                 <input type="text" name="searchWord" th:value="${searchWord}" placeholder="상품명 검색">

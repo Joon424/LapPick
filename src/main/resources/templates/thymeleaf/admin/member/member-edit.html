@@ -53,8 +53,8 @@
 
            <table>
              <tbody>
-              <tr><th>회원번호</th><td th:text="*{memberNum}">...</td></tr>
-              <tr><th>아이디</th><td th:text="*{memberId}">...</td></tr>
+			  <tr><th>회원번호</th><td th:text="${memberInfo.memberNum}">...</td></tr>
+              <tr><th>아이디</th><td th:text="${memberInfo.memberId}">...</td></tr>
               <tr>
                 <th>이름</th>
                 <td>
@@ -117,8 +117,8 @@
 
               <tr>
                 <th>가입일</th>
-                <td th:text="${#temporals.format(memberCommand.memberRegist, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
-                </tr>
+                <td th:text="${#temporals.format(memberInfo.memberRegist, 'yyyy-MM-dd HH:mm')}">2024-01-01 10:00</td>
+              </tr>
 
               </tbody>
             </table>
